@@ -1,0 +1,12 @@
+requirement:
+  id: SREQ-00002-1
+  title: The render-IR schema shall define the origin-neutral drawing contract under semver
+  description: >
+    The render-IR schema shall define the origin-neutral drawing contract under semver.
+  rationale: >
+    The IR (JSON Schema, shipped in the package and per release tag) is the family's second public API after the grammar's node vocabulary: boxes, compartments, containers, notes and typed edges — never puml-specific or argos-specific concepts. Emitters validate against it in their own CI; the engine rejects invalid IR instead of best-effort drawing.
+  owner: dcoello-dev
+  status: APPROVED
+  asil: QM
+  parent_ids:
+    - SREQ-00001-1
