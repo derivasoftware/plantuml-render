@@ -21,14 +21,29 @@ export interface CstNode {
 
 type Node = CstNode;
 
-const EDGE_BY_OP: Record<string, IrEdge["kind"]> = {
-  "--|>": "inheritance",
-  "..|>": "realization",
-  "*--": "composition",
-  "o--": "aggregation",
-  "..>": "dependency",
-  "-->": "association",
-};
+/** Structural decode of a relation operator: head/tail decorations on a
+ * dashed or dotted core, direction hints stripped. Reversed forms
+ * (`B <|-- A` ≡ `A --|> B`) swap the endpoints so the stored edge is
+ * canonical. Plain links (`--`, `..`) draw as associations. */
+function decodeOperator(
+  op: string,
+): { kind: IrEdge["kind"]; swapped: boolean } | null {
+  const m = /^(<\||<|\*|o)?([-.]+(?:(?:left|right|up|down)[-.]+)?)(\|>|>|\*|o)?$/.exec(
+    op,
+  );
+  if (!m) return null;
+  const [, head, core, tail] = m;
+  const dotted = core.includes(".");
+  if (tail === "|>") return { kind: dotted ? "realization" : "inheritance", swapped: false };
+  if (head === "<|") return { kind: dotted ? "realization" : "inheritance", swapped: true };
+  if (head === "*") return { kind: "composition", swapped: false };
+  if (tail === "*") return { kind: "composition", swapped: true };
+  if (head === "o") return { kind: "aggregation", swapped: false };
+  if (tail === "o") return { kind: "aggregation", swapped: true };
+  if (tail === ">") return { kind: dotted ? "dependency" : "association", swapped: false };
+  if (head === "<") return { kind: dotted ? "dependency" : "association", swapped: true };
+  return { kind: "association", swapped: false };
+}
 
 export function treeToIr(root: CstNode): RenderIr {
   const nodes: IrNode[] = [];
@@ -90,13 +105,15 @@ export function treeToIr(root: CstNode): RenderIr {
       }
       case "relation": {
         const op = node.childForFieldName("operator")?.text.trim() ?? "";
-        const kind = EDGE_BY_OP[op];
-        if (kind) {
+        const decoded = decodeOperator(op);
+        if (decoded) {
           const label = node.childForFieldName("label")?.text.trim();
+          const left = strip(node.childForFieldName("left")?.text ?? "");
+          const right = strip(node.childForFieldName("right")?.text ?? "");
           edges.push({
-            from: strip(node.childForFieldName("left")?.text ?? ""),
-            to: strip(node.childForFieldName("right")?.text ?? ""),
-            kind,
+            from: decoded.swapped ? right : left,
+            to: decoded.swapped ? left : right,
+            kind: decoded.kind,
             label,
           });
         }
