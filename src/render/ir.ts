@@ -6,10 +6,7 @@
  * error, never a best-effort drawing.
  */
 
-import { Ajv2020 as Ajv } from "ajv/dist/2020.js";
-import type { ValidateFunction } from "ajv";
-
-import { RENDER_IR_SCHEMA } from "./schema.gen.js";
+import compiledValidate from "./validate.gen.js";
 
 export type NodeKind = "box" | "container" | "note";
 
@@ -47,23 +44,11 @@ export interface RenderIr {
   edges: IrEdge[];
 }
 
-let compiled: ValidateFunction | undefined;
-
-function validator(): ValidateFunction {
-  if (!compiled) {
-    compiled = new Ajv({ allErrors: true }).compile(
-      RENDER_IR_SCHEMA as unknown as object,
-    );
-  }
-  return compiled;
-}
-
 export class IrValidationError extends Error {}
 
 export function validateIr(value: unknown): RenderIr {
-  const check = validator();
-  if (!check(value)) {
-    const detail = (check.errors ?? [])
+  if (!compiledValidate(value)) {
+    const detail = (compiledValidate.errors ?? [])
       .map((e) => `${e.instancePath || "/"} ${e.message}`)
       .join("; ");
     throw new IrValidationError(`invalid render-IR: ${detail}`);
