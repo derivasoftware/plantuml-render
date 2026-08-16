@@ -6,6 +6,7 @@
 
 export { renderSvg } from "./engine.js";
 export { treeToIr, type CstNode } from "./frontend-core.js";
+export { expandIncludes, type IncludeLoader } from "./preprocess.js";
 export {
   IrValidationError,
   validateIr,
