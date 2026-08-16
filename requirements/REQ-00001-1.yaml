@@ -1,0 +1,13 @@
+requirement:
+  id: REQ-00001-1
+  title: The engine shall validate its input against the published schema strictly
+  description: >
+    The engine shall validate its input against the published schema strictly
+  rationale: >
+    Invalid IR raises IrValidationError with the offending paths; unknown kinds, extra fields and wrong contract versions are rejected — the schema is enforcement, not documentation.
+  status: APPROVED
+  asil: QM
+  parent_ids:
+    - SREQ-00002-1
+  tags:
+    - ir
