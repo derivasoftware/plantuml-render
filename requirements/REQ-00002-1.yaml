@@ -1,0 +1,13 @@
+requirement:
+  id: REQ-00002-1
+  title: The engine shall emit byte-identical SVG for identical input
+  description: >
+    The engine shall emit byte-identical SVG for identical input
+  rationale: >
+    Verified per commit on a fixture and per release over the 6226-file wild corpus (scripts/eval_render.mjs renders everything twice and compares).
+  status: APPROVED
+  asil: QM
+  parent_ids:
+    - SREQ-00003-1
+  tags:
+    - determinism
