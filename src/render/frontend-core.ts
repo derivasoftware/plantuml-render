@@ -80,14 +80,20 @@ export function treeToIr(root: CstNode): RenderIr {
       case "package_block": {
         const nameNode = node.childForFieldName("name");
         const label = strip(nameNode?.text ?? "");
-        const id = containerId ? `${containerId}.${label}` : label;
-        pushNode({
-          id,
-          kind: "container",
-          label,
-          classifier: node.type === "package_block" ? "package" : "namespace",
-          parent: containerId,
-        });
+        // Dotted names open one container per segment: argos.toolkit.x
+        // and argos.toolkit.y share the argos.toolkit box.
+        let id = containerId;
+        for (const segment of label.split(".")) {
+          const segmentId = id ? `${id}.${segment}` : segment;
+          pushNode({
+            id: segmentId,
+            kind: "container",
+            label: segment,
+            classifier: node.type === "package_block" ? "package" : "namespace",
+            parent: id || undefined,
+          });
+          id = segmentId;
+        }
         for (const child of node.namedChildren) visit(child, id);
         return;
       }

@@ -45,15 +45,58 @@ export function renderSvg(input: unknown, opts: RenderOptions = {}): string {
   const ir = validateIr(input);
   const placed = layout(ir);
   if (opts.positions) {
-    for (const p of placed) {
-      const delta = opts.positions[p.node.id];
-      if (delta && p.node.kind !== "container") {
-        p.x += delta.dx;
-        p.y += delta.dy;
-      }
-    }
+    applyDeltas(ir, placed, opts.positions);
   }
+  adaptContainers(placed);
   return emit(ir, placed);
+}
+
+/** A node's effective delta cascades: its own plus every ancestor
+ * container's — dragging a namespace moves its whole subtree. */
+function applyDeltas(
+  ir: RenderIr,
+  placed: Placed[],
+  positions: NonNullable<RenderOptions["positions"]>,
+): void {
+  const parentOf = new Map(ir.nodes.map((n) => [n.id, n.parent]));
+  for (const p of placed) {
+    let dx = 0;
+    let dy = 0;
+    let id: string | undefined = p.node.id;
+    while (id) {
+      const delta = positions[id];
+      if (delta) {
+        dx += delta.dx;
+        dy += delta.dy;
+      }
+      id = parentOf.get(id) ?? undefined;
+    }
+    p.x += dx;
+    p.y += dy;
+  }
+}
+
+/** Containers stretch to enclose their (possibly dragged) children.
+ * `placed` lists children before their container, so one forward pass
+ * folds bottom-up. */
+function adaptContainers(placed: Placed[]): void {
+  const byId = new Map(placed.map((p) => [p.node.id, p]));
+  for (const p of placed) {
+    if (p.node.kind !== "container") continue;
+    const children = placed.filter(
+      (c) => c.node.parent === p.node.id && byId.has(c.node.id),
+    );
+    if (children.length === 0) continue;
+    const minX = Math.min(...children.map((c) => c.x)) - CONTAINER_PAD;
+    const minY =
+      Math.min(...children.map((c) => c.y)) - CONTAINER_PAD - CONTAINER_LABEL_H;
+    const maxX = Math.max(...children.map((c) => c.x + c.w)) + CONTAINER_PAD;
+    const maxY = Math.max(...children.map((c) => c.y + c.h)) + CONTAINER_PAD;
+    p.x = minX;
+    p.y = minY;
+    p.w = Math.max(maxX - minX, p.node.label.length * CHAR_W + 16);
+    p.h = maxY - minY;
+  }
 }
 
 // ── Layout ───────────────────────────────────────────────────────────────────
@@ -297,8 +340,10 @@ function emitEdge(edge: IrEdge, byId: Map<string, Placed>): string {
 }
 
 function emit(ir: RenderIr, placed: Placed[]): string {
-  const width = Math.max(...placed.map((p) => p.x + p.w), 10) + PAD;
-  const height = Math.max(...placed.map((p) => p.y + p.h), 10) + PAD;
+  const minX = Math.min(...placed.map((p) => p.x), 0) - PAD;
+  const minY = Math.min(...placed.map((p) => p.y), 0) - PAD;
+  const width = Math.max(...placed.map((p) => p.x + p.w), 10) + PAD - minX;
+  const height = Math.max(...placed.map((p) => p.y + p.h), 10) + PAD - minY;
   const byId = new Map(placed.map((p) => [p.node.id, p]));
   const containers = placed.filter((p) => p.node.kind === "container");
   const leaves = placed.filter((p) => p.node.kind !== "container");
@@ -308,7 +353,7 @@ function emit(ir: RenderIr, placed: Placed[]): string {
     ...leaves.map(emitNode),
   ].join("\n");
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" class="pr-diagram" role="img">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${width} ${height}" width="${width}" height="${height}" class="pr-diagram" role="img">`,
     ir.title ? `<title>${esc(ir.title)}</title>` : "",
     `<style>${STYLE}</style>`,
     `<defs>${MARKERS}</defs>`,
