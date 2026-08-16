@@ -36,9 +36,23 @@ interface Frame {
   children: (Frame | IrNode)[];
 }
 
-export function renderSvg(input: unknown): string {
+export interface RenderOptions {
+  /** POC: per-node drag deltas applied after layout; edges re-anchor. */
+  positions?: Record<string, { dx: number; dy: number }>;
+}
+
+export function renderSvg(input: unknown, opts: RenderOptions = {}): string {
   const ir = validateIr(input);
   const placed = layout(ir);
+  if (opts.positions) {
+    for (const p of placed) {
+      const delta = opts.positions[p.node.id];
+      if (delta && p.node.kind !== "container") {
+        p.x += delta.dx;
+        p.y += delta.dy;
+      }
+    }
+  }
   return emit(ir, placed);
 }
 
@@ -73,10 +87,14 @@ function buildFrames(ir: RenderIr): Frame {
       frames.set(node.id, { node, children: [] });
     }
   }
+  const attached = new Set<string>();
   for (const node of ir.nodes) {
     const target =
       node.parent && frames.has(node.parent) ? frames.get(node.parent)! : root;
     if (node.kind === "container") {
+      // duplicate container ids collapse to one frame — attach it once
+      if (attached.has(node.id)) continue;
+      attached.add(node.id);
       const frame = frames.get(node.id)!;
       if (node.parent && frames.has(node.parent) && byId.has(node.parent)) {
         frames.get(node.parent)!.children.push(frame);
@@ -273,7 +291,7 @@ function emitEdge(edge: IrEdge, byId: Map<string, Placed>): string {
     ? `<text x="${Math.round((a.x + b.x) / 2) + 6}" y="${Math.round((a.y + b.y) / 2) - 4}">${esc(edge.label)}</text>`
     : "";
   return (
-    `<path class="pr-edge pr-edge-${edge.kind}" d="M${a.x},${a.y} L${b.x},${b.y}"${markerAttr}/>` +
+    `<path class="pr-edge pr-edge-${edge.kind}" data-from="${esc(edge.from)}" data-to="${esc(edge.to)}" d="M${a.x},${a.y} L${b.x},${b.y}"${markerAttr}/>` +
     label
   );
 }
