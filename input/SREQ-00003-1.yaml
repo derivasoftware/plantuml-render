@@ -1,0 +1,12 @@
+requirement:
+  id: SREQ-00003-1
+  title: The engine shall emit byte-deterministic themable SVG
+  description: >
+    The engine shall emit byte-deterministic themable SVG.
+  rationale: >
+    Same IR, byte-identical SVG: integer coordinates, fixed metrics tables, no randomness — which makes rendered design diffable in merge requests. Theming through CSS custom properties on stable classes; the engine hardcodes no palette.
+  owner: dcoello-dev
+  status: APPROVED
+  asil: QM
+  parent_ids:
+    - SREQ-00001-1
