@@ -5,9 +5,27 @@
  */
 
 import { readFileSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 
 import { renderSvg } from "./engine.js";
 import { pumlToIr } from "./frontend.js";
+import { expandIncludes, type IncludeLoader } from "./preprocess.js";
+
+const fsLoader: IncludeLoader = {
+  read(path) {
+    try {
+      return readFileSync(path, "utf8");
+    } catch {
+      return null;
+    }
+  },
+  resolve(base, relative) {
+    return resolve(base, relative);
+  },
+  dirname(path) {
+    return dirname(path);
+  },
+};
 
 export async function main(argv: string[]): Promise<number> {
   const args = [...argv];
@@ -27,7 +45,11 @@ export async function main(argv: string[]): Promise<number> {
     return 2;
   }
   const raw = readFileSync(input, "utf8");
-  const ir = irMode ? JSON.parse(raw) : await pumlToIr(raw);
+  const ir = irMode
+    ? JSON.parse(raw)
+    : await pumlToIr(
+        await expandIncludes(raw, dirname(resolve(input)), fsLoader),
+      );
   const svg = renderSvg(ir);
   if (out) {
     writeFileSync(out, svg);
