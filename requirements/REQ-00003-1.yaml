@@ -1,0 +1,13 @@
+requirement:
+  id: REQ-00003-1
+  title: The frontend shall qualify entity ids by their container path
+  description: >
+    The frontend shall qualify entity ids by their container path
+  rationale: >
+    Stable ids (namespace-qualified, matching the grammar's entity naming) are what make SVGs diffable and externally addressable; relation endpoints requalify from short names.
+  status: APPROVED
+  asil: QM
+  parent_ids:
+    - SREQ-00004-1
+  tags:
+    - frontend
