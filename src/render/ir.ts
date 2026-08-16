@@ -6,12 +6,10 @@
  * error, never a best-effort drawing.
  */
 
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-
 import { Ajv2020 as Ajv } from "ajv/dist/2020.js";
 import type { ValidateFunction } from "ajv";
+
+import { RENDER_IR_SCHEMA } from "./schema.gen.js";
 
 export type NodeKind = "box" | "container" | "note";
 
@@ -49,15 +47,13 @@ export interface RenderIr {
   edges: IrEdge[];
 }
 
-const HERE = dirname(fileURLToPath(import.meta.url));
-const SCHEMA_PATH = join(HERE, "..", "..", "schema", "render-ir.schema.json");
-
 let compiled: ValidateFunction | undefined;
 
 function validator(): ValidateFunction {
   if (!compiled) {
-    const schema = JSON.parse(readFileSync(SCHEMA_PATH, "utf8"));
-    compiled = new Ajv({ allErrors: true }).compile(schema);
+    compiled = new Ajv({ allErrors: true }).compile(
+      RENDER_IR_SCHEMA as unknown as object,
+    );
   }
   return compiled;
 }
