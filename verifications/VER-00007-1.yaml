@@ -1,0 +1,9 @@
+verification:
+  id: VER-00007-1
+  req_id: REQ-00007-1
+  title: Namespace tests cover reopen merge and dotted nesting
+  description: >
+    Namespace tests cover reopen merge and dotted nesting
+  method: test
+  test_ids:
+    - tests/interactive.test.ts::namespace semantics

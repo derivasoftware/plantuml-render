@@ -1,0 +1,18 @@
+requirement:
+  id: REQ-00006-1
+  title: The engine shall apply position overrides with cascading deltas and adaptive containers
+  description: >
+    The engine shall apply position overrides with cascading deltas and adaptive containers
+  rationale: >
+    renderSvg(input, { positions }) accepts per-node deltas keyed by stable id.
+    A container's delta cascades to its whole subtree; containers re-fit as the
+    union of their children plus padding, so a dragged child can never escape
+    its frame; the viewBox covers negative coordinates; edge paths expose
+    data-from and data-to for consumers.
+  status: APPROVED
+  asil: QM
+  parent_ids:
+    - SREQ-00007-1
+  tags:
+    - engine
+    - layout

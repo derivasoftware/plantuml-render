@@ -1,0 +1,9 @@
+verification:
+  id: VER-00006-1
+  req_id: REQ-00006-1
+  title: Interactive tests cover cascade, adaptive bounds, viewBox and edge data
+  description: >
+    Interactive tests cover cascade, adaptive bounds, viewBox and edge data
+  method: test
+  test_ids:
+    - tests/interactive.test.ts::interactive rendering

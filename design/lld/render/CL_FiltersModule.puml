@@ -1,0 +1,17 @@
+@startuml CL_FiltersModule
+' requirement REQ-00005-1
+
+!startsub FiltersModule
+
+namespace render.filters {
+  class "<<module>>" as FiltersModule {
+    + stripSections(ir: RenderIr) : RenderIr
+    + flattenContainers(ir: RenderIr) : RenderIr
+    + hideNotes(ir: RenderIr) : RenderIr
+  }
+  FiltersModule ..> render.ir.IrModule
+}
+
+!endsub
+
+@enduml
