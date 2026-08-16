@@ -1,0 +1,17 @@
+requirement:
+  id: REQ-00005-1
+  title: The engine shall provide pure IR view filters for sections, containers and notes
+  description: >
+    The engine shall provide pure IR view filters for sections, containers and notes
+  rationale: >
+    stripSections, flattenContainers and hideNotes are IR-to-IR projections —
+    they never mutate their input and never touch layout, so filtered views
+    stay valid render-IR and remain byte-deterministic. flattenContainers also
+    drops parent references and container edges; hideNotes drops attachments.
+  status: APPROVED
+  asil: QM
+  parent_ids:
+    - SREQ-00007-1
+  tags:
+    - engine
+    - filters

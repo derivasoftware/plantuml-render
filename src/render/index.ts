@@ -1,4 +1,5 @@
-export { renderSvg } from "./engine.js";
+export { renderSvg, type RenderOptions } from "./engine.js";
+export { flattenContainers, hideNotes, stripSections } from "./filters.js";
 export { pumlToIr } from "./frontend.js";
 export { treeToIr, type CstNode } from "./frontend-core.js";
 export { expandIncludes, type IncludeLoader } from "./preprocess.js";

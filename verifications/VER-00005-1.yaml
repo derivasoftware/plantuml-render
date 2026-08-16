@@ -1,0 +1,9 @@
+verification:
+  id: VER-00005-1
+  req_id: REQ-00005-1
+  title: Filter tests cover each projection and input immutability
+  description: >
+    Filter tests cover each projection and input immutability
+  method: test
+  test_ids:
+    - tests/filters.test.ts::view filters

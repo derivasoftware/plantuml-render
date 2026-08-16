@@ -41,6 +41,31 @@ plantuml-render --ir model.json -o out.svg    # render external render-IR
 Validated over the 6&#8239;226-diagram wild corpus: zero failures, all
 deterministic (`npm run eval -- <roots>`).
 
+## Interactive views
+
+The engine ships the primitives interactive consumers (e.g. the
+plantuml-vscode preview) build on — interaction state always lives in
+the consumer, the output stays deterministic:
+
+```ts
+import { renderSvg, stripSections, flattenContainers, hideNotes } from "plantuml-render/browser";
+
+let view = ir;
+view = stripSections(view);      // hide members (pure IR → IR)
+view = flattenContainers(view);  // hide namespaces
+view = hideNotes(view);          // hide notes + attachments
+const svg = renderSvg(view, {
+  positions: { "argos.toolkit": { dx: 120, dy: -40 } }, // drag deltas by stable id
+});
+```
+
+Position overrides cascade: a container's delta moves its whole
+subtree, and containers re-fit around their children, so a dragged
+node never escapes its frame. Namespace semantics follow PlantUML:
+reopened namespaces merge, dotted names nest one container per
+segment, entity ids stay qualified — which is what keeps drag deltas
+stable across re-renders and `!includesub` aggregates.
+
 ## Development
 
 ```bash

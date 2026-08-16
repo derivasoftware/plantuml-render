@@ -1,0 +1,16 @@
+requirement:
+  id: SREQ-00007-1
+  title: The renderer shall support interactive read-only views
+  description: >
+    The renderer shall support interactive read-only views.
+  rationale: >
+    Consumers such as the plantuml-vscode preview drag entities, filter detail
+    (members, namespaces, notes) and pan or zoom without ever mutating the
+    source. The engine owns the primitives — pure IR view filters and
+    per-node position overrides — so every consumer gets identical,
+    deterministic output; interaction state lives entirely in the consumer.
+  owner: dcoello-dev
+  status: APPROVED
+  asil: QM
+  parent_ids:
+    - SREQ-00001-1

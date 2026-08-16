@@ -1,0 +1,18 @@
+requirement:
+  id: REQ-00007-1
+  title: The frontend shall merge reopened namespaces and nest dotted names per segment
+  description: >
+    The frontend shall merge reopened namespaces and nest dotted names per segment
+  rationale: >
+    PlantUML reopen semantics: namespace a.b declared twice is one namespace,
+    and dotted names form a chain of nested containers (a contains a.b) shared
+    across declarations. Entity ids stay qualified and unique — first
+    declaration wins — which is what makes drag deltas stable across
+    aggregate files composed from many !includesub fragments.
+  status: APPROVED
+  asil: QM
+  parent_ids:
+    - SREQ-00007-1
+  tags:
+    - frontend
+    - namespaces

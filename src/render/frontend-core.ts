@@ -48,7 +48,16 @@ function decodeOperator(
 export function treeToIr(root: CstNode): RenderIr {
   const nodes: IrNode[] = [];
   const edges: IrEdge[] = [];
+  const nodeIds = new Set<string>();
   const shortToId = new Map<string, string>();
+  const pushNode = (node: IrNode): boolean => {
+    // Same-named namespaces reopen the same namespace in PlantUML, and a
+    // re-declared entity is the same entity: merge by id, first wins.
+    if (nodeIds.has(node.id)) return false;
+    nodeIds.add(node.id);
+    nodes.push(node);
+    return true;
+  };
   let title: string | undefined;
   let noteCounter = 0;
 
@@ -71,14 +80,20 @@ export function treeToIr(root: CstNode): RenderIr {
       case "package_block": {
         const nameNode = node.childForFieldName("name");
         const label = strip(nameNode?.text ?? "");
-        const id = containerId ? `${containerId}.${label}` : label;
-        nodes.push({
-          id,
-          kind: "container",
-          label,
-          classifier: node.type === "package_block" ? "package" : "namespace",
-          parent: containerId,
-        });
+        // Dotted names open one container per segment: argos.toolkit.x
+        // and argos.toolkit.y share the argos.toolkit box.
+        let id = containerId;
+        for (const segment of label.split(".")) {
+          const segmentId = id ? `${id}.${segment}` : segment;
+          pushNode({
+            id: segmentId,
+            kind: "container",
+            label: segment,
+            classifier: node.type === "package_block" ? "package" : "namespace",
+            parent: id || undefined,
+          });
+          id = segmentId;
+        }
         for (const child of node.namedChildren) visit(child, id);
         return;
       }
@@ -89,7 +104,7 @@ export function treeToIr(root: CstNode): RenderIr {
         const id = containerId ? `${containerId}.${label}` : label;
         shortToId.set(label, id);
         const stereotypeNode = node.childForFieldName("stereotype");
-        nodes.push({
+        pushNode({
           id,
           kind: "box",
           label,
@@ -125,7 +140,7 @@ export function treeToIr(root: CstNode): RenderIr {
           .filter((c) => c.type === "raw_line")
           .map((c) => c.text.trim());
         const id = `note-${++noteCounter}`;
-        nodes.push({
+        pushNode({
           id,
           kind: "note",
           label: text ?? body[0] ?? "note",
