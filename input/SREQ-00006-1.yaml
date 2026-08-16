@@ -1,0 +1,12 @@
+requirement:
+  id: SREQ-00006-1
+  title: The engine shall render sequence diagrams
+  description: >
+    The engine shall render sequence diagrams.
+  rationale: >
+    Roadmap, after the class milestone per the family order: lifelines, ordered messages and frames — layout is nearly deterministic by construction. The IR grows minor-version capabilities for it.
+  owner: dcoello-dev
+  status: APPROVED
+  asil: QM
+  parent_ids:
+    - SREQ-00001-1
