@@ -1,6 +1,6 @@
 {
   "name": "plantuml-render",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Deterministic SVG renderer: render-IR engine plus a PlantUML frontend built on tree-sitter-plantuml",
   "license": "MIT",
   "author": "dcoello-dev",
@@ -21,7 +21,8 @@
   "scripts": {
     "compile": "node scripts/gen_schema.mjs && tsc -p ./",
     "test": "node scripts/gen_schema.mjs && tsc -p ./ && vitest run",
-    "eval": "tsc -p ./ && node scripts/eval_render.mjs"
+    "eval": "tsc -p ./ && node scripts/eval_render.mjs",
+    "prepare": "npm run compile"
   },
   "dependencies": {
     "ajv": "^8.17.1",
