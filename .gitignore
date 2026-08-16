@@ -11,3 +11,5 @@ dist/
 *.svg
 .venv/
 src/render/schema.gen.ts
+src/render/validate.gen.js
+src/render/validate.gen.d.ts
