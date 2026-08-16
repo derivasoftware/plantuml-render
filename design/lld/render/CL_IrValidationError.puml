@@ -1,0 +1,13 @@
+@startuml CL_IrValidationError
+' requirement REQ-00001-1
+
+!startsub IrValidationError
+
+namespace render.ir {
+  class IrValidationError {
+  }
+}
+
+!endsub
+
+@enduml

@@ -1,0 +1,16 @@
+@startuml CL_IrModule
+' requirement REQ-00001-1
+
+!startsub IrModule
+
+namespace render.ir {
+  class "<<module>>" as IrModule {
+    + validateIr(value: unknown) : RenderIr
+    - validator() : ValidateFunction
+  }
+  IrModule ..> IrValidationError
+}
+
+!endsub
+
+@enduml

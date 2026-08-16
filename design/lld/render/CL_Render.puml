@@ -1,0 +1,27 @@
+@startuml CL_Render
+' requirement REQ-00001-1
+' requirement REQ-00002-1
+' requirement REQ-00003-1
+' requirement REQ-00004-1
+
+!startsub IrModule
+!includesub ./CL_IrModule.puml!IrModule
+!endsub
+
+!startsub IrValidationError
+!includesub ./CL_IrValidationError.puml!IrValidationError
+!endsub
+
+!startsub EngineModule
+!includesub ./CL_EngineModule.puml!EngineModule
+!endsub
+
+!startsub FrontendModule
+!includesub ./CL_FrontendModule.puml!FrontendModule
+!endsub
+
+!startsub CliModule
+!includesub ./CL_CliModule.puml!CliModule
+!endsub
+
+@enduml

@@ -1,0 +1,9 @@
+verification:
+  id: VER-00001-1
+  req_id: REQ-00001-1
+  title: IR validation tests reject every malformed shape
+  description: >
+    IR validation tests reject every malformed shape
+  method: test
+  test_ids:
+    - tests/ir.test.ts::render-IR validation

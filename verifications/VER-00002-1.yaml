@@ -1,0 +1,9 @@
+verification:
+  id: VER-00002-1
+  req_id: REQ-00002-1
+  title: Engine tests pin determinism, ids, markers and layering
+  description: >
+    Engine tests pin determinism, ids, markers and layering
+  method: test
+  test_ids:
+    - tests/engine.test.ts::engine

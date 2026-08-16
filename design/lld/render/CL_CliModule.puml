@@ -1,0 +1,16 @@
+@startuml CL_CliModule
+' requirement REQ-00004-1
+
+!startsub CliModule
+
+namespace render.cli {
+  class "<<module>>" as CliModule {
+    + main(argv: string[]) : Promise<number>
+  }
+  CliModule ..> render.engine.EngineModule
+  CliModule ..> render.frontend.FrontendModule
+}
+
+!endsub
+
+@enduml

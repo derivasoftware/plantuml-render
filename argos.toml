@@ -1,0 +1,11 @@
+# Argos repository configuration. See ConfigReader for the schema.
+#
+# [project].asil declares the project's safety integrity level. NA
+# enables the Owner Protocol autonomous loop (PROTOCOL-autonomous-loop); QM and
+# above reserve the Owner role to a human.
+
+[project]
+asil = "NA"
+
+[sources]
+typescript = ["src"]

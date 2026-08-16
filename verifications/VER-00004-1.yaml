@@ -1,0 +1,9 @@
+verification:
+  id: VER-00004-1
+  req_id: REQ-00004-1
+  title: CLI tests cover puml and IR modes
+  description: >
+    CLI tests cover puml and IR modes
+  method: test
+  test_ids:
+    - tests/cli.test.ts::cli

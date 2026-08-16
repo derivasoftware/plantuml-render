@@ -1,0 +1,9 @@
+verification:
+  id: VER-00003-1
+  req_id: REQ-00003-1
+  title: Frontend tests pin qualification, kinds, notes and schema validity
+  description: >
+    Frontend tests pin qualification, kinds, notes and schema validity
+  method: test
+  test_ids:
+    - tests/frontend.test.ts::puml frontend

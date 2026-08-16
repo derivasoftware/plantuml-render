@@ -1,0 +1,45 @@
+# CI — plantuml-render. The grammar dependency is a private git package;
+# npm clones it with the job token via the insteadOf rewrite.
+
+include:
+  - project: deriva/infra/ci-templates
+    ref: main
+    file:
+      - /templates/base.yml
+      - /templates/node.yml
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_TAG
+
+.git-auth: &git-auth
+  - export GIT_CONFIG_GLOBAL="$CI_PROJECT_DIR/.gitconfig-ci"
+  - git config --file "$GIT_CONFIG_GLOBAL"
+    url."https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/".insteadOf
+    "https://${CI_SERVER_HOST}/"
+
+test:
+  stage: test
+  extends: [.node-base, .on-mr-and-main]
+  script:
+    - *git-auth
+    - npm ci
+    - npm test
+
+publish:
+  stage: deploy
+  extends: [.node-base]
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - *git-auth
+    - npm ci
+    - npm run compile
+    - echo "//${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" > .npmrc
+    - npm publish --registry "https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/"
+    - >
+      curl --fail --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
+      --upload-file schema/render-ir.schema.json
+      "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/render-ir/${CI_COMMIT_TAG}/render-ir.schema.json"

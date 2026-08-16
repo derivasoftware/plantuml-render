@@ -1,0 +1,12 @@
+# Argos runtime state (federation cache, eval data, reports) — derived,
+# never committed.
+.argos/
+
+# Per-operator workspace overrides (REQ-00625-1): the GDD analogue of
+# an editable install. Always local, never committed.
+argos.local.toml
+node_modules/
+out/
+dist/
+*.svg
+.venv/

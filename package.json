@@ -1,0 +1,32 @@
+{
+  "name": "plantuml-render",
+  "version": "0.1.0",
+  "description": "Deterministic SVG renderer: render-IR engine plus a PlantUML frontend built on tree-sitter-plantuml",
+  "license": "MIT",
+  "author": "dcoello-dev",
+  "repository": "https://gitlab.semantiqa.dev/deriva/plantuml/plantuml-render",
+  "type": "module",
+  "main": "./out/render/index.js",
+  "bin": {
+    "plantuml-render": "./out/render/cli.js"
+  },
+  "files": [
+    "out/**",
+    "schema/**"
+  ],
+  "scripts": {
+    "compile": "tsc -p ./",
+    "test": "tsc -p ./ && vitest run",
+    "eval": "tsc -p ./ && node scripts/eval_render.mjs"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "tree-sitter": "^0.25.0",
+    "tree-sitter-plantuml": "git+https://gitlab.semantiqa.dev/deriva/plantuml/tree-sitter-plantuml.git#v0.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.5.0",
+    "vitest": "^3.0.0"
+  }
+}

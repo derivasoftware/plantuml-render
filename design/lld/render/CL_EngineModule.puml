@@ -1,0 +1,23 @@
+@startuml CL_EngineModule
+' requirement REQ-00002-1
+
+!startsub EngineModule
+
+namespace render.engine {
+  class "<<module>>" as EngineModule {
+    + renderSvg(input: unknown) : string
+    - nodeSize(node: IrNode) : { w: number; h: number }
+    - buildFrames(ir: RenderIr) : Frame
+    - layerOrder(nodes: IrNode[], edges: IrEdge[]) : IrNode[][]
+    - layoutFrame(frame: Frame, edges: IrEdge[], originX: number, originY: number, placed: Placed[]) : { w: number; h: number }
+    - layout(ir: RenderIr) : Placed[]
+    - emitNode(p: Placed) : string
+    - emitEdge(edge: IrEdge, byId: Map<string, Placed>) : string
+    - emit(ir: RenderIr, placed: Placed[]) : string
+  }
+  EngineModule ..> render.ir.IrModule
+}
+
+!endsub
+
+@enduml
