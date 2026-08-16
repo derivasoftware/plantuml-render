@@ -1,0 +1,11 @@
+requirement:
+  id: SREQ-00001-1
+  title: The tool shall render diagrams as deterministic SVG from the render-IR contract
+  description: >
+    The tool shall render diagrams as deterministic SVG from the render-IR contract.
+  rationale: >
+    Umbrella: the drawing half of the deriva/plantuml family. One engine, many emitters — the bundled PlantUML frontend and any external producer (argos design-render) speak the same IR, so every diagram in the ecosystem shares one visual language.
+  owner: dcoello-dev
+  status: APPROVED
+  asil: QM
+  parent_ids: []
