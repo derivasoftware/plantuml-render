@@ -1,0 +1,13 @@
+requirement:
+  id: REQ-00004-1
+  title: The command line shall render both puml files and prebuilt IR documents
+  description: >
+    The command line shall render both puml files and prebuilt IR documents
+  rationale: >
+    plantuml-render file.puml renders through the frontend; --ir renders an external emitter's document — the argos design-render consumption path.
+  status: APPROVED
+  asil: QM
+  parent_ids:
+    - SREQ-00002-1
+  tags:
+    - cli
