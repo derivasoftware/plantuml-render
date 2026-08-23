@@ -41,6 +41,15 @@ plantuml-render --ir model.json -o out.svg    # render external render-IR
 Validated over the 6&#8239;226-diagram wild corpus: zero failures, all
 deterministic (`npm run eval -- <roots>`).
 
+## Documentation
+
+- [`doc/render-ir.md`](doc/render-ir.md) — the drawing contract:
+  shape, validation, versioning, how external emitters consume it.
+- [`doc/engine.md`](doc/engine.md) — determinism, layout model,
+  theming variables, include preprocessing, CLI.
+- [`doc/interactive.md`](doc/interactive.md) — view filters and
+  position overrides for interactive consumers.
+
 ## Interactive views
 
 The engine ships the primitives interactive consumers (e.g. the
