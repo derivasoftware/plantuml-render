@@ -28,8 +28,10 @@ rejects invalid IR outright.
   (`--pr-stroke`, `--pr-box-fill`, `pr-classifier-<c>`, `pr-edge-<kind>`);
   neutral fallbacks only.
 - **Honest frontier**: the frontend draws the class subset (declarations,
-  members, containers, six relation kinds, notes); everything else is
-  simply not drawn.
+  members, containers, six relation kinds, notes) and the sequence
+  subset (participants, ordered messages, alt/else and loop frames,
+  dividers, anchored notes — evidence-scoped from a real 84-diagram
+  corpus); everything else is simply not drawn.
 
 ## Usage
 

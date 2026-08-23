@@ -6,6 +6,9 @@
 ' requirement REQ-00005-1
 ' requirement REQ-00006-1
 ' requirement REQ-00007-1
+' requirement REQ-00008-1
+' requirement REQ-00009-1
+' requirement REQ-00010-1
 
 !startsub IrModule
 !includesub ./CL_IrModule.puml!IrModule
@@ -17,6 +20,14 @@
 
 !startsub EngineModule
 !includesub ./CL_EngineModule.puml!EngineModule
+!endsub
+
+!startsub SharedModule
+!includesub ./CL_SharedModule.puml!SharedModule
+!endsub
+
+!startsub SequenceModule
+!includesub ./CL_SequenceModule.puml!SequenceModule
 !endsub
 
 !startsub FiltersModule

@@ -21,11 +21,13 @@ const ajv = new Ajv2020({ allErrors: true, code: { source: true, esm: true } });
 const validate = ajv.compile(JSON.parse(schemaText));
 let code = standaloneCode(ajv, validate);
 // Inline ajv's ucs2length runtime helper so the module is dependency-free
-// and require()-free (ESM + browser + CSP safe).
-const UCS2 = "const func1 = (function(str){const len=str.length;let length=0,pos=0,value;while(pos<len){length++;value=str.charCodeAt(pos++);if(value>=0xD800&&value<=0xDBFF&&pos<len){value=str.charCodeAt(pos);if((value&0xFC00)===0xDC00)pos++;}}return length;});";
+// and require()-free (ESM + browser + CSP safe). The helper's local name
+// (funcN) shifts as the schema grows, so match it, don't hardcode it.
+const UCS2 =
+  "(function(str){const len=str.length;let length=0,pos=0,value;while(pos<len){length++;value=str.charCodeAt(pos++);if(value>=0xD800&&value<=0xDBFF&&pos<len){value=str.charCodeAt(pos);if((value&0xFC00)===0xDC00)pos++;}}return length;})";
 code = code.replace(
-  'const func1 = require("ajv/dist/runtime/ucs2length").default;',
-  UCS2,
+  /const (\w+) = require\("ajv\/dist\/runtime\/ucs2length"\)\.default;/g,
+  (_, name) => `const ${name} = ${UCS2};`,
 );
 if (code.includes("require(")) {
   console.error("validator codegen still contains require() — extend the inliner");

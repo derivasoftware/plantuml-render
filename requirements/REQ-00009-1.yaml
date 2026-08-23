@@ -1,0 +1,23 @@
+requirement:
+  id: REQ-00009-1
+  title: The engine shall render sequence IR deterministically on a row grid
+  description: >
+    The engine shall render sequence IR deterministically on a row grid
+  rationale: >
+    A lifeline node switches the document to the time-axis layout: head
+    boxes on a fixed pitch (derived from head and label widths), dashed
+    lifelines, one row per order (messages with open-arrow markers and
+    data-from/to/order attributes, dashed class for responses,
+    self-message loops), frames wrapping their span with nesting insets
+    and else dividers, full-width divider bands, and anchored note
+    boxes. Same contract as the class layout: integer coordinates,
+    fixed metrics, CSS-variable theming (heads are pr-box, so editor
+    theming applies unchanged). Position overrides do not apply — rows
+    are the layout.
+  status: APPROVED
+  asil: QM
+  parent_ids:
+    - SREQ-00006-1
+  tags:
+    - engine
+    - sequence

@@ -1,72 +1,191 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://gitlab.semantiqa.dev/deriva/plantuml/plantuml-render/schema/render-ir.schema.json",
-  "title": "render-IR",
-  "description": "Origin-neutral diagram intermediate representation consumed by the plantuml-render engine. Versioned under semver alongside the engine: removing or renaming a field is a breaking change; new drawing capabilities are minor. Emitters (the bundled PlantUML frontend, argos design-render, any future producer) validate against this schema in their own CI.",
-  "type": "object",
-  "required": ["ir", "nodes", "edges"],
-  "additionalProperties": false,
-  "properties": {
-    "ir": {
-      "description": "Major version of this contract the document targets.",
-      "const": 1
-    },
-    "title": { "type": "string" },
-    "nodes": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/node" }
-    },
-    "edges": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/edge" }
-    }
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://gitlab.semantiqa.dev/deriva/plantuml/plantuml-render/schema/render-ir.schema.json",
+ "title": "render-IR",
+ "description": "Origin-neutral diagram intermediate representation consumed by the plantuml-render engine. Versioned under semver alongside the engine: removing or renaming a field is a breaking change; new drawing capabilities are minor. Emitters (the bundled PlantUML frontend, argos design-render, any future producer) validate against this schema in their own CI.",
+ "type": "object",
+ "required": [
+  "ir",
+  "nodes",
+  "edges"
+ ],
+ "additionalProperties": false,
+ "properties": {
+  "ir": {
+   "description": "Major version of this contract the document targets.",
+   "const": 1
   },
-  "$defs": {
-    "node": {
-      "type": "object",
-      "required": ["id", "kind", "label"],
-      "additionalProperties": false,
-      "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "kind": { "enum": ["box", "container", "note"] },
-        "label": { "type": "string" },
-        "classifier": {
-          "description": "Free-form theming hook (class, interface, enum, namespace, package, …). The engine maps it to CSS classes, never to hardcoded colors.",
-          "type": "string"
-        },
-        "stereotype": { "type": "string" },
-        "abstract": { "type": "boolean" },
-        "sections": {
-          "description": "Ordered text compartments (e.g. attributes, then methods). Lines render verbatim, monospaced.",
-          "type": "array",
-          "items": { "type": "array", "items": { "type": "string" } }
-        },
-        "parent": {
-          "description": "Id of the enclosing container node.",
-          "type": "string"
-        }
-      }
-    },
-    "edge": {
-      "type": "object",
-      "required": ["from", "to", "kind"],
-      "additionalProperties": false,
-      "properties": {
-        "from": { "type": "string" },
-        "to": { "type": "string" },
-        "kind": {
-          "enum": [
-            "inheritance",
-            "realization",
-            "composition",
-            "aggregation",
-            "dependency",
-            "association",
-            "attachment"
-          ]
-        },
-        "label": { "type": "string" }
-      }
-    }
+  "title": {
+   "type": "string"
+  },
+  "nodes": {
+   "type": "array",
+   "items": {
+    "$ref": "#/$defs/node"
+   }
+  },
+  "edges": {
+   "type": "array",
+   "items": {
+    "$ref": "#/$defs/edge"
+   }
   }
+ },
+ "$defs": {
+  "node": {
+   "type": "object",
+   "required": [
+    "id",
+    "kind",
+    "label"
+   ],
+   "additionalProperties": false,
+   "properties": {
+    "id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "kind": {
+     "enum": [
+      "box",
+      "container",
+      "note",
+      "lifeline",
+      "frame",
+      "divider"
+     ]
+    },
+    "label": {
+     "type": "string"
+    },
+    "classifier": {
+     "description": "Free-form theming hook (class, interface, enum, namespace, package, \u2026). The engine maps it to CSS classes, never to hardcoded colors.",
+     "type": "string"
+    },
+    "stereotype": {
+     "type": "string"
+    },
+    "abstract": {
+     "type": "boolean"
+    },
+    "sections": {
+     "description": "Ordered text compartments (e.g. attributes, then methods). Lines render verbatim, monospaced.",
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     }
+    },
+    "parent": {
+     "description": "Id of the enclosing container node.",
+     "type": "string"
+    },
+    "at": {
+     "description": "Sequence row this node occupies (dividers, anchored notes).",
+     "type": "integer",
+     "minimum": 0
+    },
+    "anchor": {
+     "description": "Lifeline id an anchored note attaches to.",
+     "type": "string",
+     "minLength": 1
+    },
+    "span": {
+     "description": "Inclusive [first, last] sequence-row range a frame covers.",
+     "type": "array",
+     "prefixItems": [
+      {
+       "type": "integer",
+       "minimum": 0
+      },
+      {
+       "type": "integer",
+       "minimum": 0
+      }
+     ],
+     "minItems": 2,
+     "maxItems": 2
+    },
+    "dividers": {
+     "description": "Frame-internal section boundaries (else clauses).",
+     "type": "array",
+     "items": {
+      "type": "object",
+      "required": [
+       "at",
+       "label"
+      ],
+      "additionalProperties": false,
+      "properties": {
+       "at": {
+        "type": "integer",
+        "minimum": 0
+       },
+       "label": {
+        "type": "string"
+       }
+      }
+     }
+    }
+   }
+  },
+  "edge": {
+   "type": "object",
+   "required": [
+    "from",
+    "to",
+    "kind"
+   ],
+   "additionalProperties": false,
+   "properties": {
+    "from": {
+     "type": "string"
+    },
+    "to": {
+     "type": "string"
+    },
+    "kind": {
+     "enum": [
+      "inheritance",
+      "realization",
+      "composition",
+      "aggregation",
+      "dependency",
+      "association",
+      "attachment",
+      "message"
+     ]
+    },
+    "label": {
+     "type": "string"
+    },
+    "order": {
+     "description": "Sequence row of a message; required when kind is message.",
+     "type": "integer",
+     "minimum": 0
+    },
+    "dashed": {
+     "description": "Dashed message core (responses, PlantUML -->).",
+     "type": "boolean"
+    }
+   },
+   "if": {
+    "properties": {
+     "kind": {
+      "const": "message"
+     }
+    }
+   },
+   "then": {
+    "required": [
+     "from",
+     "to",
+     "kind",
+     "order"
+    ]
+   }
+  }
+ }
 }

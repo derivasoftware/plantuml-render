@@ -1,0 +1,21 @@
+requirement:
+  id: REQ-00010-1
+  title: The frontend shall map sequence CSTs to sequence IR by row-claiming statement order
+  description: >
+    The frontend shall map sequence CSTs to sequence IR by row-claiming statement order
+  rationale: >
+    A diagram declaring participants or frames is a sequence diagram —
+    the same inference PlantUML makes. Participants become lifelines
+    (alias as id, declaration label kept, kind as classifier;
+    undeclared endpoints materialize on first use); messages take rows
+    in source order with dashed decoding and reversal; alt/else and
+    loop blocks become frames spanning their children's rows (else as
+    frame dividers; empty frames still claim a row); == dividers and
+    targeted notes (single-line and block bodies) claim their own rows.
+  status: APPROVED
+  asil: QM
+  parent_ids:
+    - SREQ-00006-1
+  tags:
+    - frontend
+    - sequence

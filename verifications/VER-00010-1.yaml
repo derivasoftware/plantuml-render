@@ -1,0 +1,9 @@
+verification:
+  id: VER-00010-1
+  req_id: REQ-00010-1
+  title: Frontend tests cover the corpus constructs, implicit lifelines and mode detection
+  description: >
+    Frontend tests cover the corpus constructs, implicit lifelines and mode detection
+  method: test
+  test_ids:
+    - tests/sequence.test.ts::frontend sequence mapping
