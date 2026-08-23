@@ -1,0 +1,9 @@
+verification:
+  id: VER-00009-1
+  req_id: REQ-00009-1
+  title: Engine tests cover determinism, row monotony and self-message loops
+  description: >
+    Engine tests cover determinism, row monotony and self-message loops
+  method: test
+  test_ids:
+    - tests/sequence.test.ts::sequence engine layout

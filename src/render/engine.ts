@@ -13,10 +13,9 @@
  */
 
 import { type IrEdge, type IrNode, type RenderIr, validateIr } from "./ir.js";
+import { renderSequenceSvg } from "./sequence.js";
+import { CHAR_W, LINE_H, PAD, STYLE, esc } from "./shared.js";
 
-const CHAR_W = 8;
-const LINE_H = 18;
-const PAD = 10;
 const SECTION_GAP = 4;
 const GAP_X = 48;
 const GAP_Y = 64;
@@ -43,6 +42,11 @@ export interface RenderOptions {
 
 export function renderSvg(input: unknown, opts: RenderOptions = {}): string {
   const ir = validateIr(input);
+  // A lifeline switches the whole document to the time-axis layout;
+  // position overrides don't apply there (rows are the layout).
+  if (ir.nodes.some((n) => n.kind === "lifeline")) {
+    return renderSequenceSvg(ir);
+  }
   const placed = layout(ir);
   if (opts.positions) {
     applyDeltas(ir, placed, opts.positions);
@@ -234,28 +238,6 @@ function layout(ir: RenderIr): Placed[] {
 }
 
 // ── SVG emission ─────────────────────────────────────────────────────────────
-
-const STYLE = `
-  :root { color-scheme: light dark; }
-  .pr-diagram { font-family: var(--pr-font, ui-monospace, monospace); font-size: 12px; }
-  .pr-box rect { fill: var(--pr-box-fill, #fdfdf6); stroke: var(--pr-stroke, #3b3b33); }
-  .pr-container > rect { fill: var(--pr-container-fill, none); stroke: var(--pr-stroke, #3b3b33); stroke-dasharray: none; }
-  .pr-note rect { fill: var(--pr-note-fill, #fbf6d9); stroke: var(--pr-stroke, #3b3b33); }
-  text { fill: var(--pr-text, #1c1c14); }
-  .pr-header { font-weight: 600; }
-  .pr-abstract .pr-header { font-style: italic; }
-  .pr-sep { stroke: var(--pr-stroke, #3b3b33); }
-  .pr-edge { stroke: var(--pr-stroke, #3b3b33); fill: none; }
-  .pr-edge-realization, .pr-edge-dependency, .pr-edge-attachment { stroke-dasharray: 6 4; }
-`;
-
-function esc(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
 
 const MARKERS = `
   <marker id="pr-tri" viewBox="0 0 14 12" refX="13" refY="6" markerWidth="14" markerHeight="12" orient="auto"><path d="M1,1 L13,6 L1,11 Z" fill="var(--pr-box-fill, #fdfdf6)" stroke="var(--pr-stroke, #3b3b33)"/></marker>

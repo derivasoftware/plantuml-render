@@ -35,8 +35,19 @@ consumer, the engine. Anything that emits valid IR renders identically.
   `container` (nests children via their `parent`), `note`. Boxes also
   carry optional `classifier` (free-form theming hook — the engine maps
   it to CSS classes, never colors), `stereotype` and `abstract`.
-- Edge kinds (7): `inheritance`, `realization`, `composition`,
-  `aggregation`, `dependency`, `association`, `attachment`.
+- Edge kinds (8): `inheritance`, `realization`, `composition`,
+  `aggregation`, `dependency`, `association`, `attachment`, `message`.
+
+### Sequence vocabulary (additive, still contract v1)
+
+- `lifeline` nodes are participants (`classifier` keeps the PlantUML
+  kind: participant, actor, database, …).
+- `message` edges **require `order`** — the row they occupy, in source
+  order; `dashed: true` marks responses (`-->`).
+- `frame` nodes wrap a row range: `span: [first, last]`, with
+  `dividers: [{at, label}]` for `else` sections.
+- `divider` nodes (`== phase ==`) and anchored notes (`at` + `anchor`,
+  position hint in `classifier`) each claim one row.
 
 ## Validation
 

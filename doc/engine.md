@@ -37,6 +37,19 @@ per-edge-kind (`pr-edge-inheritance`, …) classes allow finer theming.
 The vscode extension's editor-theme mapping (its `client/preview.ts`)
 is the reference consumer.
 
+## Sequence layout
+
+A `lifeline` node switches the document to the time-axis layout (same
+determinism and theming contract; position overrides don't apply —
+rows *are* the layout): head boxes on a fixed pitch derived from head
+and message-label widths, dashed lifelines, one row per `order`.
+Messages draw with open-arrow markers and `data-from`/`data-to`/
+`data-order`; responses get `pr-msg-dashed`; self-messages loop
+(`pr-msg-self`). Frames wrap their `span` with an 8px inset per
+nesting level and dashed `else` dividers; `==` bands span the lanes;
+anchored notes sit beside their lifeline. Heads are `pr-box`, so box
+theming (and the vscode editor mapping) applies unchanged.
+
 ## Include preprocessing
 
 Aggregate files built from `!include` / `!includesub file!NAME` expand

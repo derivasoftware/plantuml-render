@@ -45,7 +45,162 @@ function decodeOperator(
   return { kind: "association", swapped: false };
 }
 
+/** A diagram is a sequence diagram when it declares participants or
+ * frames — the same inference PlantUML itself makes. */
+function isSequence(root: Node): boolean {
+  const walk = (node: Node): boolean => {
+    if (node.type === "participant_declaration" || node.type === "frame_block") {
+      return true;
+    }
+    if (node.type === "entity_body") return false;
+    return node.namedChildren.some(walk);
+  };
+  return walk(root);
+}
+
+const PARTICIPANT_KINDS = new Set([
+  "participant", "actor", "boundary", "control", "entity",
+  "database", "collections", "queue",
+]);
+
+/** Sequence mapping: statements claim rows in source order — messages,
+ * `==` dividers and anchored notes each take one; frames span the rows
+ * of their children (an empty frame still claims one). */
+function sequenceToIr(root: Node): RenderIr {
+  const nodes: IrNode[] = [];
+  const edges: IrEdge[] = [];
+  const lifelineIds = new Map<string, string>();
+  let title: string | undefined;
+  let order = 0;
+  let frameCounter = 0;
+  let noteCounter = 0;
+  let dividerCounter = 0;
+
+  const strip = (s: string) => s.replace(/^"|"$/g, "");
+
+  const ensureLifeline = (name: string, classifier?: string): string => {
+    const existing = lifelineIds.get(name);
+    if (existing) return existing;
+    lifelineIds.set(name, name);
+    nodes.push({
+      id: name,
+      kind: "lifeline",
+      label: name,
+      classifier: classifier ?? "participant",
+    });
+    return name;
+  };
+
+  const visit = (node: Node) => {
+    switch (node.type) {
+      case "diagram": {
+        const name = node.childForFieldName("name");
+        if (name) title = name.text.trim();
+        break;
+      }
+      case "participant_declaration": {
+        const kind = node.childForFieldName("kind")?.text ?? "participant";
+        const name = strip(node.childForFieldName("name")?.text ?? "?");
+        const alias = node.childForFieldName("alias");
+        const id = alias ? strip(alias.text) : name;
+        if (!lifelineIds.has(id)) {
+          lifelineIds.set(id, id);
+          lifelineIds.set(name, id);
+          nodes.push({ id, kind: "lifeline", label: name, classifier: kind });
+        }
+        return;
+      }
+      case "relation": {
+        const op = node.childForFieldName("operator")?.text.trim() ?? "";
+        const core = op.replace(/\[[^\]]*\]/g, "");
+        const reversed = core.startsWith("<");
+        const left = strip(node.childForFieldName("left")?.text ?? "");
+        const right = strip(node.childForFieldName("right")?.text ?? "");
+        const from = ensureLifeline(
+          lifelineIds.get(reversed ? right : left) ?? (reversed ? right : left),
+        );
+        const to = ensureLifeline(
+          lifelineIds.get(reversed ? left : right) ?? (reversed ? left : right),
+        );
+        edges.push({
+          from,
+          to,
+          kind: "message",
+          label: node.childForFieldName("label")?.text.trim(),
+          order: order++,
+          dashed: /--|\.\./.test(core) || undefined,
+        });
+        return;
+      }
+      case "frame_block": {
+        const kind = node.childForFieldName("kind")?.text ?? "group";
+        const label = node.childForFieldName("label")?.text.trim();
+        const frame: IrNode = {
+          id: `frame-${++frameCounter}`,
+          kind: "frame",
+          label: label ? `${kind} ${label}` : kind,
+          span: [order, order],
+        };
+        nodes.push(frame);
+        const start = order;
+        const dividers: { at: number; label: string }[] = [];
+        for (const child of node.namedChildren) {
+          if (child.type === "else_clause") {
+            dividers.push({
+              at: order,
+              label: child.childForFieldName("label")?.text.trim() ?? "else",
+            });
+            for (const inner of child.namedChildren) visit(inner);
+          } else {
+            visit(child);
+          }
+        }
+        if (order === start) order++; // an empty frame still shows
+        frame.span = [start, order - 1];
+        if (dividers.length > 0) frame.dividers = dividers;
+        return;
+      }
+      case "divider": {
+        const label = node.text.replace(/=+/g, "").trim();
+        nodes.push({
+          id: `divider-${++dividerCounter}`,
+          kind: "divider",
+          label,
+          at: order++,
+        });
+        return;
+      }
+      case "note_statement": {
+        const text = node.childForFieldName("text")?.text.trim();
+        const body = node.namedChildren
+          .filter((c) => c.type === "raw_line")
+          .map((c) => c.text.trim());
+        const target = node.childForFieldName("target");
+        const anchorName = target
+          ? strip(target.text.split(",")[0].trim())
+          : undefined;
+        nodes.push({
+          id: `note-${++noteCounter}`,
+          kind: "note",
+          label: text ?? (body.length > 0 ? body.join("\n") : "note"),
+          classifier: node.childForFieldName("position")?.text ?? "right",
+          anchor: anchorName
+            ? ensureLifeline(lifelineIds.get(anchorName) ?? anchorName)
+            : undefined,
+          at: order++,
+        });
+        return;
+      }
+    }
+    for (const child of node.namedChildren) visit(child);
+  };
+
+  visit(root);
+  return { ir: 1, title, nodes, edges };
+}
+
 export function treeToIr(root: CstNode): RenderIr {
+  if (isSequence(root)) return sequenceToIr(root);
   const nodes: IrNode[] = [];
   const edges: IrEdge[] = [];
   const nodeIds = new Set<string>();

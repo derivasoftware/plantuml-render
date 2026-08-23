@@ -1,0 +1,9 @@
+verification:
+  id: VER-00008-1
+  req_id: REQ-00008-1
+  title: Contract tests validate the sequence vocabulary and reject orderless messages
+  description: >
+    Contract tests validate the sequence vocabulary and reject orderless messages
+  method: test
+  test_ids:
+    - tests/sequence.test.ts::sequence IR vocabulary

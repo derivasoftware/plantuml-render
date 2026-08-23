@@ -1,0 +1,18 @@
+requirement:
+  id: REQ-00008-1
+  title: The render-IR shall express sequence diagrams with lifelines, ordered messages and frames
+  description: >
+    The render-IR shall express sequence diagrams with lifelines, ordered messages and frames
+  rationale: >
+    Additive contract growth (still ir 1): node kinds lifeline, frame
+    (span + dividers for else clauses) and divider (at); edge kind
+    message with a required order and optional dashed; notes gain at
+    and anchor. Scope is evidence-driven from the 84-diagram argos
+    sequence corpus. The strict validator enforces order on messages.
+  status: APPROVED
+  asil: QM
+  parent_ids:
+    - SREQ-00006-1
+  tags:
+    - contract
+    - sequence

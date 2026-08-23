@@ -8,7 +8,13 @@
 
 import compiledValidate from "./validate.gen.js";
 
-export type NodeKind = "box" | "container" | "note";
+export type NodeKind =
+  | "box"
+  | "container"
+  | "note"
+  | "lifeline"
+  | "frame"
+  | "divider";
 
 export type EdgeKind =
   | "inheritance"
@@ -17,7 +23,8 @@ export type EdgeKind =
   | "aggregation"
   | "dependency"
   | "association"
-  | "attachment";
+  | "attachment"
+  | "message";
 
 export interface IrNode {
   id: string;
@@ -28,6 +35,14 @@ export interface IrNode {
   abstract?: boolean;
   sections?: string[][];
   parent?: string;
+  /** Sequence row this node occupies (dividers, anchored notes). */
+  at?: number;
+  /** Lifeline id an anchored note attaches to. */
+  anchor?: string;
+  /** Inclusive [first, last] row range a frame covers. */
+  span?: [number, number];
+  /** Frame-internal section boundaries (else clauses). */
+  dividers?: { at: number; label: string }[];
 }
 
 export interface IrEdge {
@@ -35,6 +50,10 @@ export interface IrEdge {
   to: string;
   kind: EdgeKind;
   label?: string;
+  /** Sequence row of a message; required when kind is "message". */
+  order?: number;
+  /** Dashed message core (responses, PlantUML `-->`). */
+  dashed?: boolean;
 }
 
 export interface RenderIr {

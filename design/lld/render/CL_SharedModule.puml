@@ -1,0 +1,14 @@
+@startuml CL_SharedModule
+' requirement REQ-00002-1
+
+!startsub SharedModule
+
+namespace render.shared {
+  class "<<module>>" as SharedModule {
+    + esc(text: string) : string
+  }
+}
+
+!endsub
+
+@enduml
