@@ -29,6 +29,26 @@ const fsLoader: IncludeLoader = {
 
 export async function main(argv: string[]): Promise<number> {
   const args = [...argv];
+  if (args[0] === "serve") {
+    args.shift();
+    let port = 0;
+    const pIdx = args.indexOf("--port");
+    if (pIdx >= 0) {
+      port = Number(args[pIdx + 1]) || 0;
+      args.splice(pIdx, 2);
+    }
+    const [file] = args;
+    if (!file) {
+      process.stderr.write("usage: plantuml-render serve <file.puml> [--port N]\n");
+      return 2;
+    }
+    const { startServer } = await import("./serve.js");
+    const serving = await startServer(file, port);
+    process.stdout.write(
+      `serving http://127.0.0.1:${serving.port}/ (watching ${file})\n`,
+    );
+    return new Promise(() => {}); // stay alive until killed
+  }
   const irMode = args.includes("--ir");
   if (irMode) args.splice(args.indexOf("--ir"), 1);
   let out: string | undefined;

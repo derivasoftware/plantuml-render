@@ -1,0 +1,19 @@
+requirement:
+  id: REQ-00011-1
+  title: The serve command shall render view state on demand and push change events
+  description: >
+    The serve command shall render view state on demand and push change events
+  rationale: >
+    GET / returns the interaction page; POST /render renders the
+    watched file with the posted view state (detail filters, drag
+    positions) through the include-expanding pipeline, 422 on parse
+    failures; GET /events is an SSE stream fed by watching the file's
+    directory, siblings included, so aggregate edits reload too. The
+    CLI grows the `serve <file> [--port N]` form, ephemeral port by
+    default, and prints the bound URL.
+  status: APPROVED
+  asil: QM
+  parent_ids:
+    - SREQ-00008-1
+  tags:
+    - serve

@@ -9,6 +9,7 @@
 ' requirement REQ-00008-1
 ' requirement REQ-00009-1
 ' requirement REQ-00010-1
+' requirement REQ-00011-1
 
 !startsub IrModule
 !includesub ./CL_IrModule.puml!IrModule
@@ -36,6 +37,10 @@
 
 !startsub FrontendModule
 !includesub ./CL_FrontendModule.puml!FrontendModule
+!endsub
+
+!startsub ServeModule
+!includesub ./CL_ServeModule.puml!ServeModule
 !endsub
 
 !startsub CliModule

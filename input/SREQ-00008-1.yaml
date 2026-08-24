@@ -1,0 +1,17 @@
+requirement:
+  id: SREQ-00008-1
+  title: The renderer shall serve the interactive preview over local HTTP
+  description: >
+    The renderer shall serve the interactive preview over local HTTP.
+  rationale: >
+    Editor-agnostic preview: any editor (plantuml.nvim first) spawns
+    `plantuml-render serve <file>` and opens a browser page carrying
+    the same interaction the vscode webview pioneered — drag with
+    stable ids, detail filters, pan and cursor zoom — reloading on
+    save. Parsing and rendering stay server-side on the native grammar
+    binding (no wasm in the page); everything binds to 127.0.0.1.
+  owner: dcoello-dev
+  status: APPROVED
+  asil: QM
+  parent_ids:
+    - SREQ-00001-1

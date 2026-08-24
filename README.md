@@ -38,6 +38,7 @@ rejects invalid IR outright.
 ```bash
 plantuml-render diagram.puml -o diagram.svg   # parse + render
 plantuml-render --ir model.json -o out.svg    # render external render-IR
+plantuml-render serve diagram.puml            # interactive preview in the browser
 ```
 
 Validated over the 6&#8239;226-diagram wild corpus: zero failures, all
