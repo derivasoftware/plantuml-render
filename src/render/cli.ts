@@ -79,11 +79,21 @@ export async function main(argv: string[]): Promise<number> {
   return 0;
 }
 
+import { realpathSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
-if (
-  process.argv[1] &&
-  import.meta.url === pathToFileURL(process.argv[1]).href
-) {
+// npm bin entries are symlinks: resolve argv[1] before comparing, or
+// the guard silently skips main() on global installs.
+const invoked = (() => {
+  try {
+    return process.argv[1]
+      ? pathToFileURL(realpathSync(process.argv[1])).href
+      : undefined;
+  } catch {
+    return undefined;
+  }
+})();
+
+if (invoked === import.meta.url) {
   process.exit(await main(process.argv.slice(2)));
 }
