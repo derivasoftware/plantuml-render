@@ -1,0 +1,9 @@
+verification:
+  id: VER-00011-1
+  req_id: REQ-00011-1
+  title: Serve tests cover the page, stateful rendering, drag deltas and SSE reloads
+  description: >
+    Serve tests cover the page, stateful rendering, drag deltas and SSE reloads
+  method: test
+  test_ids:
+    - tests/serve.test.ts::serve mode

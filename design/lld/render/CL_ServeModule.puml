@@ -1,0 +1,18 @@
+@startuml CL_ServeModule
+' requirement REQ-00011-1
+
+!startsub ServeModule
+
+namespace render.serve {
+  class "<<module>>" as ServeModule {
+    + renderFile(file: string, state: ViewState) : Promise<string>
+    + startServer(file: string, port: number) : Promise<Serving>
+  }
+  ServeModule ..> render.engine.EngineModule
+  ServeModule ..> render.frontend.FrontendModule
+  ServeModule ..> render.filters.FiltersModule
+}
+
+!endsub
+
+@enduml
