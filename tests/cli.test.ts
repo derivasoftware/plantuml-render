@@ -29,3 +29,18 @@ describe("cli", () => {
     expect(await main([])).toBe(2);
   });
 });
+
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, symlinkSync, writeFileSync as wf } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve as res } from "node:path";
+
+it("cli runs through a symlinked bin entry (global install shape)", () => {
+  const dir = mkdtempSync(join(tmpdir(), "pr-bin-"));
+  const link = join(dir, "plantuml-render");
+  symlinkSync(res("out/render/cli.js"), link);
+  const puml = join(dir, "d.puml");
+  wf(puml, "@startuml\nclass A\n@enduml\n");
+  const svg = execFileSync(process.execPath, [link, puml]).toString();
+  expect(svg).toContain("<svg");
+});
