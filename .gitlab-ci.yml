@@ -26,7 +26,8 @@ test:
   script:
     - *git-auth
     - npm ci
-    - npm test
+    - mkdir -p test-results
+    - npm run test:ci
 
 publish:
   stage: deploy

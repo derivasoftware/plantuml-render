@@ -6,3 +6,8 @@ repos:
       - id: end-of-file-fixer
       - id: check-yaml
       - id: check-merge-conflict
+
+  - repo: https://gitlab.semantiqa.dev/deriva/plantuml/plantuml-fmt
+    rev: v0.3.2
+    hooks:
+      - id: plantuml-fmt

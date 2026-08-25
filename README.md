@@ -1,90 +1,61 @@
 # plantuml-render
 
+<!-- folio: colophon --project plantuml-render --junit test-results/junit.xml --coverage_ut test-results/coverage/cobertura-coverage.xml -->
+![powered by: argos](https://img.shields.io/badge/powered%20by-argos-1f6feb) ![verified: 100%](https://img.shields.io/badge/verified-100%25-2ea44f) ![tests: 100%](https://img.shields.io/badge/tests-100%25-2ea44f) ![UT: 58%](https://img.shields.io/badge/UT-58%25-e05d44) ![ST: n/a](https://img.shields.io/badge/ST-n%2Fa-lightgrey) ![diagnostics: 13](https://img.shields.io/badge/diagnostics-13-dfb317)
+
+> **plantuml-render** is powered by **argos**. **folio** generates this documentation from the repository's model: 11 requirements · 11 verifications · 0 constraints. Quality: 100% verified · 100% tests passing · 58% UT coverage.
+<!-- /folio -->
+
 Deterministic SVG renderer for the
-[deriva/plantuml](https://gitlab.semantiqa.dev/deriva/plantuml) family:
-a **render-IR engine** plus a **PlantUML frontend** built on
+[deriva/plantuml](https://gitlab.semantiqa.dev/deriva/plantuml) family: a
+**render-IR engine** plus a **PlantUML frontend** built on
 [tree-sitter-plantuml](https://gitlab.semantiqa.dev/deriva/plantuml/tree-sitter-plantuml).
 
-## Architecture
+Three guarantees: **byte-deterministic** (same IR, byte-identical SVG, so
+rendered design is diffable in merge requests), **themable, never themed**
+(CSS custom properties on stable classes, neutral fallbacks only), and an
+**honest frontier** (the class and sequence subsets are drawn; everything
+else is simply not drawn). Validated over a 6 226-diagram wild corpus:
+zero failures, all deterministic.
 
+## Install
+
+Generated from the manifest and the latest tag:
+
+<!-- folio: install -->
+```bash
+git clone https://gitlab.semantiqa.dev/deriva/plantuml/plantuml-render
+cd plantuml-render && npm install && npm install -g .
 ```
-CST (grammar) ──► puml frontend ─┐
-                                 ├─ render-IR ──► engine ──► SVG
-external emitters (design-render)┘
-```
+<!-- /folio -->
 
-The **render-IR** (`schema/render-ir.schema.json`) is the family's second
-public API after the grammar's node vocabulary: an origin-neutral drawing
-contract (boxes, compartments, containers, notes, typed edges) versioned
-under semver. Emitters validate against it in their own CI; the engine
-rejects invalid IR outright.
+## Use cases
 
-## Guarantees
-
-- **Byte-deterministic**: same IR, byte-identical SVG — rendered design
-  is diffable in merge requests. Stable element ids (qualified entity
-  names).
-- **Themable, never themed**: CSS custom properties on stable classes
-  (`--pr-stroke`, `--pr-box-fill`, `pr-classifier-<c>`, `pr-edge-<kind>`);
-  neutral fallbacks only.
-- **Honest frontier**: the frontend draws the class subset (declarations,
-  members, containers, six relation kinds, notes) and the sequence
-  subset (participants, ordered messages, alt/else and loop frames,
-  dividers, anchored notes — evidence-scoped from a real 84-diagram
-  corpus); everything else is simply not drawn.
-
-## Usage
+**Render a diagram to SVG**, includes expanded:
 
 ```bash
-plantuml-render diagram.puml -o diagram.svg   # parse + render
-plantuml-render --ir model.json -o out.svg    # render external render-IR
-plantuml-render serve diagram.puml            # interactive preview in the browser
+plantuml-render diagram.puml -o diagram.svg
 ```
 
-Validated over the 6&#8239;226-diagram wild corpus: zero failures, all
-deterministic (`npm run eval -- <roots>`).
+**Interactive preview in the browser**: server-side parse, drag, filters
+and live reload on save. `:PlantumlPreview` in Neovim opens this:
+
+```bash
+plantuml-render serve diagram.puml
+```
+
+**Render external render-IR**: any tool can emit the drawing contract
+(`schema/render-ir.schema.json`) and get the same deterministic SVG:
+
+```bash
+plantuml-render --ir model.json -o out.svg
+```
 
 ## Documentation
 
-- [`doc/render-ir.md`](doc/render-ir.md) — the drawing contract:
-  shape, validation, versioning, how external emitters consume it.
-- [`doc/engine.md`](doc/engine.md) — determinism, layout model,
-  theming variables, include preprocessing, CLI.
-- [`doc/interactive.md`](doc/interactive.md) — view filters and
-  position overrides for interactive consumers.
-
-## Interactive views
-
-The engine ships the primitives interactive consumers (e.g. the
-plantuml-vscode preview) build on — interaction state always lives in
-the consumer, the output stays deterministic:
-
-```ts
-import { renderSvg, stripSections, flattenContainers, hideNotes } from "plantuml-render/browser";
-
-let view = ir;
-view = stripSections(view);      // hide members (pure IR → IR)
-view = flattenContainers(view);  // hide namespaces
-view = hideNotes(view);          // hide notes + attachments
-const svg = renderSvg(view, {
-  positions: { "argos.toolkit": { dx: 120, dy: -40 } }, // drag deltas by stable id
-});
-```
-
-Position overrides cascade: a container's delta moves its whole
-subtree, and containers re-fit around their children, so a dragged
-node never escapes its frame. Namespace semantics follow PlantUML:
-reopened namespaces merge, dotted names nest one container per
-segment, entity ids stay qualified — which is what keeps drag deltas
-stable across re-renders and `!includesub` aggregates.
-
-## Development
-
-```bash
-npm install && npm test
-```
-
-## Governance
-
-An [argos](https://gitlab.semantiqa.dev/deriva/argos/argos) NA project —
-see `CLAUDE.md`.
+- [render-IR](doc/render-ir.md): the drawing contract; shape, validation, versioning
+- [Engine](doc/engine.md): layout and drawing internals
+- [Interactive mode](doc/interactive.md): the serve-mode interaction shell
+- [Architecture](doc/architecture.md): the model's diagrams, rendered by this same tool
+- [Requirements & status](doc/requirements.md): what was asked and the traceability matrix
+- [Repo quality](doc/quality.md): artefact inventory and health metrics

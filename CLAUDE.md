@@ -33,7 +33,8 @@ npm test && pre-commit run --all-files
 
 - `W-DESIGN-NO-CODE` on the four `<<module>>` boxes: the drift checker
   does not yet know the module-entity convention (DDEV-246).
-- `W-SREQ-NOT-DECOMPOSED` on SREQ-00001-1 (umbrella), SREQ-00005-1
-  (wasm preview) and SREQ-00006-1 (sequence): roadmap.
+- Umbrella SREQs no longer fire `W-SREQ-NOT-DECOMPOSED` (child SREQs
+  count as decomposition since argos 0.0.5); SREQ-00005-2 (wasm
+  preview) is OBSOLETE, superseded by the serve mode (SREQ-00008-1).
 - `W-CLASS-TOO-SMALL` on IrValidationError: a deliberate marker
   exception subclass.
