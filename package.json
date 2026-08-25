@@ -23,7 +23,7 @@
     "test": "npm run compile && vitest run",
     "eval": "tsc -p ./ && node scripts/eval_render.mjs",
     "prepare": "npm run compile",
-    "test:ci": "npm run compile && vitest run --reporter=default --reporter=junit --outputFile=test-results/junit.xml --coverage.enabled --coverage.provider=v8 --coverage.reporter=cobertura --coverage.reportsDirectory=test-results/coverage"
+    "test:ci": "npm run compile && vitest run --reporter=default --reporter=junit --outputFile=test-results/junit.xml --coverage.enabled --coverage.provider=v8 --coverage.reporter=cobertura --coverage.reportsDirectory=test-results/coverage --coverage.include=src/** --coverage.exclude=src/**/*.gen.*"
   },
   "dependencies": {
     "tree-sitter": "^0.25.0",
