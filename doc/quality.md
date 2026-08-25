@@ -1,10 +1,7 @@
 # Repo quality
 
 The repository's inventory and health metrics, computed from the model
-and the last test runs. Absent evidence reads `?`, never a guess. The
-remaining diagnostics are the TypeScript-reader gap: argos cannot model
-this repository's code or vitest suite yet, so design-to-code checks and
-verification test ids read as findings until that reader exists.
+and the last test runs. Absent evidence reads `?`, never a guess.
 
 <!-- folio: quality --junit test-results/junit.xml --coverage_ut test-results/coverage/cobertura-coverage.xml -->
 ### Inventory
@@ -16,21 +13,21 @@ verification test ids read as findings until that reader exists.
 | Verifications | 11 |
 | Constraints | 0 |
 | Design diagrams | 11 |
-| Code classes | 0 |
-| Free functions | 0 |
-| Test cases | 0 |
+| Code classes | 1 |
+| Free functions | 32 |
+| Test cases | 13 |
 
 ### Metrics
 
 | Metric | Value |
 | --- | --- |
-| Source files | 0 |
-| Source lines | 0 |
+| Source files | 10 |
+| Source lines | 1386 |
 | Documentation files | 7 |
-| Documentation lines (authored) | 286 |
+| Documentation lines (authored) | 293 |
 | Tests executed (UT) | 44 |
 | Tests executed (ST) | ? |
 | UT line coverage | 58% |
 | ST line coverage | ? |
-| argos diagnostics | 13 |
+| argos diagnostics | 1 |
 <!-- /folio -->

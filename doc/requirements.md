@@ -2,24 +2,21 @@
 
 ## What was asked
 
-The system requirements, with a check for implemented and one per test
-suite. No argos reader models TypeScript yet, so the implemented column
-and the verification test ids read from that gap (the eleven
-W-VER-DEAD-TEST-ID findings say the checker cannot see vitest tests,
-not that they are missing): the junit evidence below is what the last
-run actually executed.
+The system requirements, with a check for implemented (its requirements
+land on diagrams that resolve to code) and one per test suite: the junit
+evidence is what the last run actually executed.
 
 <!-- folio: sreqs --junit test-results/junit.xml -->
 | SREQ | Title | Implemented | UT | ST |
 | --- | --- | --- | --- | --- |
-| `SREQ-00001-1` | The tool shall render diagrams as deterministic SVG from the render-IR contract | ? | ~ | ? |
-| `SREQ-00002-1` | The render-IR schema shall define the origin-neutral drawing contract under semver | ? | ✓ | ? |
-| `SREQ-00003-1` | The engine shall emit byte-deterministic themable SVG | ? | ✓ | ? |
-| `SREQ-00004-1` | The frontend shall project the PlantUML class subset into the render-IR | ? | ✓ | ? |
+| `SREQ-00001-1` | The tool shall render diagrams as deterministic SVG from the render-IR contract | ~ | ~ | ? |
+| `SREQ-00002-1` | The render-IR schema shall define the origin-neutral drawing contract under semver | ✓ | ✓ | ? |
+| `SREQ-00003-1` | The engine shall emit byte-deterministic themable SVG | ✓ | ✓ | ? |
+| `SREQ-00004-1` | The frontend shall project the PlantUML class subset into the render-IR | ✓ | ✓ | ? |
 | `SREQ-00005-2` | The extension shall render previews self-contained through the wasm grammar | ✗ | ✗ | ✗ |
-| `SREQ-00006-1` | The engine shall render sequence diagrams | ? | ✓ | ? |
-| `SREQ-00007-1` | The renderer shall support interactive read-only views | ? | ✓ | ? |
-| `SREQ-00008-1` | The renderer shall serve the interactive preview over local HTTP | ? | ✓ | ? |
+| `SREQ-00006-1` | The engine shall render sequence diagrams | ✓ | ✓ | ? |
+| `SREQ-00007-1` | The renderer shall support interactive read-only views | ✓ | ✓ | ? |
+| `SREQ-00008-1` | The renderer shall serve the interactive preview over local HTTP | ✓ | ✓ | ? |
 <!-- /folio -->
 
 ## Total traceability
