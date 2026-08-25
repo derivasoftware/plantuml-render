@@ -51,6 +51,17 @@ plantuml-render serve diagram.puml
 plantuml-render --ir model.json -o out.svg
 ```
 
+## Scope
+
+The family covers a standard-driven subset of PlantUML, never the whole
+language. Class diagrams: 125 of 149 standard constructs structural;
+sequence: 70 of 111, with the lifecycle verbs (activate, ref, box,
+delays) still raw; activity: actions and swimlanes structural, control
+flow raw. Everything else (deployment, components, state, mindmaps,
+gantt) parses lossless as raw lines, never an ERROR, but gets no
+structure. The native engine draws the class and sequence
+subsets; activity and the rest are not drawn.
+
 ## Documentation
 
 - [render-IR](doc/render-ir.md): the drawing contract; shape, validation, versioning
@@ -59,3 +70,5 @@ plantuml-render --ir model.json -o out.svg
 - [Architecture](doc/architecture.md): the model's diagrams, rendered by this same tool
 - [Requirements & status](doc/requirements.md): what was asked and the traceability matrix
 - [Repo quality](doc/quality.md): artefact inventory and health metrics
+
+*Not affiliated with or endorsed by the PlantUML project.*
