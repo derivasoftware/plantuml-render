@@ -13,3 +13,5 @@ dist/
 src/render/schema.gen.ts
 src/render/validate.gen.js
 src/render/validate.gen.d.ts
+test-results/
+!doc/assets/*.svg

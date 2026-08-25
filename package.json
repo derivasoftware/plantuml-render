@@ -4,7 +4,7 @@
   "description": "Deterministic SVG renderer: render-IR engine plus a PlantUML frontend built on tree-sitter-plantuml",
   "license": "MIT",
   "author": "dcoello-dev",
-  "repository": "https://gitlab.semantiqa.dev/deriva/plantuml/plantuml-render",
+  "repository": "https://github.com/derivasoftware/plantuml-render",
   "type": "module",
   "main": "./out/render/index.js",
   "exports": {
@@ -22,14 +22,16 @@
     "compile": "node scripts/gen_schema.mjs && tsc -p ./ && cp src/render/validate.gen.js src/render/validate.gen.d.ts out/render/",
     "test": "npm run compile && vitest run",
     "eval": "tsc -p ./ && node scripts/eval_render.mjs",
-    "prepare": "npm run compile"
+    "prepare": "npm run compile",
+    "test:ci": "npm run compile && vitest run --reporter=default --reporter=junit --outputFile=test-results/junit.xml --coverage.enabled --coverage.provider=v8 --coverage.reporter=cobertura --coverage.reportsDirectory=test-results/coverage --coverage.include=src/** --coverage.exclude=src/**/*.gen.*"
   },
   "dependencies": {
     "tree-sitter": "^0.25.0",
-    "tree-sitter-plantuml": "git+https://gitlab.semantiqa.dev/deriva/plantuml/tree-sitter-plantuml.git#v0.8.0"
+    "tree-sitter-plantuml": "git+https://github.com/derivasoftware/tree-sitter-plantuml.git#v0.8.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
+    "@vitest/coverage-v8": "^3.2.7",
     "ajv": "^8.17.1",
     "typescript": "^5.5.0",
     "vitest": "^3.0.0"

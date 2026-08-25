@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -10 1106 1598" width="1106" height="1598" class="pr-diagram" role="img">
+<title>CL_Render</title>
+<style>
+  :root { color-scheme: light dark; }
+  .pr-diagram { font-family: var(--pr-font, ui-monospace, monospace); font-size: 12px; }
+  .pr-box rect { fill: var(--pr-box-fill, #fdfdf6); stroke: var(--pr-stroke, #3b3b33); }
+  .pr-container > rect { fill: var(--pr-container-fill, none); stroke: var(--pr-stroke, #3b3b33); stroke-dasharray: none; }
+  .pr-note rect { fill: var(--pr-note-fill, #fbf6d9); stroke: var(--pr-stroke, #3b3b33); }
+  text { fill: var(--pr-text, #1c1c14); }
+  .pr-header { font-weight: 600; }
+  .pr-abstract .pr-header { font-style: italic; }
+  .pr-sep { stroke: var(--pr-stroke, #3b3b33); }
+  .pr-edge { stroke: var(--pr-stroke, #3b3b33); fill: none; }
+  .pr-edge-realization, .pr-edge-dependency, .pr-edge-attachment { stroke-dasharray: 6 4; }
+</style>
+<defs>
+  <marker id="pr-tri" viewBox="0 0 14 12" refX="13" refY="6" markerWidth="14" markerHeight="12" orient="auto"><path d="M1,1 L13,6 L1,11 Z" fill="var(--pr-box-fill, #fdfdf6)" stroke="var(--pr-stroke, #3b3b33)"/></marker>
+  <marker id="pr-diamond-filled" viewBox="0 0 16 10" refX="15" refY="5" markerWidth="16" markerHeight="10" orient="auto"><path d="M1,5 L8,1 L15,5 L8,9 Z" fill="var(--pr-stroke, #3b3b33)"/></marker>
+  <marker id="pr-diamond" viewBox="0 0 16 10" refX="15" refY="5" markerWidth="16" markerHeight="10" orient="auto"><path d="M1,5 L8,1 L15,5 L8,9 Z" fill="var(--pr-box-fill, #fdfdf6)" stroke="var(--pr-stroke, #3b3b33)"/></marker>
+  <marker id="pr-arrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto"><path d="M1,1 L11,6 L1,11" fill="none" stroke="var(--pr-stroke, #3b3b33)"/></marker>
+</defs>
+<g id="render.ir" class="pr-container pr-classifier-namespace"><rect x="28" y="50" width="572" height="136"/><text class="pr-header" x="36" y="65">ir</text></g>
+<g id="render.engine" class="pr-container pr-classifier-namespace"><rect x="28" y="218" width="1040" height="316"/><text class="pr-header" x="36" y="233">engine</text></g>
+<g id="render.shared" class="pr-container pr-classifier-namespace"><rect x="28" y="566" width="280" height="118"/><text class="pr-header" x="36" y="581">shared</text></g>
+<g id="render.sequence" class="pr-container pr-classifier-namespace"><rect x="28" y="716" width="392" height="118"/><text class="pr-header" x="36" y="731">sequence</text></g>
+<g id="render.filters" class="pr-container pr-classifier-namespace"><rect x="28" y="866" width="408" height="154"/><text class="pr-header" x="36" y="881">filters</text></g>
+<g id="render.frontend" class="pr-container pr-classifier-namespace"><rect x="28" y="1052" width="480" height="190"/><text class="pr-header" x="36" y="1067">frontend</text></g>
+<g id="render.serve" class="pr-container pr-classifier-namespace"><rect x="28" y="1274" width="552" height="136"/><text class="pr-header" x="36" y="1289">serve</text></g>
+<g id="render.cli" class="pr-container pr-classifier-namespace"><rect x="28" y="1442" width="376" height="118"/><text class="pr-header" x="36" y="1457">cli</text></g>
+<g id="render" class="pr-container pr-classifier-namespace"><rect x="10" y="10" width="1076" height="1568"/><text class="pr-header" x="18" y="25">render</text></g>
+<path class="pr-edge pr-edge-dependency" data-from="render.ir.IrModule" data-to="render.ir.IrValidationError" d="M378,129 L426,109" marker-end="url(#pr-arrow)"/>
+<path class="pr-edge pr-edge-dependency" data-from="render.engine.EngineModule" data-to="render.ir.IrModule" d="M548,258 L212,168" marker-end="url(#pr-arrow)"/>
+<path class="pr-edge pr-edge-dependency" data-from="render.sequence.SequenceModule" data-to="render.ir.IrModule" d="M224,756 L212,168" marker-end="url(#pr-arrow)"/>
+<path class="pr-edge pr-edge-dependency" data-from="render.sequence.SequenceModule" data-to="render.shared.SharedModule" d="M224,756 L168,666" marker-end="url(#pr-arrow)"/>
+<path class="pr-edge pr-edge-dependency" data-from="render.filters.FiltersModule" data-to="render.ir.IrModule" d="M232,906 L212,168" marker-end="url(#pr-arrow)"/>
+<path class="pr-edge pr-edge-dependency" data-from="render.serve.ServeModule" data-to="render.engine.EngineModule" d="M304,1314 L548,516" marker-end="url(#pr-arrow)"/>
+<path class="pr-edge pr-edge-dependency" data-from="render.serve.ServeModule" data-to="render.frontend.FrontendModule" d="M304,1314 L268,1224" marker-end="url(#pr-arrow)"/>
+<path class="pr-edge pr-edge-dependency" data-from="render.serve.ServeModule" data-to="render.filters.FiltersModule" d="M304,1314 L232,1002" marker-end="url(#pr-arrow)"/>
+<path class="pr-edge pr-edge-dependency" data-from="render.cli.CliModule" data-to="render.engine.EngineModule" d="M216,1482 L548,516" marker-end="url(#pr-arrow)"/>
+<path class="pr-edge pr-edge-dependency" data-from="render.cli.CliModule" data-to="render.frontend.FrontendModule" d="M216,1482 L268,1224" marker-end="url(#pr-arrow)"/>
+<g id="render.ir.IrModule" class="pr-box pr-classifier-class"><rect x="46" y="90" width="332" height="78"/><text class="pr-header" x="56" y="112">IrModule</text><line class="pr-sep" x1="46" y1="122" x2="378" y2="122"/><text x="56" y="134">+ validateIr(value: unknown) : RenderIr</text><text x="56" y="152">- validator() : ValidateFunction</text></g>
+<g id="render.ir.IrValidationError" class="pr-box pr-classifier-class"><rect x="426" y="90" width="156" height="38"/><text class="pr-header" x="436" y="112">IrValidationError</text></g>
+<g id="render.engine.EngineModule" class="pr-box pr-classifier-class"><rect x="46" y="258" width="1004" height="258"/><text class="pr-header" x="56" y="280">EngineModule</text><line class="pr-sep" x1="46" y1="290" x2="1050" y2="290"/><text x="56" y="302">+ renderSvg(input: unknown, opts: RenderOptions) : string</text><text x="56" y="320">- applyDeltas(ir: RenderIr, placed: Placed[], positions: Record&lt;string, Delta&gt;) : void</text><text x="56" y="338">- adaptContainers(placed: Placed[]) : void</text><text x="56" y="356">- nodeSize(node: IrNode) : { w: number; h: number }</text><text x="56" y="374">- headerText(node: IrNode) : string</text><text x="56" y="392">- buildFrames(ir: RenderIr) : Frame</text><text x="56" y="410">- layerOrder(nodes: IrNode[], edges: IrEdge[]) : IrNode[][]</text><text x="56" y="428">- layoutFrame(frame: Frame, edges: IrEdge[], originX: number, originY: number, placed: Placed[]) : { w: number; h: number }</text><text x="56" y="446">- layout(ir: RenderIr) : Placed[]</text><text x="56" y="464">- emitNode(p: Placed) : string</text><text x="56" y="482">- emitEdge(edge: IrEdge, byId: Map&lt;string, Placed&gt;) : string</text><text x="56" y="500">- emit(ir: RenderIr, placed: Placed[]) : string</text></g>
+<g id="render.shared.SharedModule" class="pr-box pr-classifier-class"><rect x="46" y="606" width="244" height="60"/><text class="pr-header" x="56" y="628">SharedModule</text><line class="pr-sep" x1="46" y1="638" x2="290" y2="638"/><text x="56" y="650">+ esc(text: string) : string</text></g>
+<g id="render.sequence.SequenceModule" class="pr-box pr-classifier-class"><rect x="46" y="756" width="356" height="60"/><text class="pr-header" x="56" y="778">SequenceModule</text><line class="pr-sep" x1="46" y1="788" x2="402" y2="788"/><text x="56" y="800">+ renderSequenceSvg(ir: RenderIr) : string</text></g>
+<g id="render.filters.FiltersModule" class="pr-box pr-classifier-class"><rect x="46" y="906" width="372" height="96"/><text class="pr-header" x="56" y="928">FiltersModule</text><line class="pr-sep" x1="46" y1="938" x2="418" y2="938"/><text x="56" y="950">+ stripSections(ir: RenderIr) : RenderIr</text><text x="56" y="968">+ flattenContainers(ir: RenderIr) : RenderIr</text><text x="56" y="986">+ hideNotes(ir: RenderIr) : RenderIr</text></g>
+<g id="render.frontend.FrontendModule" class="pr-box pr-classifier-class"><rect x="46" y="1092" width="444" height="132"/><text class="pr-header" x="56" y="1114">FrontendModule</text><line class="pr-sep" x1="46" y1="1124" x2="490" y2="1124"/><text x="56" y="1136">+ pumlToIr(source: string) : Promise&lt;RenderIr&gt;</text><text x="56" y="1154">+ treeToIr(root: CstNode) : RenderIr</text><text x="56" y="1172">- getParser() : Promise&lt;Parser&gt;</text><text x="56" y="1190">- decodeOperator(op: string) : DecodedOperator</text><text x="56" y="1208">- memberSections(decl: Node) : string[][] | undefined</text></g>
+<g id="render.serve.ServeModule" class="pr-box pr-classifier-class"><rect x="46" y="1314" width="516" height="78"/><text class="pr-header" x="56" y="1336">ServeModule</text><line class="pr-sep" x1="46" y1="1346" x2="562" y2="1346"/><text x="56" y="1358">+ renderFile(file: string, state: ViewState) : Promise&lt;string&gt;</text><text x="56" y="1376">+ startServer(file: string, port: number) : Promise&lt;Serving&gt;</text></g>
+<g id="render.cli.CliModule" class="pr-box pr-classifier-class"><rect x="46" y="1482" width="340" height="60"/><text class="pr-header" x="56" y="1504">CliModule</text><line class="pr-sep" x1="46" y1="1514" x2="386" y2="1514"/><text x="56" y="1526">+ main(argv: string[]) : Promise&lt;number&gt;</text></g>
+</svg>

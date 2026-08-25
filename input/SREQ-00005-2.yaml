@@ -1,0 +1,17 @@
+requirement:
+  id: SREQ-00005-2
+  title: The extension shall render previews self-contained through the wasm grammar
+  description: >
+    The extension shall render previews self-contained through the wasm grammar.
+  rationale: >
+    Retired. The wasm-in-webview roadmap was superseded by the serve
+    mode (SREQ-00008-1): the preview parses and renders server-side
+    over local HTTP with the native binding, so no wasm build, no
+    emscripten in the pipeline and no bundle in the webview. Nothing
+    decomposes or implements this path any more; revision 2 records the
+    supersession.
+  owner: dcoello-dev
+  status: OBSOLETE
+  asil: QM
+  parent_ids:
+    - SREQ-00001-1
