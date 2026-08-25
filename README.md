@@ -7,9 +7,9 @@
 <!-- /folio -->
 
 Deterministic SVG renderer for the
-[deriva/plantuml](https://gitlab.semantiqa.dev/deriva/plantuml) family: a
+[deriva/plantuml](https://github.com/derivasoftware) family: a
 **render-IR engine** plus a **PlantUML frontend** built on
-[tree-sitter-plantuml](https://gitlab.semantiqa.dev/deriva/plantuml/tree-sitter-plantuml).
+[tree-sitter-plantuml](https://github.com/derivasoftware/tree-sitter-plantuml).
 
 Three guarantees: **byte-deterministic** (same IR, byte-identical SVG, so
 rendered design is diffable in merge requests), **themable, never themed**
@@ -24,7 +24,7 @@ Generated from the manifest and the latest tag:
 
 <!-- folio: install -->
 ```bash
-git clone https://gitlab.semantiqa.dev/deriva/plantuml/plantuml-render
+git clone https://github.com/derivasoftware/plantuml-render
 cd plantuml-render && npm install && npm install -g .
 ```
 <!-- /folio -->
