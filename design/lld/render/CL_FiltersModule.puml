@@ -4,12 +4,15 @@
 !startsub FiltersModule
 
 namespace render.filters {
-  class "<<module>>" as FiltersModule {
+  class stripSections <<function>> {
     + stripSections(ir: RenderIr) : RenderIr
+  }
+  class flattenContainers <<function>> {
     + flattenContainers(ir: RenderIr) : RenderIr
+  }
+  class hideNotes <<function>> {
     + hideNotes(ir: RenderIr) : RenderIr
   }
-  FiltersModule ..> render.ir.IrModule
 }
 
 !endsub

@@ -5,21 +5,9 @@
 !startsub EngineModule
 
 namespace render.engine {
-  class "<<module>>" as EngineModule {
+  class renderSvg <<function>> {
     + renderSvg(input: unknown, opts: RenderOptions) : string
-    - applyDeltas(ir: RenderIr, placed: Placed[], positions: Record<string, Delta>) : void
-    - adaptContainers(placed: Placed[]) : void
-    - nodeSize(node: IrNode) : { w: number; h: number }
-    - headerText(node: IrNode) : string
-    - buildFrames(ir: RenderIr) : Frame
-    - layerOrder(nodes: IrNode[], edges: IrEdge[]) : IrNode[][]
-    - layoutFrame(frame: Frame, edges: IrEdge[], originX: number, originY: number, placed: Placed[]) : { w: number; h: number }
-    - layout(ir: RenderIr) : Placed[]
-    - emitNode(p: Placed) : string
-    - emitEdge(edge: IrEdge, byId: Map<string, Placed>) : string
-    - emit(ir: RenderIr, placed: Placed[]) : string
   }
-  EngineModule ..> render.ir.IrModule
 }
 
 !endsub

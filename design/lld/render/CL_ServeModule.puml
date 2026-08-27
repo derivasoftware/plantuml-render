@@ -4,13 +4,12 @@
 !startsub ServeModule
 
 namespace render.serve {
-  class "<<module>>" as ServeModule {
+  class renderFile <<function>> {
     + renderFile(file: string, state: ViewState) : Promise<string>
+  }
+  class startServer <<function>> {
     + startServer(file: string, port: number) : Promise<Serving>
   }
-  ServeModule ..> render.engine.EngineModule
-  ServeModule ..> render.frontend.FrontendModule
-  ServeModule ..> render.filters.FiltersModule
 }
 
 !endsub

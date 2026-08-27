@@ -4,11 +4,9 @@
 !startsub IrModule
 
 namespace render.ir {
-  class "<<module>>" as IrModule {
+  class validateIr <<function>> {
     + validateIr(value: unknown) : RenderIr
-    - validator() : ValidateFunction
   }
-  IrModule ..> IrValidationError
 }
 
 !endsub

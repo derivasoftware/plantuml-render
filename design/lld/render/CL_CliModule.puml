@@ -4,11 +4,9 @@
 !startsub CliModule
 
 namespace render.cli {
-  class "<<module>>" as CliModule {
+  class main <<function>> {
     + main(argv: string[]) : Promise<number>
   }
-  CliModule ..> render.engine.EngineModule
-  CliModule ..> render.frontend.FrontendModule
 }
 
 !endsub

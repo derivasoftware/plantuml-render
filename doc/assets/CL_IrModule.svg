@@ -21,6 +21,5 @@
 </defs>
 <g id="render.ir" class="pr-container pr-classifier-namespace"><rect x="28" y="50" width="368" height="136"/><text class="pr-header" x="36" y="65">ir</text></g>
 <g id="render" class="pr-container pr-classifier-namespace"><rect x="10" y="10" width="404" height="194"/><text class="pr-header" x="18" y="25">render</text></g>
-
-<g id="render.ir.IrModule" class="pr-box pr-classifier-class"><rect x="46" y="90" width="332" height="78"/><text class="pr-header" x="56" y="112">IrModule</text><line class="pr-sep" x1="46" y1="122" x2="378" y2="122"/><text x="56" y="134">+ validateIr(value: unknown) : RenderIr</text><text x="56" y="152">- validator() : ValidateFunction</text></g>
+<g id="render.ir.validateIr" class="pr-box pr-classifier-class"><rect x="46" y="90" width="332" height="78"/><text x="56" y="112">«function»</text><text class="pr-header" x="56" y="130">validateIr</text><line class="pr-sep" x1="46" y1="140" x2="378" y2="140"/><text x="56" y="152">+ validateIr(value: unknown) : RenderIr</text></g>
 </svg>

@@ -4,7 +4,7 @@
 !startsub SharedModule
 
 namespace render.shared {
-  class "<<module>>" as SharedModule {
+  class esc <<function>> {
     + esc(text: string) : string
   }
 }
