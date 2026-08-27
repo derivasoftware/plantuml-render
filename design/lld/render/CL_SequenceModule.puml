@@ -4,11 +4,9 @@
 !startsub SequenceModule
 
 namespace render.sequence {
-  class "<<module>>" as SequenceModule {
+  class renderSequenceSvg <<function>> {
     + renderSequenceSvg(ir: RenderIr) : string
   }
-  SequenceModule ..> render.ir.IrModule
-  SequenceModule ..> render.shared.SharedModule
 }
 
 !endsub

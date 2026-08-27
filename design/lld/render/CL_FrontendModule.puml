@@ -5,12 +5,8 @@
 !startsub FrontendModule
 
 namespace render.frontend {
-  class "<<module>>" as FrontendModule {
+  class pumlToIr <<function>> {
     + pumlToIr(source: string) : Promise<RenderIr>
-    + treeToIr(root: CstNode) : RenderIr
-    - getParser() : Promise<Parser>
-    - decodeOperator(op: string) : DecodedOperator
-    - memberSections(decl: Node) : string[][] | undefined
   }
 }
 
