@@ -1,6 +1,6 @@
 {
   "name": "plantuml-render",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "description": "Deterministic SVG renderer: render-IR engine plus a PlantUML frontend built on tree-sitter-plantuml",
   "license": "MIT",
   "author": "dcoello-dev",
@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "tree-sitter": "^0.25.0",
-    "tree-sitter-plantuml": "git+https://github.com/derivasoftware/tree-sitter-plantuml.git#v0.9.2"
+    "tree-sitter-plantuml": "git+https://github.com/derivasoftware/tree-sitter-plantuml.git#v0.9.6"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
