@@ -9,3 +9,5 @@ requirement:
   status: APPROVED
   asil: QM
   parent_ids: []
+  tags:
+    - rendering
