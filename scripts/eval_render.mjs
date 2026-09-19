@@ -28,8 +28,8 @@ for (const root of roots) {
     total += 1;
     try {
       const src = readFileSync(file, "utf8");
-      const a = renderSvg(await pumlToIr(src));
-      const b = renderSvg(await pumlToIr(src));
+      const a = await renderSvg(await pumlToIr(src));
+      const b = await renderSvg(await pumlToIr(src));
       if (a !== b) throw new Error("non-deterministic output");
       if (!a.startsWith("<svg ") || !a.endsWith("</svg>")) {
         throw new Error("malformed svg envelope");

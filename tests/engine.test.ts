@@ -26,12 +26,12 @@ const IR = {
 };
 
 describe("engine", () => {
-  it("is byte-deterministic", () => {
-    expect(renderSvg(IR)).toBe(renderSvg(IR));
+  it("is byte-deterministic", async () => {
+    expect(await renderSvg(IR)).toBe(await renderSvg(IR));
   });
 
-  it("emits stable ids, theming classes and typed markers", () => {
-    const svg = renderSvg(IR);
+  it("emits stable ids, theming classes and typed markers", async () => {
+    const svg = await renderSvg(IR);
     expect(svg).toContain('id="ns.Base"');
     expect(svg).toContain("pr-classifier-class");
     expect(svg).toContain("pr-abstract");
@@ -42,8 +42,8 @@ describe("engine", () => {
     expect(svg).toContain("<title>demo</title>");
   });
 
-  it("layers inheritance targets above sources", () => {
-    const svg = renderSvg(IR);
+  it("layers inheritance targets above sources", async () => {
+    const svg = await renderSvg(IR);
     const y = (id: string) => {
       const match = svg.match(new RegExp(`id="${id}"[^>]*>\\s*<rect [^>]*y="(\\d+)"`));
       return Number(match?.[1]);
@@ -51,8 +51,8 @@ describe("engine", () => {
     expect(y("ns.Base")).toBeLessThan(y("ns.Impl"));
   });
 
-  it("escapes markup in labels", () => {
-    const svg = renderSvg({
+  it("escapes markup in labels", async () => {
+    const svg = await renderSvg({
       ir: 1,
       nodes: [{ id: "a", kind: "box", label: "<X&Y>" }],
       edges: [],

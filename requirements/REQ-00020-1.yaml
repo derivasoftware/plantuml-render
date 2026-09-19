@@ -1,0 +1,34 @@
+requirement:
+  id: REQ-00020-1
+  title: The class layout shall place nodes in layers and route edges around them
+  description: >
+    The class layout shall place nodes in layers and route edges around them
+  rationale: >
+    Until 0.11 the class layout was one unbounded row per inheritance
+    layer and straight centre-to-centre edges: on the family corpus
+    (spike PUML-40) 79 of 586 class diagrams fell outside a 1:3..3:1
+    aspect, 48 were illegible when fitted to a 944 px column, edges
+    crossed foreign boxes and labels collided. The layout is now ELK's
+    layered algorithm (elkjs, pure JavaScript, deterministic): hierarchy
+    edges point upward so bases sit above subtypes, containers are
+    compound nodes laid out with their children, edges are routed
+    orthogonally around the boxes and their labels placed by the router,
+    and every level is split into connected components that are packed
+    towards a 1.6 aspect together with the edge-less boxes, so a diagram
+    of loose classes is a grid instead of a line. Edges between a node
+    and its own container are drawn as straight anchored lines. All
+    coordinates are rounded to integers, so byte-determinism
+    (REQ-00002-1) holds; `renderSvg` becomes asynchronous because the
+    router is. Composition and aggregation paths end on the whole, where the
+    diamond belongs. Measured after the change on the same corpus: 37
+    diagrams outside the aspect band (from 79), 27 illegible at 944 px
+    (from 48), widest 8020 px (from 9336), tallest 5671 px (from 18100),
+    slowest 586 ms for a 175-class aggregate, 7.7 s for all 590. Dragging a node (REQ-00006-1) falls back to straight
+    edges until the next full layout.
+  status: DRAFT
+  asil: QM
+  parent_ids:
+    - SREQ-00004-1
+  tags:
+    - engine
+    - layout

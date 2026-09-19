@@ -1,0 +1,12 @@
+verification:
+  id: VER-00020-1
+  req_id: REQ-00020-1
+  title: Layout tests cover layering, routed edges, packed components, containers and determinism; the corpus metrics are recorded in the rationale
+  description: >
+    Layout tests cover layering, routed edges, packed components, containers and determinism; the corpus metrics are recorded in the rationale
+  method: test
+  test_ids:
+    - tests/layout.test.ts::class layout
+    - tests/engine.test.ts::engine
+    - tests/interactive.test.ts::interactive rendering
+  status: DRAFT

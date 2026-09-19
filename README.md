@@ -92,6 +92,10 @@ or `--links map.json` and `--link-template` on the command line; the SVG
 then navigates by itself, and a host page can build hover cards on the
 `data-id` and `data-ref-*` attributes. See `plantuml-render docs navigation`.
 
+Class diagrams are laid out by ELK's layered algorithm (bases above
+subtypes, orthogonal edges routed around the boxes, disconnected pieces
+packed into a grid); `renderSvg` is asynchronous for that reason.
+
 ## Scope
 
 The family covers a standard-driven subset of PlantUML, never the whole

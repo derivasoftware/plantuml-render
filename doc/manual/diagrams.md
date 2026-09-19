@@ -29,6 +29,14 @@ frames with their condition, `== dividers ==`, `note over|left|right`.
 Lanes are spaced by what crosses them, frames wrap only the participants
 they involve, and rows grow to fit multi-line notes.
 
+## Layout
+
+Class diagrams are laid out by ELK's layered algorithm: bases above their
+subtypes, containers laid out with their children, edges routed around the
+boxes with their labels placed by the router, and the disconnected pieces
+of a diagram packed into a grid. The output is deterministic: the same
+source always produces the same SVG.
+
 ## Not drawn (kept lossless)
 
 Activity, deployment, component, state, mindmap, gantt. Use `plantuml.jar`

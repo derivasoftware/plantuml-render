@@ -108,7 +108,7 @@ async function renderFile(file: string, links: LinkSpec): Promise<string> {
   const raw = readFileSync(file, "utf8");
   const ir = await pumlToIr(await expandIncludes(raw, dirname(resolve(file)), fsLoader));
   ir.title ??= basename(file, extname(file));
-  return renderSvg(applyLinks(ir, links));
+  return await renderSvg(applyLinks(ir, links));
 }
 
 export async function main(argv: string[], deps: CliDeps = {}): Promise<number> {
@@ -188,7 +188,7 @@ export async function main(argv: string[], deps: CliDeps = {}): Promise<number> 
     return 2;
   }
   if (irMode) {
-    const svg = renderSvg(applyLinks(JSON.parse(readFileSync(input, "utf8")), links));
+    const svg = await renderSvg(applyLinks(JSON.parse(readFileSync(input, "utf8")), links));
     target ? writeFileSync(target, svg) : out(svg);
     return 0;
   }
