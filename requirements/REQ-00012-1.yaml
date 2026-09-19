@@ -1,0 +1,30 @@
+requirement:
+  id: REQ-00012-1
+  title: The engine shall emit SVG that embeds inline in a host document without side effects
+  description: >
+    The engine shall emit SVG that embeds inline in a host document without side effects
+  rationale: >
+    Measured on the family corpus (spike PUML-40): with 270 SVGs inline
+    in one page, the 0.6.x stylesheet leaked into the host (its `text {}`
+    and `:root { color-scheme }` rules applied to the whole document),
+    620 ids collided (markers and namespace containers repeated per
+    diagram), the frame carried 20 px on the top/left and 10 px on the
+    bottom/right, and a dark host without variables lost labels and
+    edges. The profile that closes this: every style rule scoped under
+    `.pr-diagram`; light tokens declared on the diagram and dark tokens
+    under `prefers-color-scheme: dark` and `[data-theme="dark"]`, with
+    `[data-theme="light"]` winning back; marker and node ids prefixed
+    with a deterministic hash of the title while the logical entity id
+    stays in `data-id` (edges keep `data-from`/`data-to`); the root
+    keeps its natural width/height and adds `max-width:100%;height:auto`;
+    the viewBox is the content's bounding box plus the same pad on every
+    side. Observable contract change: element ids are now
+    `<prefix><logical id>`, so interaction layers (serve page, editor
+    webviews) key on `data-id`. Byte-determinism (REQ-00002-1) is kept.
+  status: DRAFT
+  asil: QM
+  parent_ids:
+    - SREQ-00003-1
+  tags:
+    - engine
+    - embedding

@@ -13,7 +13,7 @@
  */
 
 import { type IrNode, type RenderIr } from "./ir.js";
-import { CHAR_W, LINE_H, PAD, STYLE, esc } from "./shared.js";
+import { CHAR_W, LINE_H, PAD, STYLE, esc, idPrefix, svgRoot } from "./shared.js";
 
 const HEAD_H = LINE_H + 2 * PAD;
 const ROW_H = 30;
@@ -21,16 +21,17 @@ const MARGIN = 20;
 const SELF_W = 32;
 
 const SEQ_STYLE = `
-  .pr-lifeline-line { stroke: var(--pr-stroke, #3b3b33); stroke-dasharray: 4 4; }
-  .pr-msg { stroke: var(--pr-stroke, #3b3b33); fill: none; }
-  .pr-msg-dashed { stroke-dasharray: 6 4; }
-  .pr-frame > rect { fill: none; stroke: var(--pr-stroke, #3b3b33); }
-  .pr-frame-label { font-weight: 600; }
-  .pr-frame-divider { stroke: var(--pr-stroke, #3b3b33); stroke-dasharray: 6 4; }
-  .pr-divider rect { fill: var(--pr-box-fill, #fdfdf6); stroke: var(--pr-stroke, #3b3b33); }
+  .pr-diagram .pr-lifeline-line { stroke: var(--pr-stroke); stroke-dasharray: 4 4; }
+  .pr-diagram .pr-msg { stroke: var(--pr-stroke); fill: none; }
+  .pr-diagram .pr-msg-dashed { stroke-dasharray: 6 4; }
+  .pr-diagram .pr-frame > rect { fill: none; stroke: var(--pr-stroke); }
+  .pr-diagram .pr-frame-label { font-weight: 600; }
+  .pr-diagram .pr-frame-divider { stroke: var(--pr-stroke); stroke-dasharray: 6 4; }
+  .pr-diagram .pr-divider rect { fill: var(--pr-box-fill); stroke: var(--pr-stroke); }
 `;
 
 export function renderSequenceSvg(ir: RenderIr): string {
+  const px = idPrefix(ir.title);
   const lifelines = ir.nodes.filter((n) => n.kind === "lifeline");
   const frames = ir.nodes.filter((n) => n.kind === "frame");
   const dividers = ir.nodes.filter((n) => n.kind === "divider");
@@ -87,7 +88,7 @@ export function renderSequenceSvg(ir: RenderIr): string {
     const h = rowTop(frame.span[1]) + ROW_H - y;
     const tabW = frame.label.length * CHAR_W + 2 * PAD;
     parts.push(
-      `<g id="${esc(frame.id)}" class="pr-frame">` +
+      `<g id="${px}${esc(frame.id)}" data-id="${esc(frame.id)}" class="pr-frame">` +
         `<rect x="${x}" y="${y}" width="${w}" height="${h}"/>` +
         `<text class="pr-frame-label" x="${x + PAD}" y="${y + 14}">${esc(frame.label)}</text>` +
         (frame.dividers ?? [])
@@ -106,7 +107,7 @@ export function renderSequenceSvg(ir: RenderIr): string {
   for (const d of dividers) {
     const y = rowTop(d.at ?? 0) + 6;
     parts.push(
-      `<g id="${esc(d.id)}" class="pr-divider">` +
+      `<g id="${px}${esc(d.id)}" data-id="${esc(d.id)}" class="pr-divider">` +
         `<rect x="${laneL}" y="${y}" width="${laneR - laneL}" height="16"/>` +
         `<text x="${Math.round((laneL + laneR) / 2 - (d.label.length * CHAR_W) / 2)}" y="${y + 12}">${esc(d.label)}</text>` +
         "</g>",
@@ -120,7 +121,7 @@ export function renderSequenceSvg(ir: RenderIr): string {
     const classes = ["pr-box", "pr-lifeline-head"];
     if (n.classifier) classes.push(`pr-classifier-${n.classifier}`);
     parts.push(
-      `<g id="${esc(n.id)}" class="${classes.join(" ")}">` +
+      `<g id="${px}${esc(n.id)}" data-id="${esc(n.id)}" class="${classes.join(" ")}">` +
         `<line class="pr-lifeline-line" x1="${x}" y1="${MARGIN + HEAD_H}" x2="${x}" y2="${bottom}"/>` +
         `<rect x="${x - Math.round(w / 2)}" y="${MARGIN}" width="${w}" height="${HEAD_H}"/>` +
         `<text class="pr-header" x="${x - Math.round(w / 2) + PAD}" y="${MARGIN + PAD + 13}">${esc(n.label)}</text>` +
@@ -140,7 +141,7 @@ export function renderSequenceSvg(ir: RenderIr): string {
     if (m.from === m.to) {
       classes.push("pr-msg-self");
       parts.push(
-        `<path class="${classes.join(" ")}" data-from="${esc(m.from)}" data-to="${esc(m.to)}" data-order="${m.order}" d="M${xa} ${y - 8} L${xa + SELF_W} ${y - 8} L${xa + SELF_W} ${y + 4} L${xa + 4} ${y + 4}" marker-end="url(#pr-arrow)"/>`,
+        `<path class="${classes.join(" ")}" data-from="${esc(m.from)}" data-to="${esc(m.to)}" data-order="${m.order}" d="M${xa} ${y - 8} L${xa + SELF_W} ${y - 8} L${xa + SELF_W} ${y + 4} L${xa + 4} ${y + 4}" marker-end="url(#${px}arrow)"/>`,
       );
       if (m.label) {
         parts.push(
@@ -150,7 +151,7 @@ export function renderSequenceSvg(ir: RenderIr): string {
       }
     } else {
       parts.push(
-        `<path ${attrs} d="M${xa} ${y} L${xb} ${y}" marker-end="url(#pr-arrow)"/>`,
+        `<path ${attrs} d="M${xa} ${y} L${xb} ${y}" marker-end="url(#${px}arrow)"/>`,
       );
       if (m.label) {
         const mid = Math.round((xa + xb) / 2);
@@ -177,7 +178,7 @@ export function renderSequenceSvg(ir: RenderIr): string {
             ? anchorX - Math.round(w / 2)
             : anchorX + 16;
     parts.push(
-      `<g id="${esc(n.id)}" class="pr-note">` +
+      `<g id="${px}${esc(n.id)}" data-id="${esc(n.id)}" class="pr-note">` +
         `<rect x="${x}" y="${y}" width="${w}" height="${h}"/>` +
         lines
           .map(
@@ -192,10 +193,10 @@ export function renderSequenceSvg(ir: RenderIr): string {
 
   const height = bottom + MARGIN;
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" class="pr-diagram" role="img">`,
+    svgRoot(0, 0, width, height),
     ir.title ? `<title>${esc(ir.title)}</title>` : "",
     `<style>${STYLE}${SEQ_STYLE}</style>`,
-    `<defs><marker id="pr-arrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto"><path d="M1,1 L11,6 L1,11" fill="none" stroke="var(--pr-stroke, #3b3b33)"/></marker></defs>`,
+    `<defs><marker id="${px}arrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto"><path class="pr-open" d="M1,1 L11,6 L1,11"/></marker></defs>`,
     parts.join("\n"),
     "</svg>",
   ]

@@ -1,11 +1,18 @@
 @startuml CL_SharedModule
 ' requirement REQ-00002-1
+' requirement REQ-00012-1
 
 !startsub SharedModule
 
 namespace render.shared {
   class esc <<function>> {
     + esc(text: string) : string
+  }
+  class idPrefix <<function>> {
+    + idPrefix(title: string | undefined) : string
+  }
+  class svgRoot <<function>> {
+    + svgRoot(minX: number, minY: number, width: number, height: number) : string
   }
 }
 

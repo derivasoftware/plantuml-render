@@ -35,7 +35,8 @@ describe("engine", () => {
     expect(svg).toContain('id="ns.Base"');
     expect(svg).toContain("pr-classifier-class");
     expect(svg).toContain("pr-abstract");
-    expect(svg).toContain('marker-end="url(#pr-tri)"');
+    expect(svg).toMatch(/marker-end="url\(#pr[0-9a-z]+-tri\)"/);
+    expect(svg).toContain('data-id="ns.Base"');
     expect(svg).toContain("pr-edge-attachment");
     expect(svg).toContain("var(--pr-stroke");
     expect(svg).toContain("<title>demo</title>");

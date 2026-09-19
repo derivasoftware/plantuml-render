@@ -101,8 +101,8 @@ export const PAGE = `<!DOCTYPE html>
   stage().addEventListener("pointerdown", (ev) => {
     const group = draggableGroup(ev.target);
     if (group) {
-      const base = positions[group.id] || { dx: 0, dy: 0 };
-      drag = { id: group.id, startX: ev.clientX, startY: ev.clientY,
+      const base = positions[group.dataset.id] || { dx: 0, dy: 0 };
+      drag = { id: group.dataset.id, startX: ev.clientX, startY: ev.clientY,
                baseDx: base.dx, baseDy: base.dy };
     } else {
       panning = { startX: ev.clientX, startY: ev.clientY,
