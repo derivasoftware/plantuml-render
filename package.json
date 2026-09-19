@@ -1,6 +1,6 @@
 {
   "name": "plantuml-render",
-  "version": "0.12.0",
+  "version": "0.12.1",
   "description": "Deterministic SVG renderer: render-IR engine plus a PlantUML frontend built on tree-sitter-plantuml",
   "license": "MIT",
   "author": "dcoello-dev",
