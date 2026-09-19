@@ -1,0 +1,29 @@
+requirement:
+  id: REQ-00014-1
+  title: The command line shall run as one standalone executable with the manual embedded
+  description: >
+    The command line shall run as one standalone executable with the manual embedded
+  rationale: >
+    Consumers outside the toolchain (folio and design-render look for
+    `plantuml-render` on the PATH; a documentation site's CI; a colleague
+    without Node) get one file per platform: `bun build --compile` over
+    scripts/standalone.mjs embeds the grammar wasm, the web-tree-sitter
+    runtime and the manual, cross-compiling from any host
+    (scripts/build_binaries.sh, npm run binaries; the tag job builds
+    linux/windows/macOS and keeps them as artifacts and in the generic
+    registry, and they are attached to the GitHub release). The CLI
+    grows `render <file|dir> -o <out|dir>` (mirroring the source tree),
+    `docs [topic]` for the manual (diagrams, embedding, navigation,
+    style, contract — doc/manual/*.md), `--help` with examples and
+    `--version` from a generated constant; the former positional, `--ir`
+    and `serve` forms keep working. Measured in the spike: the Windows
+    executable run from cmd.exe renders a folder with `!includesub`
+    byte-identical to the Linux one. Distribution decision: GitHub
+    releases, no npm publication.
+  status: DRAFT
+  asil: QM
+  parent_ids:
+    - SREQ-00001-1
+  tags:
+    - cli
+    - distribution

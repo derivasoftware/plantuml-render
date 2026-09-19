@@ -1,0 +1,10 @@
+verification:
+  id: VER-00014-1
+  req_id: REQ-00014-1
+  title: CLI tests cover the subcommands, the embedded manual, the version and the batch mode; the binaries by release review
+  description: >
+    CLI tests cover the subcommands, the embedded manual, the version and the batch mode; the binaries by release review
+  method: test
+  test_ids:
+    - tests/manual.test.ts::command line
+  status: DRAFT

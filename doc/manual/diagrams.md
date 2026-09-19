@@ -1,0 +1,40 @@
+# What plantuml-render draws
+
+plantuml-render turns PlantUML text into deterministic SVG without Java. It
+parses with the deriva tree-sitter grammar and draws a standard-driven subset;
+whatever it does not model is kept as raw text and drawn as nothing, never as
+an error.
+
+## Class diagrams (the core)
+
+- `class`, `abstract class`, `interface`, `enum`, plus `annotation`,
+  `exception`, `struct`, `record`, `protocol`. Aliases (`class "X" as Y`).
+- Members with visibility `+ - # ~`, `{static}` (underlined) and
+  `{abstract}` (italic). Attributes `name : type`, methods
+  `name(a: T, b: U) : R`. Types and parameters are syntax-coloured.
+- Relations: `--|>` inheritance, `..|>` realization, `*--` composition,
+  `o--` aggregation, `..>` dependency, `-->` association; labels after `:`;
+  cardinalities in quotes are accepted.
+- `namespace` and `package` blocks become containers; dotted names nest
+  (`namespace a.b.c`).
+- `note left|right|top|bottom of X : text` with `\n` line breaks.
+- `class f <<function>>` marks a module-level function (badge `f`).
+- `!include file` and `!includesub file!NAME` are expanded before parsing.
+
+## Sequence diagrams
+
+Participants of every kind (`actor` is drawn as a stick figure), `->` and
+`-->` messages with labels, self messages, `alt/else`, `loop`, `opt`, `par`
+frames with their condition, `== dividers ==`, `note over|left|right`.
+
+## Not drawn (kept lossless)
+
+Activity, deployment, component, state, mindmap, gantt. Use `plantuml.jar`
+for those; the SVG says so instead of leaving a blank.
+
+## Recommendations for readable output
+
+- One diagram per file; aggregates through `!includesub` of leaf files.
+- Declare relations. A box list without edges is a list, not a diagram.
+- Keep member lines in the canonical plantuml-fmt style; that is what the
+  syntax colouring understands.

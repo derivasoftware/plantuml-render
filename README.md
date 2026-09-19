@@ -20,14 +20,32 @@ zero failures, all deterministic.
 
 ## Install
 
-Generated from the manifest and the latest tag:
+**Standalone executable (recommended).** One file per platform, nothing
+else to install — no Node, no Java, no compiler. Download it from the
+[GitHub release](https://github.com/derivasoftware/plantuml-render/releases),
+put it on your `PATH` as `plantuml-render`, and:
 
-<!-- folio: install -->
 ```bash
-git clone https://github.com/derivasoftware/plantuml-render
-cd plantuml-render && npm install && npm install -g .
+plantuml-render --help                 # usage and examples
+plantuml-render docs                   # the manual: diagrams, embedding, navigation, style, contract
+plantuml-render design/CL_Order.puml -o CL_Order.svg
+plantuml-render render design/ -o site/svg/
 ```
-<!-- /folio -->
+
+Binaries: `linux-x64`, `linux-arm64`, `windows-x64`, `darwin-arm64`,
+`darwin-x64`. They embed the grammar (wasm), the parser runtime and the
+manual, so `plantuml-render docs` always describes the version you run.
+
+**npm package (for JavaScript consumers).** The release also carries the
+package tarball; it needs Node ≥ 18 and no native toolchain, since the
+frontend parses through the wasm grammar in every host:
+
+```bash
+npm install -g <plantuml-render-x.y.z.tgz from the release>
+```
+
+As a library, `import { renderSvg, pumlToIr } from "plantuml-render"` on
+node and `plantuml-render/browser` in a web page.
 
 ## Use cases
 

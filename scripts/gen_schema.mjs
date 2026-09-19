@@ -49,3 +49,11 @@ export default validate;
 `,
 );
 console.log("schema.gen.ts + validate.gen.js written");
+
+// version.gen.ts: the package version as a constant, so `--version` needs no
+// package.json at runtime (the standalone binary has none).
+const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
+writeFileSync(
+  new URL("../src/render/version.gen.ts", import.meta.url),
+  "// GENERATED from package.json — do not edit.\n" + `export const VERSION = ${JSON.stringify(pkg.version)};\n`,
+);
