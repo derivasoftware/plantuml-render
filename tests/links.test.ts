@@ -23,21 +23,21 @@ const ir = () => ({
 });
 
 describe("links", () => {
-  it("accepts href, title and refs on nodes and edges and rejects malformed refs", () => {
+  it("accepts href, title and refs on nodes and edges and rejects malformed refs", async () => {
     expect(validateIr(ir())).toBeTruthy();
     expect(() => validateIr({ ir: 1, nodes: [{ id: "a", kind: "box", label: "A", refs: { "Bad Key": "x" } }], edges: [] })).toThrow(IrValidationError);
     expect(() => validateIr({ ir: 1, nodes: [{ id: "a", kind: "box", label: "A", href: "" }], edges: [] })).toThrow(IrValidationError);
   });
 
-  it("wraps linked elements in <a href>, adds the tooltip and the data-ref attributes", () => {
-    const svg = renderSvg(ir());
+  it("wraps linked elements in <a href>, adds the tooltip and the data-ref attributes", async () => {
+    const svg = await renderSvg(ir());
     expect(svg).toMatch(/<a href="#cls-ns-Order" class="pr-link"><g id="[^"]+" data-id="ns.Order"[^>]*data-ref-reqs="REQ-1 REQ-2" data-ref-code="src\/ns\/order.py"><title>The order<\/title>/);
     expect(svg).toMatch(/<a href="#rel-1" class="pr-link"><path class="pr-edge pr-edge-composition"[^>]*data-ref-kind="composition"><title>owns<\/title><\/path><\/a>/);
     expect(svg).not.toMatch(/data-id="ns.Line"[^>]*data-ref/);
-    expect(renderSvg(ir())).toBe(renderSvg(ir()));
+    expect(await renderSvg(ir())).toBe(await renderSvg(ir()));
   });
 
-  it("links sequence participants and messages the same way", () => {
+  it("links sequence participants and messages the same way", async () => {
     const svg = renderSequenceSvg({
       ir: 1,
       title: "SEQ_L",
@@ -51,7 +51,7 @@ describe("links", () => {
     expect(svg).toMatch(/<a href="#m" class="pr-link"><path class="pr-msg"[^>]*><title>call<\/title><\/path><\/a>/);
   });
 
-  it("applies a map by id, by unique short name, and a template to the rest", () => {
+  it("applies a map by id, by unique short name, and a template to the rest", async () => {
     const base = { ir: 1 as const, nodes: [
       { id: "a.X", kind: "box" as const, label: "X" },
       { id: "a.Y", kind: "box" as const, label: "Y", href: "#kept" },

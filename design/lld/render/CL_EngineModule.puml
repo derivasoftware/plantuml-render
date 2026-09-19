@@ -1,13 +1,14 @@
 @startuml CL_EngineModule
 ' requirement REQ-00002-1
 ' requirement REQ-00006-1
+' requirement REQ-00020-1
 ' requirement REQ-00016-1
 
 !startsub EngineModule
 
 namespace render.engine {
   class renderSvg <<function>> {
-    + renderSvg(input: unknown, opts: RenderOptions) : string
+    + renderSvg(input: unknown, opts: RenderOptions) : Promise<string>
   }
 }
 

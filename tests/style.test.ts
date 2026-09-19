@@ -7,7 +7,7 @@ import { BADGE, memberMarkup } from "../src/render/shared.js";
 const box = (id: string, extra: Record<string, unknown> = {}) => ({ id, kind: "box" as const, label: id.split(".").pop()!, ...extra });
 
 describe("visual style", () => {
-  it("tokenises members: visibility, static and abstract, name, params, types", () => {
+  it("tokenises members: visibility, static and abstract, name, params, types", async () => {
     const m = memberMarkup("+ {static} {abstract} load(path: str, opts: dict[str, int]) : Repo | None");
     expect(m.visibility).toBe("public");
     expect(m.inner).toContain('class="pr-name pr-static pr-abstract-member">load<');
@@ -24,8 +24,8 @@ describe("visual style", () => {
     expect(memberMarkup("+ <X&Y> : T").inner).toContain("&lt;X&amp;Y&gt;");
   });
 
-  it("draws visibility dots, a header band and a classifier badge per kind", () => {
-    const svg = renderSvg({
+  it("draws visibility dots, a header band and a classifier badge per kind", async () => {
+    const svg = await renderSvg({
       ir: 1,
       title: "CL_Kinds",
       nodes: [
@@ -49,8 +49,8 @@ describe("visual style", () => {
     expect(BADGE.interface).toBe("I");
   });
 
-  it("breaks note lines on the PlantUML \\\\n escape and folds the corner", () => {
-    const svg = renderSvg({
+  it("breaks note lines on the PlantUML \\\\n escape and folds the corner", async () => {
+    const svg = await renderSvg({
       ir: 1,
       title: "CL_Note",
       nodes: [box("A"), { id: "n1", kind: "note", label: "first\\nsecond" }],
@@ -62,8 +62,8 @@ describe("visual style", () => {
     expect(svg.match(/<g id="[^"]+" data-id="n1" class="pr-note"><path d="M/)).toBeTruthy();
   });
 
-  it("paints containers parent-first and edge labels above the leaves", () => {
-    const svg = renderSvg({
+  it("paints containers parent-first and edge labels above the leaves", async () => {
+    const svg = await renderSvg({
       ir: 1,
       title: "CL_Order",
       nodes: [
@@ -82,7 +82,7 @@ describe("visual style", () => {
     expect(svg).toContain("paint-order: stroke");
   });
 
-  it("styles the sequence: actor glyph, frame tab with condition, note line breaks", () => {
+  it("styles the sequence: actor glyph, frame tab with condition, note line breaks", async () => {
     const svg = renderSequenceSvg({
       ir: 1,
       title: "SEQ_Style",
@@ -107,8 +107,8 @@ describe("visual style", () => {
     expect(svg).toContain(">two</text>");
   });
 
-  it("declares the palette as overridable tokens in light and dark", () => {
-    const svg = renderSvg({ ir: 1, title: "CL_T", nodes: [box("A")], edges: [] });
+  it("declares the palette as overridable tokens in light and dark", async () => {
+    const svg = await renderSvg({ ir: 1, title: "CL_T", nodes: [box("A")], edges: [] });
     for (const token of ["--pr-type", "--pr-vis-public", "--pr-head-interface", "--pr-badge-enum", "--pr-note-stroke", "--pr-edge"]) {
       expect(svg.split(token).length).toBeGreaterThanOrEqual(3); // light block + two dark blocks
     }

@@ -33,8 +33,8 @@ const rules = (svg: string) =>
     .map((r) => r.slice(0, r.indexOf("{")).trim());
 
 describe("embedding", () => {
-  it("scopes every style rule under .pr-diagram and never targets the host root", () => {
-    for (const svg of [renderSvg(classIr("CL_A")), renderSvg(seqIr)]) {
+  it("scopes every style rule under .pr-diagram and never targets the host root", async () => {
+    for (const svg of [await renderSvg(classIr("CL_A")), await renderSvg(seqIr)]) {
       const selectors = rules(svg);
       expect(selectors.length).toBeGreaterThan(5);
       for (const sel of selectors) {
@@ -44,9 +44,9 @@ describe("embedding", () => {
     }
   });
 
-  it("keeps ids unique across diagrams while the logical id stays in data-id", () => {
-    const a = renderSvg(classIr("CL_A"));
-    const b = renderSvg(classIr("CL_B"));
+  it("keeps ids unique across diagrams while the logical id stays in data-id", async () => {
+    const a = await renderSvg(classIr("CL_A"));
+    const b = await renderSvg(classIr("CL_B"));
     const shared = ids(a).filter((id) => ids(b).includes(id));
     expect(shared).toEqual([]);
     expect(new Set(ids(a)).size).toBe(ids(a).length);
@@ -55,29 +55,29 @@ describe("embedding", () => {
     expect(a).toMatch(new RegExp(`marker-end="url\\(#${idPrefix("CL_A")}tri\\)"`));
   });
 
-  it("derives the prefix deterministically from the title", () => {
+  it("derives the prefix deterministically from the title", async () => {
     expect(idPrefix("CL_A")).toBe(idPrefix("CL_A"));
     expect(idPrefix("CL_A")).not.toBe(idPrefix("CL_B"));
     expect(idPrefix(undefined)).toMatch(/^pr[0-9a-z]+-$/);
   });
 
-  it("declares light and dark tokens on the diagram itself", () => {
-    const svg = renderSvg(classIr("CL_A"));
+  it("declares light and dark tokens on the diagram itself", async () => {
+    const svg = await renderSvg(classIr("CL_A"));
     expect(svg).toContain("prefers-color-scheme: dark");
     expect(svg).toContain('[data-theme="dark"] .pr-diagram');
     expect(svg).toMatch(/\.pr-diagram \{[^}]*--pr-text:/);
   });
 
-  it("sizes the root naturally and fluidly", () => {
-    const svg = renderSvg(classIr("CL_A"));
+  it("sizes the root naturally and fluidly", async () => {
+    const svg = await renderSvg(classIr("CL_A"));
     const root = svg.match(/<svg [^>]+>/)![0];
     expect(root).toMatch(/viewBox="-?\d+ -?\d+ \d+ \d+"/);
     expect(root).toMatch(/ width="\d+" height="\d+"/);
     expect(root).toContain('style="max-width:100%;height:auto"');
   });
 
-  it("frames the content with the same margin on every side", () => {
-    const svg = renderSvg(classIr("CL_A"));
+  it("frames the content with the same margin on every side", async () => {
+    const svg = await renderSvg(classIr("CL_A"));
     const [, vx, vy, vw, vh] = svg.match(/viewBox="(-?\d+) (-?\d+) (\d+) (\d+)"/)!.map(Number);
     const boxes = [...svg.matchAll(/<rect x="(-?\d+)" y="(-?\d+)" width="(\d+)" height="(\d+)"/g)].map((m) => m.slice(1).map(Number));
     const left = Math.min(...boxes.map((b) => b[0])) - vx;

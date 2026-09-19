@@ -52,7 +52,7 @@ export async function renderFile(
   if (state.members === false) ir = stripSections(ir);
   if (state.namespaces === false) ir = flattenContainers(ir);
   if (state.notes === false) ir = hideNotes(ir);
-  return renderSvg(ir, { positions: state.positions });
+  return await renderSvg(ir, { positions: state.positions });
 }
 
 export interface Serving {

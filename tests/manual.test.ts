@@ -55,7 +55,9 @@ describe("command line", () => {
 
   it("parses through the wasm grammar: no native binding in the dependencies", () => {
     const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
-    expect(Object.keys(pkg.dependencies)).toEqual(["web-tree-sitter"]);
+    expect(Object.keys(pkg.dependencies)).toContain("web-tree-sitter");
+    expect(Object.keys(pkg.dependencies)).not.toContain("tree-sitter");
+    expect(Object.keys(pkg.dependencies)).not.toContain("tree-sitter-plantuml");
     expect(pkg.config.grammar).toMatch(/tree-sitter-plantuml\.git#v\d+\.\d+\.\d+$/);
     expect(existsSync(new URL("../grammar/tree-sitter-plantuml.wasm", import.meta.url))).toBe(true);
   });

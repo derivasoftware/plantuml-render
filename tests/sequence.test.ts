@@ -44,11 +44,11 @@ describe("sequence IR vocabulary", () => {
     ],
   };
 
-  it("validates lifelines, frames, dividers, anchored notes and messages", () => {
+  it("validates lifelines, frames, dividers, anchored notes and messages", async () => {
     expect(() => validateIr(IR)).not.toThrow();
   });
 
-  it("rejects a message without an order", () => {
+  it("rejects a message without an order", async () => {
     const bad = JSON.parse(JSON.stringify(IR));
     delete bad.edges[0].order;
     expect(() => validateIr(bad)).toThrow(/order/);
@@ -102,8 +102,8 @@ describe("frontend sequence mapping", () => {
 describe("sequence engine layout", () => {
   it("renders deterministically with lifelines, rows and frames", async () => {
     const ir = await pumlToIr(SRC);
-    const a = renderSvg(ir);
-    const b = renderSvg(ir);
+    const a = await renderSvg(ir);
+    const b = await renderSvg(ir);
     expect(a).toBe(b);
     expect(a).toContain('class="pr-box pr-lifeline-head');
     expect(a).toContain("pr-msg-dashed");
@@ -114,7 +114,7 @@ describe("sequence engine layout", () => {
 
   it("orders message rows top to bottom and keeps lifeline x stable", async () => {
     const ir = await pumlToIr(SRC);
-    const svg = renderSvg(ir);
+    const svg = await renderSvg(ir);
     const ys = [...svg.matchAll(/data-order="(\d+)"[^>]*d="M(\d+) (\d+)/g)].map(
       (m) => [Number(m[1]), Number(m[3])] as const,
     );
@@ -126,7 +126,7 @@ describe("sequence engine layout", () => {
 
   it("draws a self-message as a loop with its label", async () => {
     const ir = await pumlToIr("@startuml\nparticipant A\nA -> A : again\n@enduml\n");
-    const svg = renderSvg(ir);
+    const svg = await renderSvg(ir);
     expect(svg).toContain("again");
     expect(svg).toContain("pr-msg-self");
   });

@@ -1,6 +1,6 @@
 {
   "name": "plantuml-render",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "description": "Deterministic SVG renderer: render-IR engine plus a PlantUML frontend built on tree-sitter-plantuml",
   "license": "MIT",
   "author": "dcoello-dev",
@@ -33,6 +33,7 @@
     "binaries": "bash scripts/build_binaries.sh"
   },
   "dependencies": {
+    "elkjs": "^0.12.0",
     "web-tree-sitter": "^0.26.12"
   },
   "devDependencies": {

@@ -22,12 +22,12 @@ function rectOf(svg: string, id: string): { x: number; y: number; w: number; h: 
 }
 
 describe("interactive rendering", () => {
-  it("edges carry endpoint data attributes", () => {
-    expect(renderSvg(IR)).toContain('data-from="ns.A" data-to="ns.B"');
+  it("edges carry endpoint data attributes", async () => {
+    expect(await renderSvg(IR)).toContain('data-from="ns.A" data-to="ns.B"');
   });
 
-  it("leaf deltas move the node and its container adapts around it", () => {
-    const svg = renderSvg(IR, { positions: { "ns.A": { dx: 300, dy: 200 } } });
+  it("leaf deltas move the node and its container adapts around it", async () => {
+    const svg = await renderSvg(IR, { positions: { "ns.A": { dx: 300, dy: 200 } } });
     const a = rectOf(svg, "ns.A");
     const ns = rectOf(svg, "ns");
     expect(a.x).toBeGreaterThan(250);
@@ -35,19 +35,21 @@ describe("interactive rendering", () => {
     expect(ns.y + ns.h).toBeGreaterThanOrEqual(a.y + a.h);
   });
 
-  it("container deltas cascade to the whole subtree", () => {
-    const base = rectOf(renderSvg(IR), "ns.B");
-    const svg = renderSvg(IR, { positions: { ns: { dx: 100, dy: 50 } } });
+  it("container deltas cascade to the whole subtree", async () => {
+    const base = rectOf(await renderSvg(IR), "ns.B");
+    const svg = await renderSvg(IR, { positions: { ns: { dx: 100, dy: 50 } } });
     const moved = rectOf(svg, "ns.B");
     expect(moved.x - base.x).toBe(100);
     expect(moved.y - base.y).toBe(50);
   });
 
-  it("negative deltas stay inside the covering viewBox", () => {
-    const svg = renderSvg(IR, { positions: { "ns.A": { dx: -500, dy: -400 } } });
+  it("negative deltas stay inside the covering viewBox", async () => {
+    const svg = await renderSvg(IR, { positions: { "ns.A": { dx: -500, dy: -400 } } });
     const m = svg.match(/viewBox="(-?\d+) (-?\d+) /);
-    expect(Number(m![1])).toBeLessThanOrEqual(-500 + 10);
-    expect(Number(m![2])).toBeLessThanOrEqual(-400 + 22);
+    const moved = rectOf(svg, "ns.A");
+    expect(moved.x).toBeLessThan(-400);
+    expect(Number(m![1])).toBeLessThanOrEqual(moved.x);
+    expect(Number(m![2])).toBeLessThanOrEqual(moved.y);
   });
 });
 
