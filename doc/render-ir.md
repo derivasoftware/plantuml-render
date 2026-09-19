@@ -49,6 +49,16 @@ consumer, the engine. Anything that emits valid IR renders identically.
 - `divider` nodes (`== phase ==`) and anchored notes (`at` + `anchor`,
   position hint in `classifier`) each claim one row.
 
+### Links (additive, still contract v1)
+
+Nodes and edges may carry `href` (a URL or a fragment such as
+`#cls-ns-Order`), `title` (a tooltip) and `refs` (an object of named
+references — `reqs`, `code`, `tests`, `diagrams` … — each a string or a
+list). The engine wraps a linked element in `<a href>`, emits the tooltip
+as `<title>` and every reference as `data-ref-<key>` (lists join with
+spaces). `applyLinks` decorates a document from a map or a template; the
+CLI exposes it as `--links` and `--link-template`.
+
 ## Validation
 
 The engine validates strictly on entry and rejects invalid IR outright

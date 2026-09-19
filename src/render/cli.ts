@@ -9,6 +9,9 @@
  *   plantuml-render docs [topic]                    the manual, embedded
  *   plantuml-render --version | --help
  *
+ * `--links map.json` and `--link-template <tpl>` decorate entities with
+ * links (REQ-00018-1) in every render form.
+ *
  * `main` takes its manual and version by injection so the standalone
  * executable (scripts/standalone.mjs) can hand it the embedded copies; the
  * npm install reads them from the package tree.
@@ -19,6 +22,7 @@ import { basename, dirname, extname, join, relative, resolve } from "node:path";
 
 import { renderSvg } from "./engine.js";
 import { pumlToIr } from "./frontend.js";
+import { applyLinks, type LinkSpec } from "./links.js";
 import { expandIncludes, type IncludeLoader } from "./preprocess.js";
 import { VERSION } from "./version.gen.js";
 
@@ -62,7 +66,9 @@ USAGE
   plantuml-render --version | --help
 
 OPTIONS
-  -o, --out <path>   output file, or output directory in batch mode (the source tree is mirrored)
+  -o, --out <path>          output file, or output directory in batch mode (the source tree is mirrored)
+  --links <map.json>        link entities: { "<id or unique name>": "<url>" | { href, title, refs } }
+  --link-template <tpl>     href for every entity without one; {id} and {name} expand
 
 OUTPUT
   Inline-ready SVG: styles scoped under .pr-diagram, ids prefixed per diagram, the entity id in
@@ -98,11 +104,11 @@ function walk(dir: string, acc: string[] = []): string[] {
   return acc;
 }
 
-async function renderFile(file: string): Promise<string> {
+async function renderFile(file: string, links: LinkSpec): Promise<string> {
   const raw = readFileSync(file, "utf8");
   const ir = await pumlToIr(await expandIncludes(raw, dirname(resolve(file)), fsLoader));
   ir.title ??= basename(file, extname(file));
-  return renderSvg(ir);
+  return renderSvg(applyLinks(ir, links));
 }
 
 export async function main(argv: string[], deps: CliDeps = {}): Promise<number> {
@@ -166,6 +172,11 @@ export async function main(argv: string[], deps: CliDeps = {}): Promise<number> 
 
   const irMode = takeFlag("--ir");
   const target = takeValue("-o", "--out");
+  const linksFile = takeValue("--links");
+  const links: LinkSpec = {
+    map: linksFile ? (JSON.parse(readFileSync(linksFile, "utf8")) as LinkSpec["map"]) : undefined,
+    template: takeValue("--link-template"),
+  };
   if (args[0] === "render") args.shift();
   const [input] = args;
   if (!input) {
@@ -177,7 +188,7 @@ export async function main(argv: string[], deps: CliDeps = {}): Promise<number> 
     return 2;
   }
   if (irMode) {
-    const svg = renderSvg(JSON.parse(readFileSync(input, "utf8")));
+    const svg = renderSvg(applyLinks(JSON.parse(readFileSync(input, "utf8")), links));
     target ? writeFileSync(target, svg) : out(svg);
     return 0;
   }
@@ -192,7 +203,7 @@ export async function main(argv: string[], deps: CliDeps = {}): Promise<number> 
       const dest = join(target, relative(input, file)).replace(PUML, ".svg");
       try {
         mkdirSync(dirname(dest), { recursive: true });
-        writeFileSync(dest, await renderFile(file));
+        writeFileSync(dest, await renderFile(file, links));
       } catch (error) {
         failed += 1;
         err(`${file}: ${(error as Error).message}\n`);
@@ -201,7 +212,7 @@ export async function main(argv: string[], deps: CliDeps = {}): Promise<number> 
     err(`${files.length - failed} of ${files.length} diagrams → ${target}\n`);
     return failed ? 1 : 0;
   }
-  const svg = await renderFile(input);
+  const svg = await renderFile(input, links);
   target ? writeFileSync(target, svg) : out(svg);
   return 0;
 }

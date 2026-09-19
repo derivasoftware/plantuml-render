@@ -166,3 +166,21 @@ export const BADGE: Record<string, string> = {
   annotation: "@",
   exception: "X",
 };
+
+/** The `data-ref-*` attributes of an element (REQ-00017-1). */
+export function refAttrs(refs: Record<string, string | string[]> | undefined): string {
+  if (!refs) return "";
+  return Object.entries(refs)
+    .map(([key, value]) => ` data-ref-${key}="${esc(Array.isArray(value) ? value.join(" ") : value)}"`)
+    .join("");
+}
+
+/** Wrap an element's markup in `<a href>` when it carries a link. */
+export function linked(href: string | undefined, markup: string): string {
+  return href ? `<a href="${esc(href)}" class="pr-link">${markup}</a>` : markup;
+}
+
+/** The `<title>` child (tooltip) of a linked element, if any. */
+export function tooltip(title: string | undefined): string {
+  return title ? `<title>${esc(title)}</title>` : "";
+}

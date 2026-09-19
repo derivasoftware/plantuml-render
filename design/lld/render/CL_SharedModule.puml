@@ -2,6 +2,7 @@
 ' requirement REQ-00002-1
 ' requirement REQ-00012-1
 ' requirement REQ-00015-1
+' requirement REQ-00017-1
 
 !startsub SharedModule
 
@@ -14,6 +15,15 @@ namespace render.shared {
   }
   class memberMarkup <<function>> {
     + memberMarkup(line: string) : { visibility: string | undefined; inner: string }
+  }
+  class refAttrs <<function>> {
+    + refAttrs(refs: Record<string, string | string[]> | undefined) : string
+  }
+  class linked <<function>> {
+    + linked(href: string | undefined, markup: string) : string
+  }
+  class tooltip <<function>> {
+    + tooltip(title: string | undefined) : string
   }
   class svgRoot <<function>> {
     + svgRoot(minX: number, minY: number, width: number, height: number) : string

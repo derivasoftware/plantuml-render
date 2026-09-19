@@ -1,0 +1,10 @@
+verification:
+  id: VER-00017-1
+  req_id: REQ-00017-1
+  title: Link tests cover href, title and refs in the IR and their SVG emission
+  description: >
+    Link tests cover href, title and refs in the IR and their SVG emission
+  method: test
+  test_ids:
+    - tests/links.test.ts::links
+  status: DRAFT

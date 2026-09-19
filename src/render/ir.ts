@@ -26,7 +26,18 @@ export type EdgeKind =
   | "attachment"
   | "message";
 
-export interface IrNode {
+/** Navigation hooks a producer may attach to a node or an edge. */
+export interface IrLinks {
+  /** Link target; the engine wraps the element in `<a href>`. */
+  href?: string;
+  /** Tooltip; emitted as the element's `<title>`. */
+  title?: string;
+  /** References for a host page (reqs, code, tests, diagrams …), emitted
+   * as `data-ref-<key>` attributes; a list joins with spaces. */
+  refs?: Record<string, string | string[]>;
+}
+
+export interface IrNode extends IrLinks {
   id: string;
   kind: NodeKind;
   label: string;
@@ -45,7 +56,7 @@ export interface IrNode {
   dividers?: { at: number; label: string }[];
 }
 
-export interface IrEdge {
+export interface IrEdge extends IrLinks {
   from: string;
   to: string;
   kind: EdgeKind;

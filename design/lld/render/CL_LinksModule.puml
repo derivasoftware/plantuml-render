@@ -1,0 +1,14 @@
+@startuml CL_LinksModule
+' requirement REQ-00018-1
+
+!startsub LinksModule
+
+namespace render.links {
+  class applyLinks <<function>> {
+    + applyLinks(ir: RenderIr, spec: LinkSpec) : RenderIr
+  }
+}
+
+!endsub
+
+@enduml

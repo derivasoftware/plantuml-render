@@ -10,6 +10,8 @@
 ' requirement REQ-00009-1
 ' requirement REQ-00010-1
 ' requirement REQ-00011-1
+' requirement REQ-00017-1
+' requirement REQ-00018-1
 
 !startsub IrModule
 !includesub ./CL_IrModule.puml!IrModule
@@ -33,6 +35,10 @@
 
 !startsub FiltersModule
 !includesub ./CL_FiltersModule.puml!FiltersModule
+!endsub
+
+!startsub LinksModule
+!includesub ./CL_LinksModule.puml!LinksModule
 !endsub
 
 !startsub FrontendModule
