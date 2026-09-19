@@ -82,6 +82,11 @@ the diagram follows `prefers-color-scheme` and a host can force one with
 `data-theme="dark"` or `data-theme="light"` on the root element. Override
 any token from the host, e.g. `.pr-diagram { --pr-text: #222 }`.
 
+Members follow UML notation with syntax colouring: visibility as a
+coloured dot, `{static}` underlined, `{abstract}` italic, types and
+parameters in their own colours; boxes carry a header band and a
+classifier badge. See `plantuml-render docs style` for the token list.
+
 ## Scope
 
 The family covers a standard-driven subset of PlantUML, never the whole

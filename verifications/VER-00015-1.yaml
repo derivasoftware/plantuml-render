@@ -1,0 +1,10 @@
+verification:
+  id: VER-00015-1
+  req_id: REQ-00015-1
+  title: Style tests cover member tokenisation, visibility dots, static and abstract notation
+  description: >
+    Style tests cover member tokenisation, visibility dots, static and abstract notation
+  method: test
+  test_ids:
+    - tests/style.test.ts::visual style
+  status: DRAFT

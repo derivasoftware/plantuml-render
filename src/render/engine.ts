@@ -14,7 +14,7 @@
 
 import { type IrEdge, type IrNode, type RenderIr, validateIr } from "./ir.js";
 import { renderSequenceSvg } from "./sequence.js";
-import { CHAR_W, LINE_H, PAD, STYLE, esc, idPrefix, svgRoot } from "./shared.js";
+import { BADGE, CHAR_W, LINE_H, PAD, STYLE, esc, idPrefix, memberMarkup, svgRoot } from "./shared.js";
 
 const SECTION_GAP = 4;
 const GAP_X = 48;
@@ -105,12 +105,31 @@ function adaptContainers(placed: Placed[]): void {
 
 // ── Layout ───────────────────────────────────────────────────────────────────
 
+const BADGE_W = 20; // badge circle plus the gap before the name
+const DOT_W = 12; // visibility dot plus the gap before the member
+const NOTE_FOLD = 9; // folded corner of a note
+
+/** A note's lines: the PlantUML `\\n` escape and real newlines both break. */
+function noteLines(node: IrNode): string[] {
+  return node.label.split(/\\n|\n/);
+}
+
 function nodeSize(node: IrNode): { w: number; h: number } {
+  if (node.kind === "note") {
+    const lines = noteLines(node);
+    return {
+      w: Math.max(1, ...lines.map((l) => l.length)) * CHAR_W + 2 * PAD + NOTE_FOLD,
+      h: 2 * PAD + lines.length * LINE_H,
+    };
+  }
   const headerLines = [headerText(node)];
   if (node.stereotype) headerLines.unshift(`«${node.stereotype}»`);
   const sections = node.sections ?? [];
-  const allLines = [...headerLines, ...sections.flat()];
-  const textW = Math.max(1, ...allLines.map((l) => l.length)) * CHAR_W;
+  const textW = Math.max(
+    headerText(node).length * CHAR_W + (node.kind === "box" ? BADGE_W : 0),
+    (node.stereotype ?? "").length * CHAR_W + 16,
+    ...sections.flat().map((l) => l.length * CHAR_W + DOT_W),
+  );
   const w = textW + 2 * PAD;
   const sectionLines = sections.reduce((n, s) => n + s.length, 0);
   const h =
@@ -263,39 +282,62 @@ function anchor(p: Placed, other: Placed): { x: number; y: number } {
   return other.x >= cx ? { x: p.x + p.w, y: cy } : { x: p.x, y: cy };
 }
 
+function classifierOf(node: IrNode): string | undefined {
+  return node.classifier ?? (node.stereotype === "function" ? "function" : undefined);
+}
+
 function emitNode(p: Placed, px: string): string {
   const node = p.node;
+  const classifier = classifierOf(node);
   const classes = [
     `pr-${node.kind}`,
-    node.classifier ? `pr-classifier-${node.classifier}` : "",
+    classifier ? `pr-classifier-${classifier}` : "",
+    node.stereotype ? `pr-stereotype-${node.stereotype.replace(/\W+/g, "-")}` : "",
     node.abstract ? "pr-abstract" : "",
   ]
     .filter(Boolean)
     .join(" ");
-  const parts: string[] = [
-    `<g id="${px}${esc(node.id)}" data-id="${esc(node.id)}" class="${classes}">`,
-    `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}"/>`,
-  ];
-  let ty = p.y + PAD + 12;
+  const parts: string[] = [`<g id="${px}${esc(node.id)}" data-id="${esc(node.id)}" class="${classes}">`];
   if (node.kind === "container") {
-    parts.push(
-      `<text class="pr-header" x="${p.x + 8}" y="${p.y + 15}">${esc(node.label)}</text>`,
+    parts.push(`<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="6"/>`);
+    parts.push(`<text class="pr-header" x="${p.x + 10}" y="${p.y + 15}">${esc(node.label)}</text>`);
+  } else if (node.kind === "note") {
+    const f = NOTE_FOLD;
+    parts.push(`<path d="M${p.x},${p.y} H${p.x + p.w - f} L${p.x + p.w},${p.y + f} V${p.y + p.h} H${p.x} Z"/>`);
+    parts.push(`<path d="M${p.x + p.w - f},${p.y} V${p.y + f} H${p.x + p.w}"/>`);
+    noteLines(node).forEach((line, i) =>
+      parts.push(`<text x="${p.x + PAD}" y="${p.y + PAD + 12 + i * LINE_H}">${esc(line)}</text>`),
     );
   } else {
+    parts.push(`<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="4"/>`);
+    let ty = p.y + PAD + 12;
+    const sections = node.sections ?? [];
+    // header band with rounded top corners, painted under the header text
+    const r = 4;
+    const bandH = sections.length ? PAD + 12 + (node.stereotype ? LINE_H : 0) + SECTION_GAP + 6 : p.h;
+    parts.push(
+      `<path class="pr-head" d="M${p.x + r},${p.y} H${p.x + p.w - r} A${r},${r} 0 0 1 ${p.x + p.w},${p.y + r} V${p.y + bandH} H${p.x} V${p.y + r} A${r},${r} 0 0 1 ${p.x + r},${p.y} Z"/>`,
+    );
     if (node.stereotype) {
-      parts.push(`<text x="${p.x + PAD}" y="${ty}">${esc(`«${node.stereotype}»`)}</text>`);
+      parts.push(`<text class="pr-stereo" x="${p.x + PAD}" y="${ty - 2}">${esc(`«${node.stereotype}»`)}</text>`);
       ty += LINE_H;
     }
-    parts.push(
-      `<text class="pr-header" x="${p.x + PAD}" y="${ty}">${esc(node.label)}</text>`,
-    );
+    const letter =
+      node.abstract && !classifier ? "A" : (BADGE[classifier ?? "class"] ?? (classifier ?? "C")[0].toUpperCase());
+    parts.push(`<circle class="pr-badge" cx="${p.x + PAD + 7}" cy="${ty - 4}" r="7"/>`);
+    parts.push(`<text class="pr-badge-text" x="${p.x + PAD + 7}" y="${ty - 0.5}" text-anchor="middle">${esc(letter)}</text>`);
+    parts.push(`<text class="pr-header" x="${p.x + PAD + BADGE_W}" y="${ty}">${esc(node.label)}</text>`);
     ty += LINE_H;
-    for (const section of node.sections ?? []) {
+    for (const section of sections) {
       const sepY = ty - LINE_H + SECTION_GAP + 6;
       parts.push(`<line class="pr-sep" x1="${p.x}" y1="${sepY}" x2="${p.x + p.w}" y2="${sepY}"/>`);
       ty += SECTION_GAP;
       for (const line of section) {
-        parts.push(`<text x="${p.x + PAD}" y="${ty}">${esc(line)}</text>`);
+        const { visibility, inner } = memberMarkup(line);
+        if (visibility) {
+          parts.push(`<circle class="pr-vis pr-vis-${visibility}" cx="${p.x + PAD + 4}" cy="${ty - 4}" r="3.5"/>`);
+        }
+        parts.push(`<text x="${p.x + PAD + (visibility ? DOT_W : 0)}" y="${ty}">${inner}</text>`);
         ty += LINE_H;
       }
     }
@@ -304,21 +346,21 @@ function emitNode(p: Placed, px: string): string {
   return parts.join("");
 }
 
-function emitEdge(edge: IrEdge, byId: Map<string, Placed>, px: string): string {
+function emitEdge(edge: IrEdge, byId: Map<string, Placed>, px: string): { path: string; label: string } {
   const from = byId.get(edge.from);
   const to = byId.get(edge.to);
-  if (!from || !to) return "";
+  if (!from || !to) return { path: "", label: "" };
   const a = anchor(from, to);
   const b = anchor(to, from);
   const marker = MARKER_BY_KIND[edge.kind];
   const markerAttr = marker ? ` marker-end="url(#${px}${marker})"` : "";
   const label = edge.label
-    ? `<text x="${Math.round((a.x + b.x) / 2) + 6}" y="${Math.round((a.y + b.y) / 2) - 4}">${esc(edge.label)}</text>`
+    ? `<text class="pr-edge-label" x="${Math.round((a.x + b.x) / 2) + 6}" y="${Math.round((a.y + b.y) / 2) - 4}">${esc(edge.label)}</text>`
     : "";
-  return (
-    `<path class="pr-edge pr-edge-${edge.kind}" data-from="${esc(edge.from)}" data-to="${esc(edge.to)}" d="M${a.x},${a.y} L${b.x},${b.y}"${markerAttr}/>` +
-    label
-  );
+  return {
+    path: `<path class="pr-edge pr-edge-${edge.kind}" data-from="${esc(edge.from)}" data-to="${esc(edge.to)}" d="M${a.x},${a.y} L${b.x},${b.y}"${markerAttr}/>`,
+    label,
+  };
 }
 
 function emit(ir: RenderIr, placed: Placed[]): string {
@@ -331,11 +373,19 @@ function emit(ir: RenderIr, placed: Placed[]): string {
   const containers = placed.filter((p) => p.node.kind === "container");
   const leaves = placed.filter((p) => p.node.kind !== "container");
   const px = idPrefix(ir.title);
+  // Paint order (REQ-00016-1): containers parent-first (placed lists a
+  // subtree before its frame, so reversing paints the outer frame under
+  // the inner ones), then edges, then leaves, then edge labels so no box
+  // covers a label.
+  const edges = ir.edges.map((e) => emitEdge(e, byId, px));
   const body = [
-    ...containers.map((p) => emitNode(p, px)),
-    ...ir.edges.map((e) => emitEdge(e, byId, px)),
+    ...[...containers].reverse().map((p) => emitNode(p, px)),
+    ...edges.map((e) => e.path),
     ...leaves.map((p) => emitNode(p, px)),
-  ].join("\n");
+    ...edges.map((e) => e.label),
+  ]
+    .filter(Boolean)
+    .join("\n");
   return [
     svgRoot(minX, minY, width, height),
     ir.title ? `<title>${esc(ir.title)}</title>` : "",

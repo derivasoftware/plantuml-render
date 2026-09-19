@@ -1,0 +1,23 @@
+requirement:
+  id: REQ-00015-1
+  title: The engine shall render class members in UML notation with syntax colouring
+  description: >
+    The engine shall render class members in UML notation with syntax colouring
+  rationale: >
+    Member lines arrive in the canonical plantuml-fmt style, so the engine
+    can tokenise them at emission without touching the render-IR
+    contract: visibility becomes a coloured dot (green public, red
+    private, amber protected, blue package), `{static}` is underlined and
+    `{abstract}` italic as UML prescribes, and the name, the parameters,
+    their types and the return or attribute type get their own `tspan`
+    classes (pr-name, pr-param, pr-type, pr-punct). Top-level commas split
+    parameters; generics and nested parentheses stay whole. Approved on
+    the spike PUML-40 bench by the owner; the glyph-and-cream 0.6.x look
+    read as a wireframe.
+  status: DRAFT
+  asil: QM
+  parent_ids:
+    - SREQ-00003-1
+  tags:
+    - engine
+    - style

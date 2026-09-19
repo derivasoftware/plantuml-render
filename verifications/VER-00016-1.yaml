@@ -1,0 +1,11 @@
+verification:
+  id: VER-00016-1
+  req_id: REQ-00016-1
+  title: Style tests cover bands, badges, folded notes, paint order, sequence tabs and the token palette
+  description: >
+    Style tests cover bands, badges, folded notes, paint order, sequence tabs and the token palette
+  method: test
+  test_ids:
+    - tests/style.test.ts::visual style
+    - tests/embed.test.ts::embedding
+  status: DRAFT
