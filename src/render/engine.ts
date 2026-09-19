@@ -14,7 +14,7 @@
 
 import { type IrEdge, type IrNode, type RenderIr, validateIr } from "./ir.js";
 import { renderSequenceSvg } from "./sequence.js";
-import { BADGE, CHAR_W, LINE_H, PAD, STYLE, esc, idPrefix, memberMarkup, svgRoot } from "./shared.js";
+import { BADGE, CHAR_W, LINE_H, PAD, STYLE, esc, idPrefix, linked, memberMarkup, refAttrs, svgRoot, tooltip } from "./shared.js";
 
 const SECTION_GAP = 4;
 const GAP_X = 48;
@@ -297,7 +297,10 @@ function emitNode(p: Placed, px: string): string {
   ]
     .filter(Boolean)
     .join(" ");
-  const parts: string[] = [`<g id="${px}${esc(node.id)}" data-id="${esc(node.id)}" class="${classes}">`];
+  const parts: string[] = [
+    `<g id="${px}${esc(node.id)}" data-id="${esc(node.id)}" class="${classes}"${refAttrs(node.refs)}>`,
+    tooltip(node.title),
+  ];
   if (node.kind === "container") {
     parts.push(`<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="6"/>`);
     parts.push(`<text class="pr-header" x="${p.x + 10}" y="${p.y + 15}">${esc(node.label)}</text>`);
@@ -343,7 +346,7 @@ function emitNode(p: Placed, px: string): string {
     }
   }
   parts.push("</g>");
-  return parts.join("");
+  return linked(node.href, parts.join(""));
 }
 
 function emitEdge(edge: IrEdge, byId: Map<string, Placed>, px: string): { path: string; label: string } {
@@ -357,10 +360,8 @@ function emitEdge(edge: IrEdge, byId: Map<string, Placed>, px: string): { path: 
   const label = edge.label
     ? `<text class="pr-edge-label" x="${Math.round((a.x + b.x) / 2) + 6}" y="${Math.round((a.y + b.y) / 2) - 4}">${esc(edge.label)}</text>`
     : "";
-  return {
-    path: `<path class="pr-edge pr-edge-${edge.kind}" data-from="${esc(edge.from)}" data-to="${esc(edge.to)}" d="M${a.x},${a.y} L${b.x},${b.y}"${markerAttr}/>`,
-    label,
-  };
+  const path = `<path class="pr-edge pr-edge-${edge.kind}" data-from="${esc(edge.from)}" data-to="${esc(edge.to)}" d="M${a.x},${a.y} L${b.x},${b.y}"${markerAttr}${refAttrs(edge.refs)}>${tooltip(edge.title)}</path>`;
+  return { path: linked(edge.href, path), label };
 }
 
 function emit(ir: RenderIr, placed: Placed[]): string {

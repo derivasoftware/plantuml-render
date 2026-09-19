@@ -1,0 +1,27 @@
+requirement:
+  id: REQ-00017-1
+  title: The engine shall link diagram entities to the targets a producer names in the render-IR
+  description: >
+    The engine shall link diagram entities to the targets a producer names in the render-IR
+  rationale: >
+    A diagram becomes a surface of its model when its elements know where
+    their targets live. The render-IR grows three optional fields on
+    nodes and edges, additive under contract v1: `href` (a URL or a page
+    fragment), `title` (a tooltip) and `refs` (named references — reqs,
+    code, tests, diagrams — for a host page's navigation and hover
+    cards). The engine wraps a linked element in `<a href>`, emits the
+    tooltip as `<title>` and the references as `data-ref-<key>`
+    attributes (lists join with spaces), in the class and the sequence
+    layouts alike. No JavaScript is needed to navigate; a host page adds
+    hover and highlight on top of the same attributes. Producers with a
+    model (design-render from the argos GDD) fill them; the spike
+    PUML-40 proved the navigation on folio's page with the entity ids
+    alone.
+  status: DRAFT
+  asil: QM
+  parent_ids:
+    - SREQ-00002-1
+    - SREQ-00007-1
+  tags:
+    - contract
+    - navigation

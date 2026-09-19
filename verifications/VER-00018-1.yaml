@@ -1,0 +1,10 @@
+verification:
+  id: VER-00018-1
+  req_id: REQ-00018-1
+  title: CLI tests cover --links maps and --link-template
+  description: >
+    CLI tests cover --links maps and --link-template
+  method: test
+  test_ids:
+    - tests/links.test.ts::link options
+  status: DRAFT

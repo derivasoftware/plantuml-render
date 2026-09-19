@@ -12,9 +12,21 @@ diagrams. It resolves the same entity across diagrams by `data-id` and,
 when the page follows the folio anchor rule (`cls-<id with non-alphanumerics
 dashed>`, `fig-<diagram id>`), it navigates to those anchors.
 
+## Links without JavaScript
+
+- In the render-IR, nodes and edges take `href`, `title` and `refs`; the
+  engine emits `<a href>`, `<title>` and `data-ref-<key>` attributes.
+- From the command line, `--links map.json` decorates entities by id (or
+  by a short name unique in the diagram): a bare URL, or
+  `{ "href": "...", "title": "...", "refs": { "reqs": ["REQ-1"] } }`.
+  `--link-template "https://docs/{name}"` gives every remaining entity a
+  link; `{id}` and `{name}` expand.
+
+```
+plantuml-render render design/ -o site/svg/ --links site/links.json
+```
+
 ## Coming next
 
-- `--links map.json`: decorate entities with `<a href>` from a JSON map of
-  id → url (navigable without any JavaScript).
 - `[[url]]` PlantUML hyperlinks, once the grammar structures them.
-- `href` and `refs` in the render-IR for producers such as design-render.
+- design-render filling `href` and `refs` from the argos model.

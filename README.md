@@ -87,6 +87,11 @@ coloured dot, `{static}` underlined, `{abstract}` italic, types and
 parameters in their own colours; boxes carry a header band and a
 classifier badge. See `plantuml-render docs style` for the token list.
 
+Entities can carry links: `href`, `title` and `refs` in the render-IR,
+or `--links map.json` and `--link-template` on the command line; the SVG
+then navigates by itself, and a host page can build hover cards on the
+`data-id` and `data-ref-*` attributes. See `plantuml-render docs navigation`.
+
 ## Scope
 
 The family covers a standard-driven subset of PlantUML, never the whole

@@ -1,0 +1,23 @@
+requirement:
+  id: REQ-00018-1
+  title: The command line shall decorate entities with links from a map or a template
+  description: >
+    The command line shall decorate entities with links from a map or a template
+  rationale: >
+    Producers without a model — a documentation site, a CI job over a
+    `design/` folder, folio handing over its anchor registry — decorate
+    the entities after the fact: `--links map.json` keys links by entity
+    id (or by a short name when it is unique in the diagram) and takes a
+    bare URL or the full `{href, title, refs}`; `--link-template` gives
+    every entity without a link an `href` with `{id}` and `{name}`
+    expanded. Map entries override what the IR carries, the template only
+    fills gaps, notes and frames are never linked. `applyLinks` is a pure
+    IR→IR function exported next to the view filters, so the library and
+    the browser bundle decorate the same way as the command line.
+  status: DRAFT
+  asil: QM
+  parent_ids:
+    - SREQ-00007-1
+  tags:
+    - cli
+    - navigation

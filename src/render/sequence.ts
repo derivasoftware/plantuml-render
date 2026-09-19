@@ -13,7 +13,7 @@
  */
 
 import { type IrNode, type RenderIr } from "./ir.js";
-import { CHAR_W, LINE_H, PAD, STYLE, esc, idPrefix, svgRoot } from "./shared.js";
+import { CHAR_W, LINE_H, PAD, STYLE, esc, idPrefix, linked, refAttrs, svgRoot, tooltip } from "./shared.js";
 
 const HEAD_H = LINE_H + 2 * PAD;
 const ROW_H = 30;
@@ -94,8 +94,8 @@ export function renderSequenceSvg(ir: RenderIr): string {
     const [keyword, ...rest] = frame.label.split(" ");
     const condition = rest.join(" ");
     const tabW = keyword.length * CHAR_W + 2 * PAD;
-    parts.push(
-      `<g id="${px}${esc(frame.id)}" data-id="${esc(frame.id)}" class="pr-frame">` +
+    parts.push(linked(frame.href,
+      `<g id="${px}${esc(frame.id)}" data-id="${esc(frame.id)}" class="pr-frame"${refAttrs(frame.refs)}>${tooltip(frame.title)}` +
         `<rect x="${x}" y="${y}" width="${w}" height="${h}"/>` +
         `<path class="pr-frame-tab" d="M${x},${y} H${x + tabW} V${y + 12} L${x + tabW - 6},${y + 18} H${x} Z"/>` +
         `<text class="pr-frame-label" x="${x + PAD}" y="${y + 13}">${esc(keyword)}</text>` +
@@ -108,7 +108,7 @@ export function renderSequenceSvg(ir: RenderIr): string {
           )
           .join("") +
         "</g>",
-    );
+    ));
     width = Math.max(width, x + tabW + MARGIN);
   }
 
@@ -136,12 +136,12 @@ export function renderSequenceSvg(ir: RenderIr): string {
         `<text class="pr-header" x="${x}" y="${MARGIN + HEAD_H + 4}" text-anchor="middle">${esc(n.label)}</text>`
       : `<rect x="${x - Math.round(w / 2)}" y="${MARGIN}" width="${w}" height="${HEAD_H}"/>` +
         `<text class="pr-header" x="${x - Math.round(w / 2) + PAD}" y="${MARGIN + PAD + 13}">${esc(n.label)}</text>`;
-    parts.push(
-      `<g id="${px}${esc(n.id)}" data-id="${esc(n.id)}" class="${classes.join(" ")}">` +
+    parts.push(linked(n.href,
+      `<g id="${px}${esc(n.id)}" data-id="${esc(n.id)}" class="${classes.join(" ")}"${refAttrs(n.refs)}>${tooltip(n.title)}` +
         `<line class="pr-lifeline-line" x1="${x}" y1="${isActor ? MARGIN + HEAD_H + 8 : MARGIN + HEAD_H}" x2="${x}" y2="${bottom}"/>` +
         head +
         "</g>",
-    );
+    ));
   }
 
   // ── Messages ──────────────────────────────────────────────────────
@@ -156,7 +156,7 @@ export function renderSequenceSvg(ir: RenderIr): string {
     if (m.from === m.to) {
       classes.push("pr-msg-self");
       parts.push(
-        `<path class="${classes.join(" ")}" data-from="${esc(m.from)}" data-to="${esc(m.to)}" data-order="${m.order}" d="M${xa} ${y - 8} L${xa + SELF_W} ${y - 8} L${xa + SELF_W} ${y + 4} L${xa + 4} ${y + 4}" marker-end="url(#${px}arrow)"/>`,
+        linked(m.href, `<path class="${classes.join(" ")}" data-from="${esc(m.from)}" data-to="${esc(m.to)}" data-order="${m.order}" d="M${xa} ${y - 8} L${xa + SELF_W} ${y - 8} L${xa + SELF_W} ${y + 4} L${xa + 4} ${y + 4}" marker-end="url(#${px}arrow)"${refAttrs(m.refs)}>${tooltip(m.title)}</path>`),
       );
       if (m.label) {
         parts.push(
@@ -166,7 +166,7 @@ export function renderSequenceSvg(ir: RenderIr): string {
       }
     } else {
       parts.push(
-        `<path ${attrs} d="M${xa} ${y} L${xb} ${y}" marker-end="url(#${px}arrow)"/>`,
+        linked(m.href, `<path ${attrs} d="M${xa} ${y} L${xb} ${y}" marker-end="url(#${px}arrow)"${refAttrs(m.refs)}>${tooltip(m.title)}</path>`),
       );
       if (m.label) {
         const mid = Math.round((xa + xb) / 2);
@@ -192,8 +192,8 @@ export function renderSequenceSvg(ir: RenderIr): string {
           : n.classifier === "over"
             ? anchorX - Math.round(w / 2)
             : anchorX + 16;
-    parts.push(
-      `<g id="${px}${esc(n.id)}" data-id="${esc(n.id)}" class="pr-note">` +
+    parts.push(linked(n.href,
+      `<g id="${px}${esc(n.id)}" data-id="${esc(n.id)}" class="pr-note"${refAttrs(n.refs)}>${tooltip(n.title)}` +
         `<rect x="${x}" y="${y}" width="${w}" height="${h}"/>` +
         lines
           .map(
@@ -202,7 +202,7 @@ export function renderSequenceSvg(ir: RenderIr): string {
           )
           .join("") +
         "</g>",
-    );
+    ));
     width = Math.max(width, x + w + MARGIN);
   }
 
