@@ -1,0 +1,10 @@
+verification:
+  id: VER-00019-1
+  req_id: REQ-00019-1
+  title: Sequence layout tests cover per-gap lane spacing, frames bounded to their participants and variable row heights
+  description: >
+    Sequence layout tests cover per-gap lane spacing, frames bounded to their participants and variable row heights
+  method: test
+  test_ids:
+    - tests/sequence-layout.test.ts::sequence layout
+  status: DRAFT
