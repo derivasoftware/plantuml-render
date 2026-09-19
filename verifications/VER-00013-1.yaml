@@ -1,0 +1,12 @@
+verification:
+  id: VER-00013-1
+  req_id: REQ-00013-1
+  title: Frontend and CLI tests parse through the wasm grammar with no native binding installed
+  description: >
+    Frontend and CLI tests parse through the wasm grammar with no native binding installed
+  method: test
+  test_ids:
+    - tests/frontend.test.ts::puml frontend
+    - tests/cli.test.ts::cli
+    - tests/manual.test.ts::command line
+  status: DRAFT

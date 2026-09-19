@@ -1,0 +1,26 @@
+requirement:
+  id: REQ-00013-1
+  title: The frontend shall parse PlantUML through the wasm grammar in every host
+  description: >
+    The frontend shall parse PlantUML through the wasm grammar in every host
+  rationale: >
+    Until 0.7 the node CLI parsed with the native tree-sitter binding
+    (compiled by node-gyp at install time from the grammar's git
+    dependency) while the browser parsed with web-tree-sitter and the
+    grammar's wasm: two parsers that could drift and an install that
+    needed a C toolchain. The spike PUML-40 measured the wasm path
+    against the native one on 607 diagrams of the family corpus:
+    byte-identical SVG, 38 ms per diagram. The frontend now parses with
+    web-tree-sitter in every host; the grammar ships as
+    `grammar/tree-sitter-plantuml.wasm`, rebuilt from the tag pinned in
+    `package.json` `config.grammar` by scripts/build_grammar_wasm.sh,
+    and the parser assets can be injected in memory (`configureParser`)
+    so a standalone executable embeds them. The stable set keeps reading
+    the grammar pin from `config.grammar`.
+  status: DRAFT
+  asil: QM
+  parent_ids:
+    - SREQ-00004-1
+  tags:
+    - frontend
+    - wasm

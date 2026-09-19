@@ -1,11 +1,16 @@
 @startuml CL_CliModule
 ' requirement REQ-00004-1
 
+' requirement REQ-00014-1
+
 !startsub CliModule
 
 namespace render.cli {
   class main <<function>> {
-    + main(argv: string[]) : Promise<number>
+    + main(argv: string[], deps: CliDeps) : Promise<number>
+  }
+  class helpText <<function>> {
+    + helpText(version: string) : string
   }
 }
 
