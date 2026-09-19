@@ -22,12 +22,17 @@ const SELF_W = 32;
 
 const SEQ_STYLE = `
   .pr-diagram .pr-lifeline-line { stroke: var(--pr-stroke); stroke-dasharray: 4 4; }
-  .pr-diagram .pr-msg { stroke: var(--pr-stroke); fill: none; }
+  .pr-diagram .pr-msg { stroke: var(--pr-edge); fill: none; }
   .pr-diagram .pr-msg-dashed { stroke-dasharray: 6 4; }
   .pr-diagram .pr-frame > rect { fill: none; stroke: var(--pr-stroke); }
-  .pr-diagram .pr-frame-label { font-weight: 600; }
+  .pr-diagram .pr-frame-tab { fill: var(--pr-head-function); stroke: var(--pr-stroke); }
+  .pr-diagram .pr-frame-label { font-weight: 700; fill: var(--pr-muted); }
+  .pr-diagram .pr-frame-cond { fill: var(--pr-muted); }
   .pr-diagram .pr-frame-divider { stroke: var(--pr-stroke); stroke-dasharray: 6 4; }
-  .pr-diagram .pr-divider rect { fill: var(--pr-box-fill); stroke: var(--pr-stroke); }
+  .pr-diagram .pr-divider rect { fill: var(--pr-container-fill); stroke: var(--pr-stroke); }
+  .pr-diagram .pr-lifeline-head > rect { fill: var(--pr-head-class); stroke: var(--pr-stroke); }
+  .pr-diagram .pr-note rect { fill: var(--pr-note-fill); stroke: var(--pr-note-stroke); }
+  .pr-diagram .pr-actor circle, .pr-diagram .pr-actor path { fill: none; stroke: var(--pr-text); stroke-width: 1.4; stroke-linecap: round; }
 `;
 
 export function renderSequenceSvg(ir: RenderIr): string {
@@ -86,11 +91,15 @@ export function renderSequenceSvg(ir: RenderIr): string {
     const w = laneR - laneL - 2 * inset;
     const y = rowTop(frame.span[0]) - 4;
     const h = rowTop(frame.span[1]) + ROW_H - y;
-    const tabW = frame.label.length * CHAR_W + 2 * PAD;
+    const [keyword, ...rest] = frame.label.split(" ");
+    const condition = rest.join(" ");
+    const tabW = keyword.length * CHAR_W + 2 * PAD;
     parts.push(
       `<g id="${px}${esc(frame.id)}" data-id="${esc(frame.id)}" class="pr-frame">` +
         `<rect x="${x}" y="${y}" width="${w}" height="${h}"/>` +
-        `<text class="pr-frame-label" x="${x + PAD}" y="${y + 14}">${esc(frame.label)}</text>` +
+        `<path class="pr-frame-tab" d="M${x},${y} H${x + tabW} V${y + 12} L${x + tabW - 6},${y + 18} H${x} Z"/>` +
+        `<text class="pr-frame-label" x="${x + PAD}" y="${y + 13}">${esc(keyword)}</text>` +
+        (condition ? `<text class="pr-frame-cond" x="${x + tabW + 8}" y="${y + 13}">[${esc(condition)}]</text>` : "") +
         (frame.dividers ?? [])
           .map(
             (d) =>
@@ -120,11 +129,17 @@ export function renderSequenceSvg(ir: RenderIr): string {
     const w = headW(n);
     const classes = ["pr-box", "pr-lifeline-head"];
     if (n.classifier) classes.push(`pr-classifier-${n.classifier}`);
+    const isActor = n.classifier === "actor";
+    const head = isActor
+      ? `<g class="pr-actor"><circle cx="${x}" cy="${MARGIN + 5}" r="4.5"/>` +
+        `<path d="M${x},${MARGIN + 10} V${MARGIN + 21} M${x - 8},${MARGIN + 14} H${x + 8} M${x},${MARGIN + 21} L${x - 7},${MARGIN + 30} M${x},${MARGIN + 21} L${x + 7},${MARGIN + 30}"/></g>` +
+        `<text class="pr-header" x="${x}" y="${MARGIN + HEAD_H + 4}" text-anchor="middle">${esc(n.label)}</text>`
+      : `<rect x="${x - Math.round(w / 2)}" y="${MARGIN}" width="${w}" height="${HEAD_H}"/>` +
+        `<text class="pr-header" x="${x - Math.round(w / 2) + PAD}" y="${MARGIN + PAD + 13}">${esc(n.label)}</text>`;
     parts.push(
       `<g id="${px}${esc(n.id)}" data-id="${esc(n.id)}" class="${classes.join(" ")}">` +
-        `<line class="pr-lifeline-line" x1="${x}" y1="${MARGIN + HEAD_H}" x2="${x}" y2="${bottom}"/>` +
-        `<rect x="${x - Math.round(w / 2)}" y="${MARGIN}" width="${w}" height="${HEAD_H}"/>` +
-        `<text class="pr-header" x="${x - Math.round(w / 2) + PAD}" y="${MARGIN + PAD + 13}">${esc(n.label)}</text>` +
+        `<line class="pr-lifeline-line" x1="${x}" y1="${isActor ? MARGIN + HEAD_H + 8 : MARGIN + HEAD_H}" x2="${x}" y2="${bottom}"/>` +
+        head +
         "</g>",
     );
   }
@@ -165,7 +180,7 @@ export function renderSequenceSvg(ir: RenderIr): string {
   // ── Anchored notes ────────────────────────────────────────────────
   for (const n of notes) {
     const anchorX = n.anchor !== undefined ? cx.get(n.anchor) : undefined;
-    const lines = n.label.split("\n");
+    const lines = n.label.split(/\\n|\n/);
     const w = Math.max(...lines.map((l) => l.length)) * CHAR_W + 2 * PAD;
     const h = lines.length * LINE_H + PAD;
     const y = rowTop(n.at ?? 0);

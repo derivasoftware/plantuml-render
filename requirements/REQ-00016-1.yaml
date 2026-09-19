@@ -1,0 +1,27 @@
+requirement:
+  id: REQ-00016-1
+  title: The engine shall paint diagrams with a shared palette of overridable tokens
+  description: >
+    The engine shall paint diagrams with a shared palette of overridable tokens
+  rationale: >
+    One palette for both layouts, declared as CSS custom properties on
+    `.pr-diagram` with light values on the diagram and dark values under
+    `prefers-color-scheme: dark` and `[data-theme="dark"]`, so a host
+    overrides any token without touching the SVG: surfaces and strokes,
+    header bands and badges per classifier (class, interface, enum,
+    function, abstract), syntax and visibility colours, notes, edges.
+    Boxes carry a header band with rounded top corners and a classifier
+    badge; notes fold their corner and honour the `\\n` escape; edge
+    labels carry a halo (paint-order) and are painted above the leaves;
+    containers are painted parent-first so a filled namespace never covers
+    its children; sequence heads share the class band, actors are stick
+    figures, frames carry a keyword tab and their condition in brackets.
+    The neutral slate values are a starting point; the final tokens may
+    come from deriva/core/ui-kit (open decision, PUML-43).
+  status: DRAFT
+  asil: QM
+  parent_ids:
+    - SREQ-00003-1
+  tags:
+    - engine
+    - style
