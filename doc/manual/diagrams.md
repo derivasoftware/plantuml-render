@@ -26,6 +26,8 @@ an error.
 Participants of every kind (`actor` is drawn as a stick figure), `->` and
 `-->` messages with labels, self messages, `alt/else`, `loop`, `opt`, `par`
 frames with their condition, `== dividers ==`, `note over|left|right`.
+Lanes are spaced by what crosses them, frames wrap only the participants
+they involve, and rows grow to fit multi-line notes.
 
 ## Not drawn (kept lossless)
 

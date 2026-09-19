@@ -1,0 +1,27 @@
+requirement:
+  id: REQ-00019-1
+  title: The sequence layout shall size lanes, frames and rows by their content
+  description: >
+    The sequence layout shall size lanes, frames and rows by their content
+  rationale: >
+    Until 0.10 one pitch, set by the longest label of the whole diagram,
+    separated every pair of lanes: the coffee-machine sequence came out
+    1320 px wide against 630 for the reference renderer, frames spanned
+    every lane whatever they contained, and rows were a fixed 30 px, so
+    a two-line note overran the message below it (spike PUML-40). The
+    geometry is now content-driven: the gap between two adjacent lanes
+    is what their heads, the labels of the messages crossing it, the
+    self-message loops and the notes beside it need (a label spanning
+    several gaps widens them evenly); a frame spans only the lanes its
+    messages and notes touch, inset by nesting depth, and never narrower
+    than its tab and condition; a row is as tall as its tallest occupant.
+    Activation bars wait for the grammar repin that makes
+    activate/deactivate structural (0.10); until then lifecycle lines are
+    raw and draw nothing.
+  status: DRAFT
+  asil: QM
+  parent_ids:
+    - SREQ-00006-1
+  tags:
+    - sequence
+    - layout
