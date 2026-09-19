@@ -14,7 +14,7 @@
 
 import { type IrEdge, type IrNode, type RenderIr, validateIr } from "./ir.js";
 import { renderSequenceSvg } from "./sequence.js";
-import { CHAR_W, LINE_H, PAD, STYLE, esc } from "./shared.js";
+import { CHAR_W, LINE_H, PAD, STYLE, esc, idPrefix, svgRoot } from "./shared.js";
 
 const SECTION_GAP = 4;
 const GAP_X = 48;
@@ -239,20 +239,20 @@ function layout(ir: RenderIr): Placed[] {
 
 // ── SVG emission ─────────────────────────────────────────────────────────────
 
-const MARKERS = `
-  <marker id="pr-tri" viewBox="0 0 14 12" refX="13" refY="6" markerWidth="14" markerHeight="12" orient="auto"><path d="M1,1 L13,6 L1,11 Z" fill="var(--pr-box-fill, #fdfdf6)" stroke="var(--pr-stroke, #3b3b33)"/></marker>
-  <marker id="pr-diamond-filled" viewBox="0 0 16 10" refX="15" refY="5" markerWidth="16" markerHeight="10" orient="auto"><path d="M1,5 L8,1 L15,5 L8,9 Z" fill="var(--pr-stroke, #3b3b33)"/></marker>
-  <marker id="pr-diamond" viewBox="0 0 16 10" refX="15" refY="5" markerWidth="16" markerHeight="10" orient="auto"><path d="M1,5 L8,1 L15,5 L8,9 Z" fill="var(--pr-box-fill, #fdfdf6)" stroke="var(--pr-stroke, #3b3b33)"/></marker>
-  <marker id="pr-arrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto"><path d="M1,1 L11,6 L1,11" fill="none" stroke="var(--pr-stroke, #3b3b33)"/></marker>
+const markers = (px: string) => `
+  <marker id="${px}tri" viewBox="0 0 14 12" refX="13" refY="6" markerWidth="14" markerHeight="12" orient="auto"><path d="M1,1 L13,6 L1,11 Z"/></marker>
+  <marker id="${px}diamond-filled" viewBox="0 0 16 10" refX="15" refY="5" markerWidth="16" markerHeight="10" orient="auto"><path class="pr-filled" d="M1,5 L8,1 L15,5 L8,9 Z"/></marker>
+  <marker id="${px}diamond" viewBox="0 0 16 10" refX="15" refY="5" markerWidth="16" markerHeight="10" orient="auto"><path d="M1,5 L8,1 L15,5 L8,9 Z"/></marker>
+  <marker id="${px}arrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto"><path class="pr-open" d="M1,1 L11,6 L1,11"/></marker>
 `;
 
 const MARKER_BY_KIND: Record<string, string> = {
-  inheritance: "pr-tri",
-  realization: "pr-tri",
-  composition: "pr-diamond-filled",
-  aggregation: "pr-diamond",
-  dependency: "pr-arrow",
-  association: "pr-arrow",
+  inheritance: "tri",
+  realization: "tri",
+  composition: "diamond-filled",
+  aggregation: "diamond",
+  dependency: "arrow",
+  association: "arrow",
 };
 
 function anchor(p: Placed, other: Placed): { x: number; y: number } {
@@ -263,7 +263,7 @@ function anchor(p: Placed, other: Placed): { x: number; y: number } {
   return other.x >= cx ? { x: p.x + p.w, y: cy } : { x: p.x, y: cy };
 }
 
-function emitNode(p: Placed): string {
+function emitNode(p: Placed, px: string): string {
   const node = p.node;
   const classes = [
     `pr-${node.kind}`,
@@ -273,7 +273,7 @@ function emitNode(p: Placed): string {
     .filter(Boolean)
     .join(" ");
   const parts: string[] = [
-    `<g id="${esc(node.id)}" class="${classes}">`,
+    `<g id="${px}${esc(node.id)}" data-id="${esc(node.id)}" class="${classes}">`,
     `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}"/>`,
   ];
   let ty = p.y + PAD + 12;
@@ -304,14 +304,14 @@ function emitNode(p: Placed): string {
   return parts.join("");
 }
 
-function emitEdge(edge: IrEdge, byId: Map<string, Placed>): string {
+function emitEdge(edge: IrEdge, byId: Map<string, Placed>, px: string): string {
   const from = byId.get(edge.from);
   const to = byId.get(edge.to);
   if (!from || !to) return "";
   const a = anchor(from, to);
   const b = anchor(to, from);
   const marker = MARKER_BY_KIND[edge.kind];
-  const markerAttr = marker ? ` marker-end="url(#${marker})"` : "";
+  const markerAttr = marker ? ` marker-end="url(#${px}${marker})"` : "";
   const label = edge.label
     ? `<text x="${Math.round((a.x + b.x) / 2) + 6}" y="${Math.round((a.y + b.y) / 2) - 4}">${esc(edge.label)}</text>`
     : "";
@@ -322,23 +322,25 @@ function emitEdge(edge: IrEdge, byId: Map<string, Placed>): string {
 }
 
 function emit(ir: RenderIr, placed: Placed[]): string {
-  const minX = Math.min(...placed.map((p) => p.x), 0) - PAD;
-  const minY = Math.min(...placed.map((p) => p.y), 0) - PAD;
+  // The frame is the content's bounding box plus PAD on every side.
+  const minX = Math.min(...placed.map((p) => p.x)) - PAD;
+  const minY = Math.min(...placed.map((p) => p.y)) - PAD;
   const width = Math.max(...placed.map((p) => p.x + p.w), 10) + PAD - minX;
   const height = Math.max(...placed.map((p) => p.y + p.h), 10) + PAD - minY;
   const byId = new Map(placed.map((p) => [p.node.id, p]));
   const containers = placed.filter((p) => p.node.kind === "container");
   const leaves = placed.filter((p) => p.node.kind !== "container");
+  const px = idPrefix(ir.title);
   const body = [
-    ...containers.map(emitNode),
-    ...ir.edges.map((e) => emitEdge(e, byId)),
-    ...leaves.map(emitNode),
+    ...containers.map((p) => emitNode(p, px)),
+    ...ir.edges.map((e) => emitEdge(e, byId, px)),
+    ...leaves.map((p) => emitNode(p, px)),
   ].join("\n");
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${width} ${height}" width="${width}" height="${height}" class="pr-diagram" role="img">`,
+    svgRoot(minX, minY, width, height),
     ir.title ? `<title>${esc(ir.title)}</title>` : "",
     `<style>${STYLE}</style>`,
-    `<defs>${MARKERS}</defs>`,
+    `<defs>${markers(px)}</defs>`,
     body,
     "</svg>",
   ]

@@ -51,6 +51,19 @@ plantuml-render serve diagram.puml
 plantuml-render --ir model.json -o out.svg
 ```
 
+## Embedding
+
+The SVG is written to live inline in any HTML page. Every style rule is
+scoped under `.pr-diagram`, so nothing leaks into the host; ids are prefixed
+per diagram (a hash of the title) so many diagrams share one document, with
+the logical entity id in `data-id` and edges carrying `data-from` and
+`data-to`; the root keeps its natural `width`/`height` plus
+`max-width:100%;height:auto`, so small diagrams stay small and large ones
+shrink to their container. Light and dark palettes travel inside the SVG:
+the diagram follows `prefers-color-scheme` and a host can force one with
+`data-theme="dark"` or `data-theme="light"` on the root element. Override
+any token from the host, e.g. `.pr-diagram { --pr-text: #222 }`.
+
 ## Scope
 
 The family covers a standard-driven subset of PlantUML, never the whole

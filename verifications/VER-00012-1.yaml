@@ -1,0 +1,10 @@
+verification:
+  id: VER-00012-1
+  req_id: REQ-00012-1
+  title: Embedding tests cover scoped styles, per-diagram ids, theme tokens, fluid root and symmetric margins
+  description: >
+    Embedding tests cover scoped styles, per-diagram ids, theme tokens, fluid root and symmetric margins
+  method: test
+  test_ids:
+    - tests/embed.test.ts::embedding
+  status: DRAFT
