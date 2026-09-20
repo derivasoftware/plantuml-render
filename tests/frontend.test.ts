@@ -130,3 +130,18 @@ describe("diagram kinds that are not drawn", () => {
     expect(validateIr(JSON.parse(JSON.stringify(await pumlToIr(STATE)))).notice).toContain("State diagram");
   });
 });
+
+describe("hyperlinks on entity heads", () => {
+  it("maps [[url]] and [[url{tooltip}]] on class, interface and aliased heads to href and title", async () => {
+    const ir = await pumlToIr(
+      '@startuml\nclass Order [[https://docs/order.html{Order aggregate}]] {\n  +total()\n}\ninterface Payable [[#payable]]\nclass "Nice" as NN [[http://n]]\nenum Kind\n@enduml\n',
+    );
+    const by = (id: string) => ir.nodes.find((n) => n.id === id)!;
+    expect(by("Order")).toMatchObject({ href: "https://docs/order.html", title: "Order aggregate" });
+    expect(by("Order").sections).toEqual([["+total()"]]);
+    expect(by("Payable")).toMatchObject({ href: "#payable" });
+    expect(by("Payable").title).toBeUndefined();
+    expect(by("NN")).toMatchObject({ href: "http://n" });
+    expect(by("Kind").href).toBeUndefined();
+  });
+});

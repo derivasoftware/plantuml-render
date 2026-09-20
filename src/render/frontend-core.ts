@@ -254,6 +254,15 @@ function diagramTitle(root: Node): string | undefined {
   return diagram?.childForFieldName("name")?.text.trim() || undefined;
 }
 
+/** A PlantUML hyperlink on an entity head (REQ-00023-1): `[[url]]` or
+ * `[[url{tooltip}]]`, structural since grammar 0.11. */
+export function hyperlink(text: string): { href?: string; title?: string } {
+  const m = /^\[\[\s*([^\]{}\s][^\]{}]*?)\s*(?:\{([^}]*)\})?\s*\]\]$/.exec(text.trim());
+  if (!m) return {};
+  const title = m[2]?.trim();
+  return { href: m[1], ...(title ? { title } : {}) };
+}
+
 export function treeToIr(root: CstNode): RenderIr {
   const kind = notDrawnKind(root);
   if (kind) return { ir: 1, title: diagramTitle(root), nodes: [], edges: [], notice: notDrawnNotice(kind) };
@@ -316,6 +325,7 @@ export function treeToIr(root: CstNode): RenderIr {
         const id = containerId ? `${containerId}.${label}` : label;
         shortToId.set(label, id);
         const stereotypeNode = node.childForFieldName("stereotype");
+        const link = node.childForFieldName("link");
         pushNode({
           id,
           kind: "box",
@@ -327,6 +337,7 @@ export function treeToIr(root: CstNode): RenderIr {
             : undefined,
           sections: memberSections(node),
           parent: containerId,
+          ...(link ? hyperlink(link.text) : {}),
         });
         return;
       }

@@ -26,7 +26,19 @@ dashed>`, `fig-<diagram id>`), it navigates to those anchors.
 plantuml-render render design/ -o site/svg/ --links site/links.json
 ```
 
+## Links written in the PlantUML source
+
+A hyperlink on an entity head sets `href` (and `title` from the tooltip)
+on its box, the standard PlantUML way:
+
+```
+class Order [[https://docs/order.html{Order aggregate}]]
+interface Payable [[#payable]]
+```
+
+A `--links` map entry for that entity overrides the source link; the
+`--link-template` only fills entities that have no link.
+
 ## Coming next
 
-- `[[url]]` PlantUML hyperlinks, once the grammar structures them.
 - design-render filling `href` and `refs` from the argos model.
