@@ -199,7 +199,64 @@ function sequenceToIr(root: Node): RenderIr {
   return { ir: 1, title, nodes, edges };
 }
 
+/** Diagram kinds the frontend recognises but does not map (REQ-00021-1).
+ * The grammar keeps their statements as raw lines (or activity nodes), so
+ * the kind is read from those and the IR carries a notice instead of an
+ * empty drawing. Note bodies and entity bodies are not scanned. */
+const START_TAGS: Record<string, string> = {
+  mindmap: "mindmap", gantt: "gantt", wbs: "work breakdown", json: "JSON", yaml: "YAML",
+  salt: "salt wireframe", ditaa: "ditaa", dot: "dot", chronology: "chronology", regex: "regex",
+};
+const RAW_LINE_KINDS: [RegExp, string][] = [
+  [/^(start|stop|fork|end ?fork|while|endwhile|repeat|endif|split|end ?split|detach|kill|backward)\b/, "activity"],
+  [/^if\s*\(/, "activity"],
+  [/^(\[\*\]|state\b)/, "state"],
+  [/^usecase\b/, "use case"],
+  [/^(component|artifact)\b/, "component"],
+  [/^(node|cloud|storage|hexagon)\b/, "deployment"],
+];
+
+function notDrawnKind(root: Node): string | undefined {
+  const tag = /@start(\w+)/.exec(root.text)?.[1];
+  if (tag && tag !== "uml") return START_TAGS[tag] ?? tag;
+  let found: string | undefined;
+  const walk = (node: Node): void => {
+    if (found) return;
+    if (node.type === "activity_action" || node.type === "swimlane") {
+      found = "activity";
+      return;
+    }
+    if (node.type === "raw_line") {
+      const line = node.text.trim();
+      found = RAW_LINE_KINDS.find(([re]) => re.test(line))?.[1];
+      return;
+    }
+    if (node.type === "ERROR" && /\[\*\]/.test(node.text)) {
+      found = "state";
+      return;
+    }
+    if (node.type === "note_statement" || node.type === "entity_body") return;
+    for (const child of node.namedChildren) walk(child);
+  };
+  walk(root);
+  return found;
+}
+
+/** The notice for a kind that is not drawn: the SVG says so instead of
+ * leaving a blank, and the command line repeats it on stderr. */
+export function notDrawnNotice(kind: string): string {
+  const name = kind.charAt(0).toUpperCase() + kind.slice(1);
+  return `${name} diagram: not drawn by plantuml-render (kept lossless).\nRender this kind with plantuml.jar.`;
+}
+
+function diagramTitle(root: Node): string | undefined {
+  const diagram = root.namedChildren.find((c) => c.type === "diagram");
+  return diagram?.childForFieldName("name")?.text.trim() || undefined;
+}
+
 export function treeToIr(root: CstNode): RenderIr {
+  const kind = notDrawnKind(root);
+  if (kind) return { ir: 1, title: diagramTitle(root), nodes: [], edges: [], notice: notDrawnNotice(kind) };
   if (isSequence(root)) return sequenceToIr(root);
   const nodes: IrNode[] = [];
   const edges: IrEdge[] = [];
@@ -320,6 +377,13 @@ export function treeToIr(root: CstNode): RenderIr {
     edge.to = shortToId.get(edge.to) ?? edge.to;
   }
 
+  // Relations alone draw nothing (the engine drops edges without both
+  // ends); say so rather than hand back an empty frame (REQ-00021-1).
+  if (nodes.length === 0 && edges.length > 0) {
+    const n = edges.length;
+    const notice = `Nothing drawn: ${n} relation${n === 1 ? "" : "s"} reference entities that are not declared in this diagram.`;
+    return { ir: 1, title, nodes, edges, notice };
+  }
   return { ir: 1, title, nodes, edges };
 }
 

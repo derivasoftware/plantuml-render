@@ -22,6 +22,7 @@ import { basename, dirname, extname, join, relative, resolve } from "node:path";
 
 import { renderSvg } from "./engine.js";
 import { pumlToIr } from "./frontend.js";
+import { validateIr } from "./ir.js";
 import { applyLinks, type LinkSpec } from "./links.js";
 import { expandIncludes, type IncludeLoader } from "./preprocess.js";
 import { VERSION } from "./version.gen.js";
@@ -104,10 +105,13 @@ function walk(dir: string, acc: string[] = []): string[] {
   return acc;
 }
 
-async function renderFile(file: string, links: LinkSpec): Promise<string> {
+async function renderFile(file: string, links: LinkSpec, warn: (text: string) => void): Promise<string> {
   const raw = readFileSync(file, "utf8");
   const ir = await pumlToIr(await expandIncludes(raw, dirname(resolve(file)), fsLoader));
   ir.title ??= basename(file, extname(file));
+  // A kind that is not drawn is said in the SVG and here (REQ-00021-1);
+  // the exit code stays 0, the source is kept as it is.
+  if (ir.notice) warn(`${file}: ${ir.notice.replace(/\s*\n\s*/g, " ")}\n`);
   return await renderSvg(applyLinks(ir, links));
 }
 
@@ -188,9 +192,14 @@ export async function main(argv: string[], deps: CliDeps = {}): Promise<number> 
     return 2;
   }
   if (irMode) {
-    const svg = await renderSvg(applyLinks(JSON.parse(readFileSync(input, "utf8")), links));
-    target ? writeFileSync(target, svg) : out(svg);
-    return 0;
+    try {
+      const svg = await renderSvg(applyLinks(validateIr(JSON.parse(readFileSync(input, "utf8"))), links));
+      target ? writeFileSync(target, svg) : out(svg);
+      return 0;
+    } catch (error) {
+      err(`${input}: ${(error as Error).message}\n`);
+      return 1;
+    }
   }
   if (statSync(input).isDirectory()) {
     if (!target) {
@@ -203,7 +212,7 @@ export async function main(argv: string[], deps: CliDeps = {}): Promise<number> 
       const dest = join(target, relative(input, file)).replace(PUML, ".svg");
       try {
         mkdirSync(dirname(dest), { recursive: true });
-        writeFileSync(dest, await renderFile(file, links));
+        writeFileSync(dest, await renderFile(file, links, err));
       } catch (error) {
         failed += 1;
         err(`${file}: ${(error as Error).message}\n`);
@@ -212,9 +221,14 @@ export async function main(argv: string[], deps: CliDeps = {}): Promise<number> 
     err(`${files.length - failed} of ${files.length} diagrams → ${target}\n`);
     return failed ? 1 : 0;
   }
-  const svg = await renderFile(input, links);
-  target ? writeFileSync(target, svg) : out(svg);
-  return 0;
+  try {
+    const svg = await renderFile(input, links, err);
+    target ? writeFileSync(target, svg) : out(svg);
+    return 0;
+  } catch (error) {
+    err(`${input}: ${(error as Error).message}\n`);
+    return 1;
+  }
 }
 
 import { realpathSync } from "node:fs";

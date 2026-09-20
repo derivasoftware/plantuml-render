@@ -19,7 +19,7 @@
  */
 
 import { type IrEdge, type IrNode, type RenderIr } from "./ir.js";
-import { CHAR_W, LINE_H, PAD, STYLE, esc, idPrefix, linked, refAttrs, svgRoot, tooltip } from "./shared.js";
+import { CHAR_W, LINE_H, PAD, STYLE, esc, idPrefix, linked, noticeMarkup, refAttrs, svgRoot, tooltip } from "./shared.js";
 
 const HEAD_H = LINE_H + 2 * PAD;
 const ROW_H = 30;
@@ -282,7 +282,15 @@ export function renderSequenceSvg(ir: RenderIr): string {
     width = Math.max(width, x + w + MARGIN);
   }
 
-  const height = bottom + MARGIN;
+  // A producer's notice goes under the last row (REQ-00021-1).
+  let end = bottom;
+  if (ir.notice) {
+    const block = noticeMarkup(ir.notice, MARGIN, bottom + MARGIN);
+    parts.push(block.markup);
+    end = bottom + MARGIN + block.h;
+    width = Math.max(width, MARGIN + block.w + MARGIN);
+  }
+  const height = end + MARGIN;
   return [
     svgRoot(0, 0, width, height),
     ir.title ? `<title>${esc(ir.title)}</title>` : "",

@@ -1,0 +1,32 @@
+requirement:
+  id: REQ-00021-1
+  title: The renderer shall state inside the SVG and on the standard error when a diagram is not drawn
+  description: >
+    The renderer shall state inside the SVG and on the standard error when a diagram is not drawn
+  rationale: >
+    GitHub issue #1: state and activity sources rendered as an empty
+    30x30 SVG with exit code 0, so a report embedding many diagrams showed
+    blank frames without a hint, although the manual promised that "the
+    SVG says so instead of leaving a blank". The frontend now classifies
+    the diagram kind from the tree (activity nodes and swimlanes, raw lines
+    opening with the activity, state, use case, component or deployment
+    keywords, `[*]`, and non-UML start tags such as @startmindmap) and,
+    for a kind it does not map, returns an IR with an empty node list and
+    a `notice` naming the kind; a class diagram whose relations only
+    reference undeclared entities gets a notice too. `notice` is a new
+    optional root field of the render-IR contract (v1, additive). Both
+    emitters draw it in a muted dashed box below the content, or alone; an
+    IR with no nodes and no notice is drawn as "Nothing to draw.". The
+    command line repeats the notice on stderr, keeps exit code 0 (the
+    lossless policy: not an error) and now reports a failure of a single
+    file or of an invalid --ir document as one line with exit code 1
+    instead of a stack trace. Native activity and state drawing stays a
+    separate, later capability.
+  status: DRAFT
+  asil: QM
+  parent_ids:
+    - SREQ-00001-1
+  tags:
+    - frontend
+    - engine
+    - cli

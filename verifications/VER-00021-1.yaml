@@ -1,0 +1,12 @@
+verification:
+  id: VER-00021-1
+  req_id: REQ-00021-1
+  title: Frontend tests classify state, activity, use case and mindmap sources into notices and keep class and sequence untouched; engine tests draw the notice in both layouts and for an empty document; CLI tests check stderr, exit codes and the --ir error line
+  description: >
+    Frontend tests classify state, activity, use case and mindmap sources into notices and keep class and sequence untouched; engine tests draw the notice in both layouts and for an empty document; CLI tests check stderr, exit codes and the --ir error line
+  method: test
+  test_ids:
+    - tests/frontend.test.ts::diagram kinds that are not drawn
+    - tests/engine.test.ts::engine
+    - tests/cli.test.ts::cli
+  status: DRAFT

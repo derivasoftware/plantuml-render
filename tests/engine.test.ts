@@ -60,3 +60,29 @@ describe("engine", () => {
     expect(svg).toContain("&lt;X&amp;Y&gt;");
   });
 });
+
+describe("engine", () => {
+  it("draws a producer's notice under the content and alone for an empty document", async () => {
+    const plain = await renderSvg(IR);
+    const noted = await renderSvg({ ...IR, notice: "Activity diagram: not drawn.\nRender it with plantuml.jar." });
+    expect(noted).toContain('class="pr-notice"');
+    expect(noted).toContain("Render it with plantuml.jar.");
+    const height = (svg: string) => Number(/height="(\d+)"/.exec(svg)![1]);
+    expect(height(noted)).toBeGreaterThan(height(plain));
+
+    const empty = await renderSvg({ ir: 1, nodes: [], edges: [] });
+    expect(empty).toContain("Nothing to draw.");
+    expect(Number(/width="(\d+)"/.exec(empty)![1])).toBeGreaterThan(30);
+  });
+
+  it("draws the notice in the sequence layout too", async () => {
+    const svg = await renderSvg({
+      ir: 1,
+      nodes: [{ id: "A", kind: "lifeline", label: "A" }, { id: "B", kind: "lifeline", label: "B" }],
+      edges: [{ from: "A", to: "B", kind: "message", label: "go", order: 0 }],
+      notice: "Something to say.",
+    });
+    expect(svg).toContain('class="pr-notice"');
+    expect(svg).toContain("Something to say.");
+  });
+});

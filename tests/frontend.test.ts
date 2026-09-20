@@ -86,3 +86,47 @@ describe("reversed and decorated operators", () => {
     });
   });
 });
+
+describe("diagram kinds that are not drawn", () => {
+  const STATE = "@startuml demo\n[*] --> Init\nInit --> Nom : ready\nNom --> [*]\n@enduml\n";
+  const ACTIVITY = "@startuml demo2\nstart\n:Read input;\nif (valid?) then (yes)\n  :Process;\nelse (no)\n  :Reject;\nendif\nstop\n@enduml\n";
+
+  it("returns an empty IR with a notice naming the kind", async () => {
+    const state = await pumlToIr(STATE);
+    expect(state.nodes).toEqual([]);
+    expect(state.edges).toEqual([]);
+    expect(state.title).toBe("demo");
+    expect(state.notice).toMatch(/^State diagram: not drawn by plantuml-render/);
+    const activity = await pumlToIr(ACTIVITY);
+    expect(activity.notice).toMatch(/^Activity diagram/);
+    expect(activity.title).toBe("demo2");
+  });
+
+  it("recognises use case, component sources and non-UML start tags", async () => {
+    expect((await pumlToIr("@startuml\nactor User\nusecase (Login) as UC1\nUser --> UC1\n@enduml\n")).notice).toMatch(/^Use case diagram/);
+    expect((await pumlToIr("@startuml\ncomponent [Web] as W\ndatabase DB\nW --> DB\n@enduml\n")).notice).toMatch(/^Component diagram/);
+    expect((await pumlToIr("@startmindmap\n* root\n** child\n@endmindmap\n")).notice).toMatch(/^Mindmap diagram/);
+  });
+
+  it("says so when relations only reference undeclared entities", async () => {
+    const ir = await pumlToIr("@startuml\nA --> B\nB ..> C\n@enduml\n");
+    expect(ir.nodes).toEqual([]);
+    expect(ir.edges).toHaveLength(2);
+    expect(ir.notice).toBe("Nothing drawn: 2 relations reference entities that are not declared in this diagram.");
+  });
+
+  it("leaves class and sequence diagrams without a notice", async () => {
+    expect((await pumlToIr(PUML)).notice).toBeUndefined();
+    const seq = await pumlToIr("@startuml\nparticipant A\nA -> B : go\nalt ok\n  B --> A : done\nend\n@enduml\n");
+    expect(seq.notice).toBeUndefined();
+    expect(seq.nodes.some((n) => n.kind === "lifeline")).toBe(true);
+    const noted = await pumlToIr("@startuml\nclass X\nnote right of X\n  start here, stop there\nend note\n@enduml\n");
+    expect(noted.notice).toBeUndefined();
+  });
+
+  it("notices validate against the schema", async () => {
+    const { validateIr } = await import("../src/render/ir.js");
+    expect(() => validateIr(JSON.parse(JSON.stringify(pumlToIr(STATE))))).not.toThrow;
+    expect(validateIr(JSON.parse(JSON.stringify(await pumlToIr(STATE)))).notice).toContain("State diagram");
+  });
+});

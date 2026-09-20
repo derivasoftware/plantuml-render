@@ -1,0 +1,29 @@
+@startuml CL_NotDrawnNotice
+' requirement REQ-00021-1
+
+' The entities that carry a diagram kind the renderer does not draw from
+' the source to the SVG and to stderr: the frontend classifies the tree
+' and emits an IR whose `notice` names the kind, both emitters draw the
+' notice through the shared markup, and the command line repeats it.
+' Module subs are the unit of composition in this LLD, so the chapter
+' shows the whole modules involved.
+
+!startsub NotDrawnNotice
+
+!includesub CL_FrontendModule.puml!FrontendModule
+!includesub CL_IrModule.puml!IrModule
+!includesub CL_SharedModule.puml!SharedModule
+!includesub CL_EngineModule.puml!EngineModule
+!includesub CL_SequenceModule.puml!SequenceModule
+!includesub CL_CliModule.puml!CliModule
+
+render.cli.main ..> render.frontend.pumlToIr : classify, IR with notice
+render.cli.main ..> render.engine.renderSvg
+render.engine.renderSvg ..> render.sequence.renderSequenceSvg : lifelines
+render.engine.renderSvg ..> render.shared.noticeMarkup
+render.sequence.renderSequenceSvg ..> render.shared.noticeMarkup
+render.frontend.pumlToIr ..> render.ir.validateIr
+
+!endsub
+
+@enduml
