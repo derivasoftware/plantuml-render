@@ -20,7 +20,7 @@ import type { ElkExtendedEdge, ElkNode } from "elkjs/lib/elk-api.js";
 
 import { type IrEdge, type IrNode, type RenderIr, validateIr } from "./ir.js";
 import { renderSequenceSvg } from "./sequence.js";
-import { BADGE, CHAR_W, LINE_H, PAD, STYLE, esc, idPrefix, linked, memberMarkup, refAttrs, svgRoot, tooltip } from "./shared.js";
+import { BADGE, CHAR_W, LINE_H, PAD, STYLE, esc, idPrefix, linked, memberMarkup, refAttrs, svgRoot, tooltip, noticeMarkup } from "./shared.js";
 
 const SECTION_GAP = 4;
 const GAP_X = 40; // between nodes of one layer
@@ -551,6 +551,18 @@ function emit(ir: RenderIr, placed: Placed[], routes: Map<number, Route>): strin
   const xs = [...placed.map((p) => p.x), ...placed.map((p) => p.x + p.w)];
   const ys = [...placed.map((p) => p.y), ...placed.map((p) => p.y + p.h)];
   for (const route of routes.values()) for (const p of route.points) { xs.push(p.x); ys.push(p.y); }
+  // A producer's notice sits below the content, or alone when there is
+  // nothing else; an IR with nothing to draw says so (REQ-00021-1).
+  const notice = ir.notice ?? (placed.length === 0 ? "Nothing to draw." : undefined);
+  let noticeBlock = "";
+  if (notice) {
+    const x = xs.length ? Math.min(...xs) : 0;
+    const y = ys.length ? Math.max(...ys) + 2 * PAD : 0;
+    const block = noticeMarkup(notice, x, y);
+    noticeBlock = block.markup;
+    xs.push(x, x + block.w);
+    ys.push(y, y + block.h);
+  }
   const minX = (xs.length ? Math.min(...xs) : 0) - PAD;
   const minY = (ys.length ? Math.min(...ys) : 0) - PAD;
   const width = (xs.length ? Math.max(...xs) : 10) + PAD - minX;
@@ -578,6 +590,7 @@ function emit(ir: RenderIr, placed: Placed[], routes: Map<number, Route>): strin
     `<style>${STYLE}</style>`,
     `<defs>${markers(px)}</defs>`,
     body,
+    noticeBlock,
     "</svg>",
   ]
     .filter(Boolean)

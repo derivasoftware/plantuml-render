@@ -10,3 +10,9 @@ same deterministic SVG as PlantUML text does.
 
 Determinism is the contract: same input, byte-identical SVG, so rendered
 diagrams can be committed and diffed.
+
+`notice` (optional, at the root) is a producer's message drawn inside the
+SVG in a muted, dashed box: below the content, or alone when there is
+nothing else. The bundled frontend uses it for the diagram kinds it does
+not draw. A document with no nodes and no notice is drawn as "Nothing to
+draw." rather than as an empty frame.

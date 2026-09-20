@@ -39,8 +39,12 @@ source always produces the same SVG.
 
 ## Not drawn (kept lossless)
 
-Activity, deployment, component, state, mindmap, gantt. Use `plantuml.jar`
-for those; the SVG says so instead of leaving a blank.
+Activity, state, use case, component, deployment, mindmap, gantt and the
+other non-UML kinds. The source is kept as it is and the SVG carries a
+notice naming the kind instead of an empty frame; the command line repeats
+the notice on stderr and still exits 0, so a batch keeps going. A class
+diagram whose relations only reference undeclared entities gets the same
+kind of notice. Render those kinds with `plantuml.jar`.
 
 ## Recommendations for readable output
 

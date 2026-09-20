@@ -70,6 +70,9 @@ export interface IrEdge extends IrLinks {
 export interface RenderIr {
   ir: 1;
   title?: string;
+  /** A producer's message drawn inside the SVG: which diagram kind is not
+   * drawn and why (REQ-00021-1). */
+  notice?: string;
   nodes: IrNode[];
   edges: IrEdge[];
 }

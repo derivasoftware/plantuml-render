@@ -56,6 +56,8 @@ export const STYLE = `
   .pr-diagram .pr-container > rect { fill: var(--pr-container-fill); stroke: var(--pr-container-stroke); }
   .pr-diagram .pr-container > .pr-header { fill: var(--pr-muted); font-weight: 600; font-size: 11px; letter-spacing: .4px; }
   .pr-diagram .pr-note path { fill: var(--pr-note-fill); stroke: var(--pr-note-stroke); }
+  .pr-diagram .pr-notice rect { fill: var(--pr-container-fill); stroke: var(--pr-muted); stroke-dasharray: 5 3; }
+  .pr-diagram .pr-notice text { fill: var(--pr-muted); font-style: italic; }
   .pr-diagram .pr-edge { stroke: var(--pr-edge); fill: none; }
   .pr-diagram .pr-edge-realization, .pr-diagram .pr-edge-dependency, .pr-diagram .pr-edge-attachment { stroke-dasharray: 6 4; }
   .pr-diagram .pr-edge-label { fill: var(--pr-muted); font-size: 11px; paint-order: stroke; stroke: var(--pr-box-fill); stroke-width: 3px; stroke-linejoin: round; }
@@ -183,4 +185,17 @@ export function linked(href: string | undefined, markup: string): string {
 /** The `<title>` child (tooltip) of a linked element, if any. */
 export function tooltip(title: string | undefined): string {
   return title ? `<title>${esc(title)}</title>` : "";
+}
+
+/** A producer's notice (REQ-00021-1): a dashed, muted box with one text
+ * line per `\n`, at the position the emitter chooses. */
+export function noticeMarkup(text: string, x: number, y: number): { markup: string; w: number; h: number } {
+  const lines = text.split(/\\n|\n/);
+  const w = Math.max(...lines.map((l) => l.length)) * CHAR_W + 2 * PAD;
+  const h = lines.length * LINE_H + 2 * PAD - 4;
+  const markup =
+    `<g class="pr-notice"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3"/>` +
+    lines.map((l, i) => `<text x="${x + PAD}" y="${y + PAD + 4 + i * LINE_H}">${esc(l)}</text>`).join("") +
+    "</g>";
+  return { markup, w, h };
 }

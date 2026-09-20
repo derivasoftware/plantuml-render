@@ -25,6 +25,26 @@ describe("cli", () => {
     expect(readFileSync(out2, "utf8")).toContain('id="a"');
   });
 
+  it("reports a kind that is not drawn on stderr, draws the notice and exits 0", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "pr-"));
+    const puml = join(dir, "flow.puml");
+    writeFileSync(puml, "@startuml\nstart\n:Read;\nstop\n@enduml\n");
+    const out = join(dir, "flow.svg");
+    let err = "";
+    expect(await main([puml, "-o", out], { stderr: (t) => (err += t) })).toBe(0);
+    expect(err).toContain("flow.puml: Activity diagram: not drawn by plantuml-render (kept lossless). Render this kind with plantuml.jar.");
+    expect(readFileSync(out, "utf8")).toContain('class="pr-notice"');
+  });
+
+  it("reports an invalid --ir document as one line with exit code 1", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "pr-"));
+    const irFile = join(dir, "bad.json");
+    writeFileSync(irFile, "{}");
+    let err = "";
+    expect(await main(["--ir", irFile], { stderr: (t) => (err += t), stdout: () => undefined })).toBe(1);
+    expect(err).toContain("invalid render-IR");
+  });
+
   it("fails usage without input", async () => {
     expect(await main([])).toBe(2);
   });

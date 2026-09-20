@@ -28,6 +28,9 @@ namespace render.shared {
   class svgRoot <<function>> {
     + svgRoot(minX: number, minY: number, width: number, height: number) : string
   }
+  class noticeMarkup <<function>> {
+    + noticeMarkup(text: string, x: number, y: number) : { markup: string; w: number; h: number }
+  }
 }
 
 !endsub

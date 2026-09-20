@@ -2,7 +2,7 @@
  "$schema": "https://json-schema.org/draft/2020-12/schema",
  "$id": "https://github.com/derivasoftware/plantuml-render/schema/render-ir.schema.json",
  "title": "render-IR",
- "description": "Origin-neutral diagram intermediate representation consumed by the plantuml-render engine. Versioned under semver alongside the engine: removing or renaming a field is a breaking change; new drawing capabilities are minor. Emitters (the bundled PlantUML frontend, argos design-render, any future producer) validate against this schema in their own CI. Links: href, title and refs are optional on nodes and edges (contract v1, additive).",
+ "description": "Origin-neutral diagram intermediate representation consumed by the plantuml-render engine. Versioned under semver alongside the engine: removing or renaming a field is a breaking change; new drawing capabilities are minor. Emitters (the bundled PlantUML frontend, argos design-render, any future producer) validate against this schema in their own CI. Links: href, title and refs are optional on nodes and edges (contract v1, additive). A root notice is optional (contract v1, additive).",
  "type": "object",
  "required": [
   "ir",
@@ -17,6 +17,11 @@
   },
   "title": {
    "type": "string"
+  },
+  "notice": {
+   "type": "string",
+   "minLength": 1,
+   "description": "A producer's message drawn inside the SVG, e.g. which diagram kind is not drawn and why (contract v1, additive)."
   },
   "nodes": {
    "type": "array",
