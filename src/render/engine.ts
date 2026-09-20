@@ -56,6 +56,11 @@ export async function renderSvg(input: unknown, opts: RenderOptions = {}): Promi
   if (ir.nodes.some((n) => n.kind === "lifeline")) {
     return renderSequenceSvg(ir);
   }
+  // Swimlanes are columns (spike PUML-53): layers from ELK, x from the lane.
+  if (ir.nodes.some((n) => n.kind === "container" && n.classifier === "swimlane")) {
+    const lanes = await layoutLanes(ir);
+    return emit(ir, lanes.placed, lanes.routes);
+  }
   const { placed, routes } = await layout(ir);
   if (opts.positions && Object.keys(opts.positions).length > 0) {
     // Dragged nodes leave the router's polylines behind: edges fall back
@@ -127,6 +132,17 @@ function noteLines(node: IrNode): string[] {
 }
 
 function nodeSize(node: IrNode): { w: number; h: number } {
+  if (node.kind === "action") {
+    const lines = noteLines(node);
+    return { w: Math.max(1, ...lines.map((l) => l.length)) * CHAR_W + 2 * PAD + 8, h: lines.length * LINE_H + 2 * PAD - 4 };
+  }
+  if (node.kind === "decision") {
+    if (!node.label) return { w: 24, h: 24 };
+    return { w: node.label.length * CHAR_W + 2 * PAD + 28, h: LINE_H + 22 };
+  }
+  if (node.kind === "start") return { w: 20, h: 20 };
+  if (node.kind === "end") return { w: 24, h: 24 };
+  if (node.kind === "bar") return { w: 120, h: 6 };
   if (node.kind === "note") {
     const lines = noteLines(node);
     return {
@@ -283,7 +299,7 @@ function toElk(ir: RenderIr): ElkGraph {
       labels: edge.label ? [{ text: edge.label, width: edge.label.length * LABEL_CHAR_W + 8, height: LABEL_H }] : undefined,
     } as ElkExtendedEdge;
   };
-  const root: ElkNode = { id: "root", layoutOptions: LAYOUT_OPTIONS, children: [], edges: [] };
+  const root: ElkNode = { id: "root", layoutOptions: { ...LAYOUT_OPTIONS, ...(ir.edges.some((e) => e.kind === "flow") ? { "elk.layered.spacing.nodeNodeBetweenLayers": "36" } : {}) }, children: [], edges: [] };
 
   const place = (level: string, host: ElkNode) => {
     const children = kids.get(level) ?? [];
@@ -419,6 +435,126 @@ async function layout(ir: RenderIr): Promise<{ placed: Placed[]; routes: Map<num
   return { placed, routes };
 }
 
+const LANE_PAD = 28;
+const LANE_HEAD = 28;
+
+/** Swimlane layout (spike PUML-53): one ELK pass over the flow alone gives
+ * the layers (y) and the order inside each lane; every lane becomes a
+ * column whose bands of vertically overlapping nodes are packed and
+ * centred, so a linear chain runs straight down its lane. Edges are routed
+ * orthogonally by hand: down through the gap between layers, back edges
+ * through a channel on the right. */
+async function layoutLanes(ir: RenderIr): Promise<{ placed: Placed[]; routes: Map<number, Route> }> {
+  const byId = new Map(ir.nodes.map((n) => [n.id, n]));
+  const lanes = ir.nodes.filter((n) => n.kind === "container" && n.classifier === "swimlane");
+  const laneIndex = new Map(lanes.map((l, i) => [l.id, i]));
+  const laneOf = (n: IrNode): number => {
+    for (let cur: IrNode | undefined = n; cur; cur = cur.parent ? byId.get(cur.parent) : undefined) {
+      const i = laneIndex.get(cur.id);
+      if (i !== undefined) return i;
+    }
+    return 0;
+  };
+  const leaves = ir.nodes.filter((n) => n.kind !== "container");
+  const leafIds = new Set(leaves.map((n) => n.id));
+  const root: ElkNode = {
+    id: "root",
+    layoutOptions: { ...LAYOUT_OPTIONS, "elk.layered.spacing.nodeNodeBetweenLayers": "36" },
+    children: leaves.map((n) => ({ id: n.id, ...nodeSize(n) })).map((c) => ({ id: c.id, width: c.w, height: c.h })),
+    edges: ir.edges
+      .map((e, i) => ({ id: `e${i}`, sources: [e.from], targets: [e.to] }))
+      .filter((e) => leafIds.has(e.sources[0]) && leafIds.has(e.targets[0])),
+  };
+  const laid = await elk.layout(root);
+  type Pos = { node: IrNode; x: number; y: number; w: number; h: number; lx: number };
+  const pos = new Map<string, Pos>();
+  for (const c of laid.children ?? []) {
+    const node = byId.get(c.id)!;
+    pos.set(c.id, { node, x: c.x ?? 0, y: c.y ?? 0, w: c.width ?? 0, h: c.height ?? 0, lx: 0 });
+  }
+  const laneW = lanes.map(() => 0);
+  for (let i = 0; i < lanes.length; i++) {
+    const mine = [...pos.values()].filter((p) => laneOf(p.node) === i).sort((a, b) => a.y - b.y || a.x - b.x);
+    const bands: Pos[][] = [];
+    let bottom = -Infinity;
+    for (const p of mine) {
+      if (p.y < bottom && bands.length) bands[bands.length - 1].push(p);
+      else bands.push([p]);
+      bottom = Math.max(bottom, p.y + p.h);
+    }
+    const widths = bands.map((band) => {
+      band.sort((a, b) => a.x - b.x);
+      let x = 0;
+      for (const p of band) {
+        p.lx = x;
+        x += p.w + GAP_X;
+      }
+      return x - GAP_X;
+    });
+    laneW[i] = Math.max(0, ...widths);
+    bands.forEach((band, b) => band.forEach((p) => (p.lx += (laneW[i] - widths[b]) / 2)));
+  }
+  const laneX: number[] = [];
+  let x = PAD;
+  for (let i = 0; i < lanes.length; i++) {
+    laneX.push(x);
+    x += 2 * LANE_PAD + laneW[i];
+  }
+  const top = PAD + LANE_HEAD + PAD;
+  let bottom = top;
+  const placed: Placed[] = [];
+  const byLeaf = new Map<string, Placed>();
+  for (const p of pos.values()) {
+    const lane = laneOf(p.node);
+    const q: Placed = { node: p.node, x: Math.round(laneX[lane] + LANE_PAD + p.lx), y: Math.round(top + p.y), w: p.w, h: p.h };
+    placed.push(q);
+    byLeaf.set(p.node.id, q);
+    bottom = Math.max(bottom, q.y + q.h);
+  }
+  const height = bottom + PAD;
+  // partitions: the bounding box of their descendants
+  for (const c of ir.nodes.filter((n) => n.kind === "container" && n.classifier !== "swimlane")) {
+    const inside = placed.filter((p) => {
+      for (let cur: IrNode | undefined = p.node; cur; cur = cur.parent ? byId.get(cur.parent) : undefined) if (cur.parent === c.id) return true;
+      return false;
+    });
+    if (!inside.length) continue;
+    const x0 = Math.min(...inside.map((p) => p.x)) - CONTAINER_PAD;
+    const y0 = Math.min(...inside.map((p) => p.y)) - CONTAINER_LABEL_H - 6;
+    const x1 = Math.max(...inside.map((p) => p.x + p.w)) + CONTAINER_PAD;
+    const y1 = Math.max(...inside.map((p) => p.y + p.h)) + CONTAINER_PAD / 2;
+    placed.push({ node: c, x: x0, y: y0, w: x1 - x0, h: y1 - y0 });
+  }
+  lanes.forEach((lane, i) => placed.push({ node: lane, x: laneX[i], y: PAD, w: 2 * LANE_PAD + laneW[i], h: height - PAD }));
+  // routes
+  const routes = new Map<number, Route>();
+  let channels = 0;
+  ir.edges.forEach((edge, index) => {
+    if (edge.kind !== "flow") return;
+    const s = byLeaf.get(edge.from);
+    const t = byLeaf.get(edge.to);
+    if (!s || !t) return;
+    const sx = Math.round(s.x + s.w / 2);
+    const tx = Math.round(t.x + t.w / 2);
+    if (t.y >= s.y + s.h) {
+      const y0 = s.y + s.h;
+      const y1 = t.y;
+      const mid = Math.round((y0 + y1) / 2);
+      const points = sx === tx ? [{ x: sx, y: y0 }, { x: tx, y: y1 }] : [{ x: sx, y: y0 }, { x: sx, y: mid }, { x: tx, y: mid }, { x: tx, y: y1 }];
+      const left = tx < sx;
+      const label = edge.label ? { x: left ? sx - 6 - edge.label.length * LABEL_CHAR_W : sx + 6, y: y0 + 13 } : undefined;
+      routes.set(index, { points, label });
+    } else {
+      const channel = Math.max(s.x + s.w, t.x + t.w) + 18 + 10 * (channels++ % 4);
+      const sy = Math.round(s.y + s.h / 2);
+      const ty = Math.round(t.y + t.h / 2);
+      const points = [{ x: s.x + s.w, y: sy }, { x: channel, y: sy }, { x: channel, y: ty }, { x: t.x + t.w, y: ty }];
+      routes.set(index, { points, label: edge.label ? { x: channel + 4, y: Math.round((sy + ty) / 2) } : undefined });
+    }
+  });
+  return { placed, routes };
+}
+
 // ── SVG emission ─────────────────────────────────────────────────────────────
 
 const markers = (px: string) => `
@@ -426,6 +562,7 @@ const markers = (px: string) => `
   <marker id="${px}diamond-filled" viewBox="0 0 16 10" refX="15" refY="5" markerWidth="16" markerHeight="10" orient="auto"><path class="pr-filled" d="M1,5 L8,1 L15,5 L8,9 Z"/></marker>
   <marker id="${px}diamond" viewBox="0 0 16 10" refX="15" refY="5" markerWidth="16" markerHeight="10" orient="auto"><path d="M1,5 L8,1 L15,5 L8,9 Z"/></marker>
   <marker id="${px}arrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto"><path class="pr-open" d="M1,1 L11,6 L1,11"/></marker>
+  <marker id="${px}tri-solid" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="11" markerHeight="11" orient="auto"><path class="pr-solid" d="M1,1 L11,6 L1,11 Z"/></marker>
 `;
 
 const MARKER_BY_KIND: Record<string, string> = {
@@ -435,6 +572,7 @@ const MARKER_BY_KIND: Record<string, string> = {
   aggregation: "diamond",
   dependency: "arrow",
   association: "arrow",
+  flow: "tri-solid",
 };
 
 function anchor(p: Placed, other: Placed): { x: number; y: number } {
@@ -464,9 +602,38 @@ function emitNode(p: Placed, px: string): string {
     `<g id="${px}${esc(node.id)}" data-id="${esc(node.id)}" class="${classes}"${refAttrs(node.refs)}>`,
     tooltip(node.title),
   ];
-  if (node.kind === "container") {
+  if (node.kind === "container" && classifier === "swimlane") {
+    parts.push(`<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}"/>`);
+    parts.push(`<line class="pr-sep" x1="${p.x}" y1="${p.y + LANE_HEAD}" x2="${p.x + p.w}" y2="${p.y + LANE_HEAD}"/>`);
+    parts.push(`<text class="pr-header" x="${p.x + p.w / 2}" y="${p.y + 18}" text-anchor="middle">${esc(node.label)}</text>`);
+  } else if (node.kind === "container") {
     parts.push(`<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="6"/>`);
     parts.push(`<text class="pr-header" x="${p.x + 10}" y="${p.y + 15}">${esc(node.label)}</text>`);
+  } else if (node.kind === "action") {
+    parts.push(`<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="10"/>`);
+    noteLines(node).forEach((line, i) =>
+      parts.push(`<text x="${p.x + p.w / 2}" y="${p.y + PAD + 8 + i * LINE_H}">${esc(line)}</text>`),
+    );
+  } else if (node.kind === "decision") {
+    const cx = p.x + p.w / 2;
+    const cy = p.y + p.h / 2;
+    parts.push(`<path d="M${cx},${p.y} L${p.x + p.w},${cy} L${cx},${p.y + p.h} L${p.x},${cy} Z"/>`);
+    if (node.label) parts.push(`<text x="${cx}" y="${cy + 4}">${esc(node.label)}</text>`);
+  } else if (node.kind === "start") {
+    parts.push(`<circle cx="${p.x + p.w / 2}" cy="${p.y + p.h / 2}" r="${p.w / 2 - 1}"/>`);
+  } else if (node.kind === "end") {
+    const cx = p.x + p.w / 2;
+    const cy = p.y + p.h / 2;
+    const r = p.w / 2 - 1;
+    parts.push(`<circle class="pr-ring" cx="${cx}" cy="${cy}" r="${r}"/>`);
+    if (node.classifier === "end") {
+      const k = r * 0.55;
+      parts.push(`<path class="pr-cross" d="M${cx - k},${cy - k} L${cx + k},${cy + k} M${cx - k},${cy + k} L${cx + k},${cy - k}"/>`);
+    } else {
+      parts.push(`<circle class="pr-core" cx="${cx}" cy="${cy}" r="${r - 4}"/>`);
+    }
+  } else if (node.kind === "bar") {
+    parts.push(`<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="2"/>`);
   } else if (node.kind === "note") {
     const f = NOTE_FOLD;
     parts.push(`<path d="M${p.x},${p.y} H${p.x + p.w - f} L${p.x + p.w},${p.y + f} V${p.y + p.h} H${p.x} Z"/>`);

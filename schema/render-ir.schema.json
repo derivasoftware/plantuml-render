@@ -2,7 +2,7 @@
  "$schema": "https://json-schema.org/draft/2020-12/schema",
  "$id": "https://github.com/derivasoftware/plantuml-render/schema/render-ir.schema.json",
  "title": "render-IR",
- "description": "Origin-neutral diagram intermediate representation consumed by the plantuml-render engine. Versioned under semver alongside the engine: removing or renaming a field is a breaking change; new drawing capabilities are minor. Emitters (the bundled PlantUML frontend, argos design-render, any future producer) validate against this schema in their own CI. Links: href, title and refs are optional on nodes and edges (contract v1, additive). A root notice is optional (contract v1, additive).",
+ "description": "Origin-neutral diagram intermediate representation consumed by the plantuml-render engine. Versioned under semver alongside the engine: removing or renaming a field is a breaking change; new drawing capabilities are minor. Emitters (the bundled PlantUML frontend, argos design-render, any future producer) validate against this schema in their own CI. Links: href, title and refs are optional on nodes and edges (contract v1, additive). A root notice is optional (contract v1, additive). Activity diagrams add the node kinds action, decision, start, end and bar and the edge kind flow; swimlanes and partitions are containers with classifier swimlane / partition (contract v1, additive).",
  "type": "object",
  "required": [
   "ir",
@@ -57,7 +57,12 @@
       "note",
       "lifeline",
       "frame",
-      "divider"
+      "divider",
+      "action",
+      "decision",
+      "start",
+      "end",
+      "bar"
      ]
     },
     "label": {
@@ -189,7 +194,8 @@
       "dependency",
       "association",
       "attachment",
-      "message"
+      "message",
+      "flow"
      ]
     },
     "label": {

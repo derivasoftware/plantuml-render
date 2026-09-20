@@ -1,0 +1,10 @@
+verification:
+  id: VER-00025-1
+  req_id: REQ-00025-1
+  title: Layout tests read the lane rectangles and the nodes back from the SVG, lanes are disjoint columns in declaration order, every node sits inside its lane, a chain inside a lane runs straight, and the output is deterministic
+  description: >
+    Layout tests read the lane rectangles and the nodes back from the SVG, lanes are disjoint columns in declaration order, every node sits inside its lane, a chain inside a lane runs straight, and the output is deterministic
+  method: test
+  test_ids:
+    - tests/activity.test.ts::swimlane layout
+  status: DRAFT

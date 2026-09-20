@@ -45,6 +45,10 @@
 !includesub ./CL_FrontendModule.puml!FrontendModule
 !endsub
 
+!startsub ActivityModule
+!includesub ./CL_ActivityModule.puml!ActivityModule
+!endsub
+
 !startsub ServeModule
 !includesub ./CL_ServeModule.puml!ServeModule
 !endsub

@@ -98,8 +98,10 @@ describe("diagram kinds that are not drawn", () => {
     expect(state.title).toBe("demo");
     expect(state.notice).toMatch(/^State diagram: not drawn by plantuml-render/);
     const activity = await pumlToIr(ACTIVITY);
-    expect(activity.notice).toMatch(/^Activity diagram/);
+    expect(activity.notice).toBeUndefined();
     expect(activity.title).toBe("demo2");
+    expect(activity.nodes.map((n) => n.kind)).toEqual(["start", "action", "decision", "action", "action", "end"]);
+    expect(activity.edges.filter((e) => e.kind === "flow").map((e) => e.label ?? "")).toEqual(["", "", "yes", "no", "", ""]);
   });
 
   it("recognises use case, component sources and non-UML start tags", async () => {

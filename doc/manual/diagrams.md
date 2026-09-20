@@ -29,22 +29,39 @@ frames with their condition, `== dividers ==`, `note over|left|right`.
 Lanes are spaced by what crosses them, frames wrap only the participants
 they involve, and rows grow to fit multi-line notes.
 
+## Activity diagrams (new syntax)
+
+`start`, `stop`, `end`, `:action;` (multi-line with `\n`), `-> label;`
+arrows, `if/elseif/else/endif` with `(condition)` and `(branch)` labels,
+`switch/case`, `while ... endwhile` with `is`/`not` labels and `break`,
+`repeat ... repeat while` with `backward:action;`, `fork/fork again/end
+fork` (bars) and `end merge`, `split/split again/end split`, `kill` and
+`detach`, `partition Name { }`, `|Swimlane|` lanes and `note left|right`.
+Actions are rounded boxes, decisions diamonds with the condition inside
+and the branch labels on the flows, start a dot, stop a bullseye, end a
+crossed circle, fork and join black bars. The legacy activity syntax
+(`if "test" then`, `-->[label] "action"`) is not drawn.
+
 ## Layout
 
 Class diagrams are laid out by ELK's layered algorithm: bases above their
 subtypes, containers laid out with their children, edges routed around the
 boxes with their labels placed by the router, and the disconnected pieces
-of a diagram packed into a grid. The output is deterministic: the same
-source always produces the same SVG.
+of a diagram packed into a grid. Activity diagrams use the same algorithm
+top-down; with swimlanes, every lane is a column, the layers still come
+from the algorithm and the flows are routed orthogonally through the gaps
+between layers (back edges through a channel on the right). The output is
+deterministic: the same source always produces the same SVG.
 
 ## Not drawn (kept lossless)
 
-Activity, state, use case, component, deployment, mindmap, gantt and the
-other non-UML kinds. The source is kept as it is and the SVG carries a
-notice naming the kind instead of an empty frame; the command line repeats
-the notice on stderr and still exits 0, so a batch keeps going. A class
-diagram whose relations only reference undeclared entities gets the same
-kind of notice. Render those kinds with `plantuml.jar`.
+State, use case, component, deployment, mindmap, gantt, the legacy
+activity syntax and the other non-UML kinds. The source is kept as it is
+and the SVG carries a notice naming the kind instead of an empty frame;
+the command line repeats the notice on stderr and still exits 0, so a
+batch keeps going. A class diagram whose relations only reference
+undeclared entities gets the same kind of notice. Render those kinds with
+`plantuml.jar`.
 
 ## Recommendations for readable output
 

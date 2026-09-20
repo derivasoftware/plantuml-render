@@ -14,7 +14,12 @@ export type NodeKind =
   | "note"
   | "lifeline"
   | "frame"
-  | "divider";
+  | "divider"
+  | "action"
+  | "decision"
+  | "start"
+  | "end"
+  | "bar";
 
 export type EdgeKind =
   | "inheritance"
@@ -24,7 +29,8 @@ export type EdgeKind =
   | "dependency"
   | "association"
   | "attachment"
-  | "message";
+  | "message"
+  | "flow";
 
 /** Navigation hooks a producer may attach to a node or an edge. */
 export interface IrLinks {

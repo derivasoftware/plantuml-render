@@ -1,0 +1,26 @@
+@startuml CL_ActivityDiagrams
+' requirement REQ-00025-1
+
+' The entities that take an activity diagram from the source to the SVG:
+' the frontend hands an activity tree to the activity module (which owns
+' REQ-00024-1 and folds the tree into a flow graph of the IR's activity
+' kinds); the engine draws the shapes and lays swimlanes out as columns
+' with the shared markup. Module subs are the unit of composition in this
+' LLD.
+
+!startsub ActivityDiagrams
+
+!includesub CL_FrontendModule.puml!FrontendModule
+!includesub CL_ActivityModule.puml!ActivityModule
+!includesub CL_IrModule.puml!IrModule
+!includesub CL_SharedModule.puml!SharedModule
+!includesub CL_EngineModule.puml!EngineModule
+
+render.frontend.pumlToIr ..> render.activity.isActivity : classify
+render.frontend.pumlToIr ..> render.activity.activityToIr : flow graph
+render.activity.activityToIr ..> render.ir.validateIr : contract
+render.engine.renderSvg ..> render.shared.svgRoot : shapes, columns
+
+!endsub
+
+@enduml

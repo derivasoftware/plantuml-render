@@ -1,0 +1,11 @@
+verification:
+  id: VER-00024-1
+  req_id: REQ-00024-1
+  title: Frontend tests fold if/elseif/else, loops with break and backward, fork/join, end merge, split, switch, notes, arrow labels and kill into the expected flow graph; drawing tests check the shapes, the solid arrowhead and determinism
+  description: >
+    Frontend tests fold if/elseif/else, loops with break and backward, fork/join, end merge, split, switch, notes, arrow labels and kill into the expected flow graph; drawing tests check the shapes, the solid arrowhead and determinism
+  method: test
+  test_ids:
+    - tests/activity.test.ts::activity frontend
+    - tests/activity.test.ts::activity drawing
+  status: DRAFT

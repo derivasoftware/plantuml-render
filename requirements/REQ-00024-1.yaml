@@ -1,0 +1,31 @@
+requirement:
+  id: REQ-00024-1
+  title: The renderer shall draw activity diagrams written in the new syntax as flowcharts
+  description: >
+    The renderer shall draw activity diagrams written in the new syntax as flowcharts
+  rationale: >
+    Spike PUML-53 (doc/spikes/SPIKE-activity-diagrams.md). The render-IR
+    gains the node kinds action, decision, start, end and bar and the edge
+    kind flow (contract v1, additive); partitions are containers with
+    classifier partition. The activity frontend folds the statement list
+    into a flow graph with a frontier of open flows: every new node takes
+    the frontier's flows with their branch labels and becomes the
+    frontier; if/elseif/else and switch/case become decisions with the
+    condition inside and the branch labels on the flows, while and repeat
+    become decisions with a back edge (repeat's backward actions sit on
+    it, break leaves through the loop's exit), fork/end fork become two
+    bars, end merge and split converge on the next node, kill and detach
+    empty the frontier, notes attach to the last node, `-> label;` labels
+    the next flow. The engine draws rounded actions, diamonds, a start
+    dot, a stop bullseye, an end crossed circle and black bars, with a
+    solid arrowhead on flows, laid out top-down by the layered algorithm
+    with 36 px between layers. The legacy syntax stays a raw, not-drawn
+    kind with its notice (REQ-00021-1).
+  status: DRAFT
+  asil: QM
+  parent_ids:
+    - SREQ-00009-1
+  tags:
+    - frontend
+    - engine
+    - activity

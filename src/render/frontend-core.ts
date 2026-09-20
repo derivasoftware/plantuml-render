@@ -7,6 +7,7 @@
  * simply not drawn — the IR carries what the subset expresses.
  */
 
+import { activityToIr, isActivity } from "./activity.js";
 import { type IrEdge, type IrNode, type RenderIr } from "./ir.js";
 
 /** Structural view of a tree-sitter node — satisfied by both the node
@@ -208,8 +209,11 @@ const START_TAGS: Record<string, string> = {
   salt: "salt wireframe", ditaa: "ditaa", dot: "dot", chronology: "chronology", regex: "regex",
 };
 const RAW_LINE_KINDS: [RegExp, string][] = [
-  [/^(start|stop|fork|end ?fork|while|endwhile|repeat|endif|split|end ?split|detach|kill|backward)\b/, "activity"],
-  [/^if\s*\(/, "activity"],
+  // the new activity syntax is structural (activity.ts); only the legacy
+  // one (`if "test" then`, `-->[label] "action"`) is left as raw lines
+  [/^(start|stop|fork|end ?fork|while|endwhile|repeat|endif|split|end ?split|detach|kill|backward)\b/, "legacy-syntax activity"],
+  [/^if\s*\(/, "legacy-syntax activity"],
+  [/^-+>\s*\[/, "legacy-syntax activity"],
   [/^(\[\*\]|state\b)/, "state"],
   [/^usecase\b/, "use case"],
   [/^(component|artifact)\b/, "component"],
@@ -264,6 +268,7 @@ export function hyperlink(text: string): { href?: string; title?: string } {
 }
 
 export function treeToIr(root: CstNode): RenderIr {
+  if (isActivity(root)) return activityToIr(root);
   const kind = notDrawnKind(root);
   if (kind) return { ir: 1, title: diagramTitle(root), nodes: [], edges: [], notice: notDrawnNotice(kind) };
   if (isSequence(root)) return sequenceToIr(root);
