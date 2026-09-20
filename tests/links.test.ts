@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 import { main } from "../src/render/cli.js";
 import { renderSvg } from "../src/render/engine.js";
 import { IrValidationError, validateIr } from "../src/render/ir.js";
+import { pumlToIr } from "../src/render/frontend.js";
 import { applyLinks } from "../src/render/links.js";
 import { renderSequenceSvg } from "../src/render/sequence.js";
 
@@ -86,5 +87,17 @@ describe("link options", () => {
     out = "";
     expect(await main(["--ir", join(dir, "model.json"), "--link-template", "/e/{id}"], io)).toBe(0);
     expect(out).toContain('<a href="/e/q.Z" class="pr-link">');
+  });
+});
+
+describe("links", () => {
+  it("keeps a link written in the source under a template and lets a map entry override it", async () => {
+    const ir = await pumlToIr("@startuml\nclass Order [[https://docs/order.html]]\nclass Line\n@enduml\n");
+    const templated = applyLinks(ir, { template: "https://site/{name}" });
+    const by = (doc: typeof ir, id: string) => doc.nodes.find((n) => n.id === id)!;
+    expect(by(templated, "Order").href).toBe("https://docs/order.html");
+    expect(by(templated, "Line").href).toBe("https://site/Line");
+    const mapped = applyLinks(ir, { map: { Order: "https://other/order" } });
+    expect(by(mapped, "Order").href).toBe("https://other/order");
   });
 });

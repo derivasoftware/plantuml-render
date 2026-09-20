@@ -1,0 +1,11 @@
+verification:
+  id: VER-00023-1
+  req_id: REQ-00023-1
+  title: Frontend tests map [[url]] and [[url{tooltip}]] on class, interface and aliased heads to href and title; links tests check that a map entry overrides the source link and that the template leaves it alone
+  description: >
+    Frontend tests map [[url]] and [[url{tooltip}]] on class, interface and aliased heads to href and title; links tests check that a map entry overrides the source link and that the template leaves it alone
+  method: test
+  test_ids:
+    - tests/frontend.test.ts::hyperlinks on entity heads
+    - tests/links.test.ts::links
+  status: DRAFT

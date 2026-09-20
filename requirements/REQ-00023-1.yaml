@@ -1,0 +1,24 @@
+requirement:
+  id: REQ-00023-1
+  title: The frontend shall map a hyperlink written on an entity head to the box's href and title
+  description: >
+    The frontend shall map a hyperlink written on an entity head to the box's href and title
+  rationale: >
+    PlantUML's own way of linking an entity is `class Order [[url]]` or
+    `[[url{tooltip}]]`; the grammar structures it since 0.11.0 (node
+    `hyperlink`, field `link` on class, interface and enum heads), so the
+    class frontend now emits `href` and `title` on the box, and the engine
+    draws the `<a href>` and `<title>` it already draws for links coming
+    from `--links` (REQ-00018-1). Precedence: a `--links` map entry for the
+    entity overrides the source link, the `--link-template` only fills
+    entities without one. This requirement also carries the repin of the
+    grammar to 0.11.0 (config.grammar and the embedded wasm rebuilt from
+    that tag), which makes the activity control flow structural for the
+    activity frontend that follows.
+  status: DRAFT
+  asil: QM
+  parent_ids:
+    - SREQ-00001-1
+  tags:
+    - frontend
+    - links
