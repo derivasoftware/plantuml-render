@@ -12,6 +12,16 @@ diagrams. It resolves the same entity across diagrams by `data-id` and,
 when the page follows the folio anchor rule (`cls-<id with non-alphanumerics
 dashed>`, `fig-<diagram id>`), it navigates to those anchors.
 
+## Rows and branches of a sequence
+
+A sequence SVG also tells a host page how it is built in time: the root
+carries `data-row-tops` (the y of every row), every message, note and
+divider carries `data-row`, every frame `data-span="first,last"`, and
+every condition is a `<g class="pr-branch">` pill with `data-rows` (the
+rows it governs). That is enough to fold a frame to its tab, focus one
+branch of an `alt` (dim the others) or show a single scenario by hiding
+rows and shifting what follows up, without laying the diagram out again.
+
 ## Links without JavaScript
 
 - In the render-IR, nodes and edges take `href`, `title` and `refs`; the

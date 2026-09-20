@@ -18,3 +18,10 @@ Override them from the host page or from the theme block of your site.
 Dark values are provided under `prefers-color-scheme: dark` and under
 `[data-theme="dark"]`; light ones under the bare selector and
 `[data-theme="light"]`.
+
+## Sequence frames
+
+`--pr-frame-alt`, `--pr-frame-loop`, `--pr-frame-opt`, `--pr-frame-par` and
+`--pr-frame-other` colour the border, the keyword tab and the condition
+pills of each frame kind; each has a light and a dark value. A frame's
+group carries `pr-frame-<kind>` and `pr-depth-<n>` for finer overrides.

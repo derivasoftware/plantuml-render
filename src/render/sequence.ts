@@ -25,18 +25,32 @@ const HEAD_H = LINE_H + 2 * PAD;
 const ROW_H = 30;
 const MARGIN = 20;
 const SELF_W = 32;
-const FRAME_LEAD = 18; // room for a frame tab or an else label at the top of a row
-const FRAME_STACK = 10; // extra per nesting level when frames open on the same row
+const FRAME_GAP = 8; // air between a frame's border and the rows around it
+const FRAME_HEAD = 22; // the tab band: keyword tab and condition pill
+const FRAME_LEAD = FRAME_GAP + FRAME_HEAD; // room a frame takes at the top of its first row
+const DIVIDER_LEAD = FRAME_GAP + 18; // an else line and its label at the top of a row
+const FRAME_STACK = 12; // extra per nesting level when frames open on the same row
+const FRAME_INSET = 14; // horizontal inset per nesting level
+const COND_WRAP = 56; // characters per line of a condition before it wraps
 
 const SEQ_STYLE = `
   .pr-diagram .pr-lifeline-line { stroke: var(--pr-stroke); stroke-dasharray: 4 4; }
   .pr-diagram .pr-msg { stroke: var(--pr-edge); fill: none; }
   .pr-diagram .pr-msg-dashed { stroke-dasharray: 6 4; }
-  .pr-diagram .pr-frame > rect { fill: none; stroke: var(--pr-stroke); }
-  .pr-diagram .pr-frame-tab { fill: var(--pr-head-function); stroke: var(--pr-stroke); }
-  .pr-diagram .pr-frame-label { font-weight: 700; fill: var(--pr-muted); }
-  .pr-diagram .pr-frame-cond { fill: var(--pr-muted); }
-  .pr-diagram .pr-frame-divider { stroke: var(--pr-stroke); stroke-dasharray: 6 4; }
+  .pr-diagram { --pr-frame-alt: #4338ca; --pr-frame-loop: #047857; --pr-frame-opt: #b45309; --pr-frame-par: #6d28d9; --pr-frame-other: #334155; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pr-diagram { --pr-frame-alt: #a5b4fc; --pr-frame-loop: #6ee7b7; --pr-frame-opt: #fcd34d; --pr-frame-par: #c4b5fd; --pr-frame-other: #cbd5e1; } }
+  [data-theme="dark"] .pr-diagram { --pr-frame-alt: #a5b4fc; --pr-frame-loop: #6ee7b7; --pr-frame-opt: #fcd34d; --pr-frame-par: #c4b5fd; --pr-frame-other: #cbd5e1; }
+  .pr-diagram .pr-frame { --pr-frame: var(--pr-frame-other); }
+  .pr-diagram .pr-frame-alt { --pr-frame: var(--pr-frame-alt); }
+  .pr-diagram .pr-frame-loop { --pr-frame: var(--pr-frame-loop); }
+  .pr-diagram .pr-frame-opt { --pr-frame: var(--pr-frame-opt); }
+  .pr-diagram .pr-frame-par { --pr-frame: var(--pr-frame-par); }
+  .pr-diagram .pr-frame > rect { fill: none; stroke: var(--pr-frame); stroke-width: 1.6px; }
+  .pr-diagram .pr-frame-tab { fill: var(--pr-frame); stroke: none; }
+  .pr-diagram .pr-frame-label { font-weight: 700; fill: var(--pr-box-fill); font-size: 11px; letter-spacing: .3px; }
+  .pr-diagram .pr-branch > rect { fill: var(--pr-box-fill); stroke: var(--pr-frame); stroke-width: 1px; }
+  .pr-diagram .pr-branch > text { fill: var(--pr-text); font-size: 11px; }
+  .pr-diagram .pr-frame-divider { stroke: var(--pr-frame); stroke-dasharray: 5 4; stroke-width: 1.2px; }
   .pr-diagram .pr-divider rect { fill: var(--pr-container-fill); stroke: var(--pr-stroke); }
   .pr-diagram .pr-lifeline-head > rect { fill: var(--pr-head-class); stroke: var(--pr-stroke); }
   .pr-diagram .pr-note rect { fill: var(--pr-note-fill); stroke: var(--pr-note-stroke); }
@@ -125,13 +139,34 @@ export function renderSequenceSvg(ir: RenderIr): string {
         g.span[1] >= f.span[1] &&
         (g.span[0] < f.span[0] || g.span[1] > f.span[1]),
     ).length;
+  const wrap = (text: string): string[] => {
+    const out: string[] = [];
+    let line = "";
+    for (const word of text.split(/\s+/)) {
+      if (line && line.length + 1 + word.length > COND_WRAP) {
+        out.push(line);
+        line = word;
+      } else line = line ? `${line} ${word}` : word;
+    }
+    if (line) out.push(line);
+    return out.length ? out : [""];
+  };
+  const condOf = (f: IrNode) => f.label.split(" ").slice(1).join(" ");
+  const headH = (f: IrNode) => FRAME_HEAD + (wrap(condOf(f)).length - 1) * (LINE_H - 4);
   const lead: number[] = new Array(rows).fill(0);
+  // A frame closing on a row leaves air under its last occupant; nested
+  // frames closing together stack their borders.
+  const tail: number[] = new Array(rows).fill(0);
   for (const f of frames) {
     if (!f.span) continue;
-    if (f.span[0] < rows) lead[f.span[0]] = Math.max(lead[f.span[0]], FRAME_LEAD + depth(f) * FRAME_STACK);
-    for (const d of f.dividers ?? []) if (d.at < rows) lead[d.at] = Math.max(lead[d.at], FRAME_LEAD);
+    if (f.span[0] < rows) lead[f.span[0]] = Math.max(lead[f.span[0]], FRAME_GAP + headH(f) + depth(f) * FRAME_STACK);
+    for (const d of f.dividers ?? []) if (d.at < rows) lead[d.at] = Math.max(lead[d.at], DIVIDER_LEAD + (wrap(d.label).length - 1) * (LINE_H - 4));
+    if (f.span[1] < rows) tail[f.span[1]] = Math.max(tail[f.span[1]], FRAME_GAP + 4 + closingBelow(f) * FRAME_GAP);
   }
-  const rowH: number[] = lead.map((l) => ROW_H + l);
+  function closingBelow(f: IrNode): number {
+    return frames.filter((g) => g !== f && g.span && f.span && g.span[1] === f.span[1] && depth(g) > depth(f)).length;
+  }
+  const rowH: number[] = lead.map((l, r) => ROW_H + l + tail[r]);
   for (const n of notes) if (n.at !== undefined && n.at < rows) rowH[n.at] = Math.max(rowH[n.at], lead[n.at] + noteH(n) + 10);
   const tops: number[] = [MARGIN + HEAD_H + 16];
   for (let r = 0; r < rows; r++) tops.push(tops[r] + rowH[r]);
@@ -178,25 +213,43 @@ export function renderSequenceSvg(ir: RenderIr): string {
       left = laneL + 12;
       right = laneR - 12;
     }
-    const inset = depth(frame) * 8;
-    const [keyword, ...rest] = frame.label.split(" ");
-    const condition = rest.join(" ");
+    const level = depth(frame);
+    const inset = level * FRAME_INSET;
+    const [keyword] = frame.label.split(" ");
+    const condition = condOf(frame);
+    const condLines = wrap(condition);
     const tabW = keyword.length * CHAR_W + 2 * PAD;
+    const condW = Math.max(...condLines.map((l) => l.length)) * CHAR_W + 16;
     const x = left - 12 + inset;
-    const w = Math.max(right + 12 - inset - x, tabW + (condition ? textW(condition) + 16 + 8 : 0) + 8);
-    const y = rowTop(first) + depth(frame) * FRAME_STACK;
-    const h = rowEnd(last) - 6 - y;
+    const w = Math.max(right + 12 - inset - x, tabW + (condition ? condW + 12 : 0) + 8);
+    const y = rowTop(first) + FRAME_GAP + level * FRAME_STACK;
+    const h = rowEnd(last) - (FRAME_GAP + closingBelow(frame) * FRAME_GAP) - y;
+    const head = headH(frame);
+    // Branches: the rows each condition governs, for a host page to focus
+    // or fold (spike). The first branch runs to the first else.
+    const cuts = (frame.dividers ?? []).map((d) => d.at);
+    const branchEnd = (k: number) => (k < cuts.length ? cuts[k] - 1 : last);
+    const pill = (lines: string[], px0: number, py: number, k: number, from: number) => {
+      const pw = Math.max(...lines.map((l) => l.length)) * CHAR_W + 16;
+      const ph = FRAME_HEAD - 6 + (lines.length - 1) * (LINE_H - 4);
+      return (
+        `<g class="pr-branch" data-frame="${esc(frame.id)}" data-branch="${k}" data-rows="${from},${branchEnd(k)}" data-row="${from}">` +
+        `<rect x="${px0}" y="${py}" width="${pw}" height="${ph}" rx="${Math.round(ph / 2)}"/>` +
+        lines.map((l, i) => `<text x="${px0 + 8}" y="${py + 12 + i * (LINE_H - 4)}">${esc(l)}</text>`).join("") +
+        "</g>"
+      );
+    };
     parts.push(linked(frame.href,
-      `<g id="${px}${esc(frame.id)}" data-id="${esc(frame.id)}" class="pr-frame"${refAttrs(frame.refs)}>${tooltip(frame.title)}` +
-        `<rect x="${x}" y="${y}" width="${w}" height="${h}"/>` +
-        `<path class="pr-frame-tab" d="M${x},${y} H${x + tabW} V${y + 12} L${x + tabW - 6},${y + 18} H${x} Z"/>` +
-        `<text class="pr-frame-label" x="${x + PAD}" y="${y + 13}">${esc(keyword)}</text>` +
-        (condition ? `<text class="pr-frame-cond" x="${x + tabW + 8}" y="${y + 13}">[${esc(condition)}]</text>` : "") +
+      `<g id="${px}${esc(frame.id)}" data-id="${esc(frame.id)}" class="pr-frame pr-frame-${esc(keyword)} pr-depth-${level}" data-span="${first},${last}" data-head="${head}"${refAttrs(frame.refs)}>${tooltip(frame.title)}` +
+        `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3"/>` +
+        `<g class="pr-frame-head" data-row="${first}"><path class="pr-frame-tab" d="M${x},${y} H${x + tabW} V${y + 13} L${x + tabW - 6},${y + FRAME_HEAD - 2} H${x} Z"/>` +
+        `<text class="pr-frame-label" x="${x + PAD}" y="${y + 14}">${esc(keyword)}</text></g>` +
+        (condition ? pill(condLines, x + tabW + 6, y + 3, 0, first) : "") +
         (frame.dividers ?? [])
           .map(
-            (d) =>
-              `<line class="pr-frame-divider" x1="${x}" y1="${rowTop(d.at)}" x2="${x + w}" y2="${rowTop(d.at)}"/>` +
-              `<text class="pr-frame-cond" x="${x + PAD}" y="${rowTop(d.at) + 14}">[${esc(d.label)}]</text>`,
+            (d, k) =>
+              `<line class="pr-frame-divider" data-row="${d.at}" x1="${x}" y1="${rowTop(d.at) + FRAME_GAP}" x2="${x + w}" y2="${rowTop(d.at) + FRAME_GAP}"/>` +
+              pill(wrap(d.label), x + 6, rowTop(d.at) + FRAME_GAP + 2, k + 1, d.at),
           )
           .join("") +
         "</g>",
@@ -208,7 +261,7 @@ export function renderSequenceSvg(ir: RenderIr): string {
   for (const d of dividers) {
     const y = rowBody(d.at ?? 0) + 6;
     parts.push(
-      `<g id="${px}${esc(d.id)}" data-id="${esc(d.id)}" class="pr-divider">` +
+      `<g id="${px}${esc(d.id)}" data-id="${esc(d.id)}" class="pr-divider" data-row="${d.at ?? 0}">` +
         `<rect x="${laneL}" y="${y}" width="${laneR - laneL}" height="16"/>` +
         `<text x="${Math.round((laneL + laneR) / 2 - (d.label.length * CHAR_W) / 2)}" y="${y + 12}">${esc(d.label)}</text>` +
         "</g>",
@@ -243,14 +296,14 @@ export function renderSequenceSvg(ir: RenderIr): string {
     if (xa === undefined || xb === undefined) continue;
     const classes = ["pr-msg"];
     if (m.dashed) classes.push("pr-msg-dashed");
-    const attrs = `class="${classes.join(" ")}" data-from="${esc(m.from)}" data-to="${esc(m.to)}" data-order="${m.order}"`;
+    const attrs = `class="${classes.join(" ")}" data-from="${esc(m.from)}" data-to="${esc(m.to)}" data-order="${m.order}" data-row="${m.order}"`;
     if (m.from === m.to) {
       classes.push("pr-msg-self");
       parts.push(
-        linked(m.href, `<path class="${classes.join(" ")}" data-from="${esc(m.from)}" data-to="${esc(m.to)}" data-order="${m.order}" d="M${xa} ${y - 8} L${xa + SELF_W} ${y - 8} L${xa + SELF_W} ${y + 4} L${xa + 4} ${y + 4}" marker-end="url(#${px}arrow)"${refAttrs(m.refs)}>${tooltip(m.title)}</path>`),
+        linked(m.href, `<path class="${classes.join(" ")}" data-from="${esc(m.from)}" data-to="${esc(m.to)}" data-order="${m.order}" data-row="${m.order}" d="M${xa} ${y - 8} L${xa + SELF_W} ${y - 8} L${xa + SELF_W} ${y + 4} L${xa + 4} ${y + 4}" marker-end="url(#${px}arrow)"${refAttrs(m.refs)}>${tooltip(m.title)}</path>`),
       );
       if (m.label) {
-        parts.push(`<text x="${xa + SELF_W + 6}" y="${y}">${esc(m.label)}</text>`);
+        parts.push(`<text data-row="${m.order}" x="${xa + SELF_W + 6}" y="${y}">${esc(m.label)}</text>`);
         width = Math.max(width, xa + selfExtent(m) + MARGIN);
       }
     } else {
@@ -259,7 +312,7 @@ export function renderSequenceSvg(ir: RenderIr): string {
       );
       if (m.label) {
         const mid = Math.round((xa + xb) / 2);
-        parts.push(`<text x="${mid - Math.round(textW(m.label) / 2)}" y="${y - 5}">${esc(m.label)}</text>`);
+        parts.push(`<text data-row="${m.order}" x="${mid - Math.round(textW(m.label) / 2)}" y="${y - 5}">${esc(m.label)}</text>`);
       }
     }
   }
@@ -272,7 +325,7 @@ export function renderSequenceSvg(ir: RenderIr): string {
     const y = rowBody(n.at ?? 0);
     const x = noteX(n);
     parts.push(linked(n.href,
-      `<g id="${px}${esc(n.id)}" data-id="${esc(n.id)}" class="pr-note"${refAttrs(n.refs)}>${tooltip(n.title)}` +
+      `<g id="${px}${esc(n.id)}" data-id="${esc(n.id)}" class="pr-note" data-row="${n.at ?? 0}"${refAttrs(n.refs)}>${tooltip(n.title)}` +
         `<rect x="${x}" y="${y}" width="${w}" height="${h}"/>` +
         lines
           .map((l, i) => `<text x="${x + PAD}" y="${y + PAD + 4 + i * LINE_H}">${esc(l)}</text>`)
@@ -292,7 +345,7 @@ export function renderSequenceSvg(ir: RenderIr): string {
   }
   const height = end + MARGIN;
   return [
-    svgRoot(0, 0, width, height),
+    svgRoot(0, 0, width, height).replace("<svg ", `<svg data-row-tops="${tops.join(",")}" data-bottom="${bottom}" `),
     ir.title ? `<title>${esc(ir.title)}</title>` : "",
     `<style>${STYLE}${SEQ_STYLE}</style>`,
     `<defs><marker id="${px}arrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto"><path class="pr-open" d="M1,1 L11,6 L1,11"/></marker></defs>`,
