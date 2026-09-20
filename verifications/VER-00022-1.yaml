@@ -1,0 +1,10 @@
+verification:
+  id: VER-00022-1
+  req_id: REQ-00022-1
+  title: The checksum script is exercised on a temporary directory; the file lists every executable, nothing else, and verifies with sha256sum -c
+  description: >
+    The checksum script is exercised on a temporary directory; the file lists every executable, nothing else, and verifies with sha256sum -c
+  method: test
+  test_ids:
+    - tests/checksums.test.ts::release checksums
+  status: DRAFT

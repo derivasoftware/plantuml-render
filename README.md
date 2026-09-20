@@ -36,6 +36,13 @@ Binaries: `linux-x64`, `linux-arm64`, `windows-x64`, `darwin-arm64`,
 `darwin-x64`. They embed the grammar (wasm), the parser runtime and the
 manual, so `plantuml-render docs` always describes the version you run.
 
+Every release also carries `SHA256SUMS`, covering every executable, so a
+script that downloads the binary can verify it before running it:
+
+```bash
+sha256sum -c SHA256SUMS --ignore-missing     # shasum -a 256 -c on macOS
+```
+
 **npm package (for JavaScript consumers).** The release also carries the
 package tarball; it needs Node ≥ 18 and no native toolchain, since the
 frontend parses through the wasm grammar in every host:

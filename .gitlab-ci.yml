@@ -48,10 +48,10 @@ publish:
 
 # The standalone executables (REQ-00014-1): one per platform, built by bun
 # from scripts/standalone.mjs with the grammar wasm, the parser runtime and
-# the manual embedded, smoke-tested on the runner, then stored in the generic
-# package registry (they exceed the job-artifact size limit); the release
-# engineer attaches them to the GitHub release (`gh release upload <tag>
-# dist/*`).
+# the manual embedded, smoke-tested on the runner, then stored with their
+# SHA256SUMS in the generic package registry (they exceed the job-artifact
+# size limit); the release engineer publishes them on GitHub with
+# scripts/release.sh.
 binaries:
   stage: deploy
   extends: [.node-base]
