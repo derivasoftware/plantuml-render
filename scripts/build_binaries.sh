@@ -37,3 +37,7 @@ if [ -x "$smoke" ]; then
 else
   echo "smoke test skipped: no executable for host ${host}"
 fi
+
+# SHA256SUMS next to the executables (REQ-00022-1): the tag job and the
+# release script publish it with them.
+bash scripts/checksums.sh dist

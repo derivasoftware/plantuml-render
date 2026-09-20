@@ -38,3 +38,6 @@ npm test && pre-commit run --all-files
   preview) is OBSOLETE, superseded by the serve mode (SREQ-00008-1).
 - `W-CLASS-TOO-SMALL` on IrValidationError: a deliberate marker
   exception subclass.
+- `W-REQ-NO-DESIGN` on REQ-00022-1 (release checksums): realised by
+  scripts/checksums.sh, scripts/release.sh and the tag job, not by a code
+  module, so no LLD chapter claims it; VER-00022-1 tests the script.
