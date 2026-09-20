@@ -14,8 +14,8 @@ Deterministic SVG renderer for the
 Three guarantees: **byte-deterministic** (same IR, byte-identical SVG, so
 rendered design is diffable in merge requests), **themable, never themed**
 (CSS custom properties on stable classes, neutral fallbacks only), and an
-**honest frontier** (the class and sequence subsets are drawn; everything
-else is simply not drawn). Validated over a 6 226-diagram wild corpus:
+**honest frontier** (the class, sequence and activity subsets are drawn;
+everything else says so in the SVG instead of drawing). Validated over a 6 226-diagram wild corpus:
 zero failures, all deterministic.
 
 ## Install
@@ -101,18 +101,21 @@ then navigates by itself, and a host page can build hover cards on the
 
 Class diagrams are laid out by ELK's layered algorithm (bases above
 subtypes, orthogonal edges routed around the boxes, disconnected pieces
-packed into a grid); `renderSvg` is asynchronous for that reason.
+packed into a grid); `renderSvg` is asynchronous for that reason. Activity
+diagrams (new syntax) are drawn as flowcharts with the same algorithm, and
+swimlanes become columns.
 
 ## Scope
 
 The family covers a standard-driven subset of PlantUML, never the whole
 language. Class diagrams: 125 of 149 standard constructs structural;
 sequence: 70 of 111, with the lifecycle verbs (activate, ref, box,
-delays) still raw; activity: actions and swimlanes structural, control
-flow raw. Everything else (deployment, components, state, mindmaps,
-gantt) parses lossless as raw lines, never an ERROR, but gets no
-structure. The native engine draws the class and sequence
-subsets; activity and the rest are not drawn.
+delays) still raw; activity (new syntax): actions, swimlanes and the
+control flow structural, the legacy syntax raw. Everything else
+(deployment, components, state, mindmaps, gantt) parses lossless as raw
+lines, never an ERROR, but gets no structure. The native engine draws the
+class, sequence and activity subsets; the rest is not drawn and the SVG
+says so.
 
 ## Documentation
 

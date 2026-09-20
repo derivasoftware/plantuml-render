@@ -56,6 +56,15 @@ export const STYLE = `
   .pr-diagram .pr-container > rect { fill: var(--pr-container-fill); stroke: var(--pr-container-stroke); }
   .pr-diagram .pr-container > .pr-header { fill: var(--pr-muted); font-weight: 600; font-size: 11px; letter-spacing: .4px; }
   .pr-diagram .pr-note path { fill: var(--pr-note-fill); stroke: var(--pr-note-stroke); }
+  .pr-diagram .pr-action > rect { fill: var(--pr-box-fill); stroke: var(--pr-stroke); }
+  .pr-diagram .pr-action text, .pr-diagram .pr-decision text { text-anchor: middle; }
+  .pr-diagram .pr-decision > path { fill: var(--pr-head-enum); stroke: var(--pr-stroke); }
+  .pr-diagram .pr-start circle, .pr-diagram .pr-bar rect, .pr-diagram .pr-end .pr-core { fill: var(--pr-text); stroke: none; }
+  .pr-diagram .pr-end .pr-ring { fill: var(--pr-box-fill); stroke: var(--pr-text); stroke-width: 1.5px; }
+  .pr-diagram .pr-end .pr-cross { fill: none; stroke: var(--pr-text); stroke-width: 1.5px; }
+  .pr-diagram .pr-classifier-swimlane > rect { fill: var(--pr-box-fill); stroke: var(--pr-container-stroke); }
+  .pr-diagram .pr-classifier-swimlane > .pr-header { font-size: 12px; letter-spacing: .2px; }
+  .pr-diagram marker .pr-solid { fill: var(--pr-edge); stroke: var(--pr-edge); }
   .pr-diagram .pr-notice rect { fill: var(--pr-container-fill); stroke: var(--pr-muted); stroke-dasharray: 5 3; }
   .pr-diagram .pr-notice text { fill: var(--pr-muted); font-style: italic; }
   .pr-diagram .pr-edge { stroke: var(--pr-edge); fill: none; }

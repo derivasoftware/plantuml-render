@@ -1,0 +1,28 @@
+requirement:
+  id: REQ-00025-1
+  title: The renderer shall draw swimlanes as columns that the flow crosses
+  description: >
+    The renderer shall draw swimlanes as columns that the flow crosses
+  rationale: >
+    `|Lane|` statements assign the following nodes to a lane (the family
+    uses lanes to name the receiver of an action, so they carry meaning).
+    Lanes as compound nodes of the layered algorithm are unreadable when
+    the flow crosses them in both directions (measured in the spike, also
+    with the algorithm's interactive strategies), so the engine lays them
+    out in two steps: one layered pass over the flow alone fixes the
+    layers and the order inside each lane, then every lane becomes a
+    column whose bands of vertically overlapping nodes are packed and
+    centred, so a linear chain runs straight down its lane; partitions are
+    drawn around their nodes; flows are routed orthogonally through the
+    gap between layers, back edges through a channel on the right, with
+    the branch labels next to their source. Known limits of this first
+    version: the router does not avoid nodes on long vertical drops and
+    back edges share a channel.
+  status: DRAFT
+  asil: QM
+  parent_ids:
+    - SREQ-00009-1
+  tags:
+    - engine
+    - layout
+    - activity

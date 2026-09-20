@@ -1,0 +1,14 @@
+requirement:
+  id: SREQ-00009-1
+  title: The engine shall render activity diagrams
+  description: >
+    The engine shall render activity diagrams.
+  rationale: >
+    Third kind after class and sequence, asked for by the report consumers (GitHub issue #1): the new activity syntax is structural in the grammar since 0.11 and a flowchart is what ELK's layered algorithm does best. Swimlanes are the family's way of naming the receiver of an action, so they are part of the capability. The IR grows minor-version capabilities for it.
+  owner: dcoello-dev
+  status: DRAFT
+  asil: QM
+  parent_ids:
+    - SREQ-00001-1
+  tags:
+    - rendering

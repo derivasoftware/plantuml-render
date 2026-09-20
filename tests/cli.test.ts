@@ -28,11 +28,11 @@ describe("cli", () => {
   it("reports a kind that is not drawn on stderr, draws the notice and exits 0", async () => {
     const dir = mkdtempSync(join(tmpdir(), "pr-"));
     const puml = join(dir, "flow.puml");
-    writeFileSync(puml, "@startuml\nstart\n:Read;\nstop\n@enduml\n");
+    writeFileSync(puml, "@startuml\n[*] --> Idle\nIdle --> [*]\n@enduml\n");
     const out = join(dir, "flow.svg");
     let err = "";
     expect(await main([puml, "-o", out], { stderr: (t) => (err += t) })).toBe(0);
-    expect(err).toContain("flow.puml: Activity diagram: not drawn by plantuml-render (kept lossless). Render this kind with plantuml.jar.");
+    expect(err).toContain("flow.puml: State diagram: not drawn by plantuml-render (kept lossless). Render this kind with plantuml.jar.");
     expect(readFileSync(out, "utf8")).toContain('class="pr-notice"');
   });
 

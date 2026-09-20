@@ -1,0 +1,17 @@
+@startuml CL_ActivityModule
+' requirement REQ-00024-1
+
+!startsub ActivityModule
+
+namespace render.activity {
+  class isActivity <<function>> {
+    + isActivity(root: CstNode) : boolean
+  }
+  class activityToIr <<function>> {
+    + activityToIr(root: CstNode) : RenderIr
+  }
+}
+
+!endsub
+
+@enduml
