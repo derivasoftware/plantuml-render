@@ -27,7 +27,12 @@ Participants of every kind (`actor` is drawn as a stick figure), `->` and
 `-->` messages with labels, self messages, `alt/else`, `loop`, `opt`, `par`
 frames with their condition, `== dividers ==`, `note over|left|right`.
 Lanes are spaced by what crosses them, frames wrap only the participants
-they involve, and rows grow to fit multi-line notes.
+they involve, and rows grow to fit multi-line notes. Frames are strong
+outlines in a colour per kind (alt indigo, loop green, opt amber, par
+violet), with the keyword on a tab and each condition in a pill; a long
+condition wraps inside the tab band instead of stretching the frame; a
+frame keeps air above, below and after each `else`, and nested frames
+step in 14 px per level.
 
 ## Activity diagrams (new syntax)
 

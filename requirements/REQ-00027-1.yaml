@@ -1,0 +1,21 @@
+requirement:
+  id: REQ-00027-1
+  title: The sequence SVG shall expose its rows, frame spans and branches to a host page
+  description: >
+    The sequence SVG shall expose its rows, frame spans and branches to a host page
+  rationale: >
+    The interactive readings the Owner wants for long evidence sequences
+    (focus one branch of an alt, fold a frame to its tab, show one scenario)
+    need no second layout when the SVG says how it is built in time: the
+    root carries data-row-tops, every message, note and divider data-row,
+    every frame data-span, and every condition is a pr-branch pill with the
+    rows it governs. The spike page proved focus, fold with reflow and a
+    scenario selector in about 120 lines of page script over these
+    attributes; folio's navigation script is the consumer (follow-up).
+  status: DRAFT
+  asil: QM
+  parent_ids:
+    - SREQ-00006-1
+  tags:
+    - sequence
+    - embedding

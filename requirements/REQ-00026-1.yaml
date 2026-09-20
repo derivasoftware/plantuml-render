@@ -1,0 +1,25 @@
+requirement:
+  id: REQ-00026-1
+  title: The sequence layout shall draw frames distinguishable by kind, with room around them and wrapped conditions
+  description: >
+    The sequence layout shall draw frames distinguishable by kind, with room around them and wrapped conditions
+  rationale: >
+    On the sequences generated from system-test evidence, alt frames were
+    hard to read: border and tab in the lifeline grey, the condition in the
+    muted text colour, the frame opening on the previous arrow and closing
+    on its last one, else labels with no room and long conditions
+    stretching the frame. Frames are now strong outlines (1.6 px) in a
+    colour per kind (alt, loop, opt, par, other; tokens with light and dark
+    values), the keyword sits on a filled tab and every condition in a pill
+    that wraps past 56 characters inside the tab band; a frame keeps 8 px
+    of air above and below, an else line has its own lead, nested frames
+    step in 14 px per level and closing borders stack instead of touching.
+    Chosen by the Owner among four sketched variants (spike branch
+    spike/sequence-frames).
+  status: DRAFT
+  asil: QM
+  parent_ids:
+    - SREQ-00006-1
+  tags:
+    - sequence
+    - style

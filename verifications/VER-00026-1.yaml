@@ -1,0 +1,11 @@
+verification:
+  id: VER-00026-1
+  req_id: REQ-00026-1
+  title: Layout tests measure the air above, below and after each else, the nesting inset and the stacked closing borders, the per-kind classes and tokens, and the wrapping of a long condition; the style test checks tab, label and pills
+  description: >
+    Layout tests measure the air above, below and after each else, the nesting inset and the stacked closing borders, the per-kind classes and tokens, and the wrapping of a long condition; the style test checks tab, label and pills
+  method: test
+  test_ids:
+    - tests/sequence-layout.test.ts::sequence frames
+    - tests/style.test.ts::visual style
+  status: DRAFT

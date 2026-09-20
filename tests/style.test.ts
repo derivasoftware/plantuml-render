@@ -101,8 +101,9 @@ describe("visual style", () => {
     expect(svg).toContain('class="pr-frame-tab"');
     expect(svg).toContain('class="pr-frame-label" x="');
     expect(svg).toContain(">alt</text>");
-    expect(svg).toContain('class="pr-frame-cond"');
-    expect(svg).toContain(">[has stock]</text>");
+    expect(svg).toContain('class="pr-branch"');
+    expect(svg).toContain(">has stock</text>");
+    expect(svg).toContain(">else</text>");
     expect(svg).toContain(">one</text>");
     expect(svg).toContain(">two</text>");
   });

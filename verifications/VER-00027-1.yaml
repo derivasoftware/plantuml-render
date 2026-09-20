@@ -1,0 +1,10 @@
+verification:
+  id: VER-00027-1
+  req_id: REQ-00027-1
+  title: Layout tests read data-row-tops, data-span, the pr-branch pills with their rows and data-row on messages and notes back from the SVG, and check determinism
+  description: >
+    Layout tests read data-row-tops, data-span, the pr-branch pills with their rows and data-row on messages and notes back from the SVG, and check determinism
+  method: test
+  test_ids:
+    - tests/sequence-layout.test.ts::sequence frames
+  status: DRAFT
