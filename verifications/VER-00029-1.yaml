@@ -1,0 +1,8 @@
+verification:
+  id: VER-00029-1
+  req_id: REQ-00029-1
+  title: Release review of the binaries workflow for a tag
+  description: >
+    Evidence: the binaries workflow run for tag vX.Y.Z with the cross-compile job, the five per-platform smoke jobs and the release job green, and the resulting release carrying the five executables, SHA256SUMS and the npm tarball, with no asset uploaded by hand. Re-verify on each release tag.
+  method: review
+  status: DRAFT

@@ -1,0 +1,104 @@
+# Standalone executables: built once, run on every platform, attached to
+# the release (REQ-00028-1, REQ-00029-1).
+#
+# The GitLab pipeline cannot finish this job. Its runners are self-hosted
+# shell runners, so there is no Windows and no macOS to run a binary on,
+# and five ~90 MB executables overrun the artifact limit — the tag job
+# there can only push them to the generic package registry. So the
+# release assets used to be attached by running scripts/release.sh by
+# hand, uploading ~400 MB from a developer's machine, and the windows,
+# macos and arm binaries were published without ever having been run:
+# only the host's binary is smoke-tested at build time.
+#
+# Here the build stays a single cross-compilation on ubuntu — bun targets
+# all five platforms from one host, which is what makes the output
+# reproducible — and each binary is then run on its own runner before the
+# release job attaches anything. The GitHub mirror is pushed by hand, so
+# pushing the tag is what triggers this.
+name: binaries
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: cross-compile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: '20'
+      - name: install bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+      - run: npm ci
+      - name: build the executables and their checksums
+        run: npm run binaries
+      - name: pack the npm tarball
+        run: npm pack --pack-destination pack
+      - uses: actions/upload-artifact@v7.0.1
+        with:
+          name: release-assets
+          path: |
+            dist/
+            pack/
+
+  smoke:
+    name: smoke · ${{ matrix.target }}
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, target: linux-x64 }
+          - { os: ubuntu-24.04-arm, target: linux-arm64 }
+          - { os: windows-latest, target: windows-x64, ext: .exe }
+          - { os: macos-latest, target: darwin-arm64 }
+          - { os: macos-15-intel, target: darwin-x64 }
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/download-artifact@v7.0.0
+        with:
+          name: release-assets
+          path: .
+      - name: run this platform's executable
+        shell: bash
+        run: |
+          version=$(node -p "require('./package.json').version")
+          bin="dist/plantuml-render-${version}-${{ matrix.target }}${{ matrix.ext }}"
+          chmod +x "$bin"
+          bash scripts/smoke_binary.sh "$bin" "$version"
+
+  release:
+    name: attach to the release
+    needs: [build, smoke]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/download-artifact@v7.0.0
+        with:
+          name: release-assets
+          path: .
+      - name: attach every asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          version=$(node -p "require('./package.json').version")
+          gh release view "$TAG" >/dev/null 2>&1 ||
+            gh release create "$TAG" --title "plantuml-render $version" --generate-notes --draft
+          # One upload per call: a single call with ~400 MB of assets is fragile.
+          for asset in dist/plantuml-render-"$version"-* dist/SHA256SUMS pack/*.tgz; do
+            gh release upload "$TAG" "$asset" --clobber
+            echo "uploaded $(basename "$asset")"
+          done
+          gh release edit "$TAG" --draft=false --latest

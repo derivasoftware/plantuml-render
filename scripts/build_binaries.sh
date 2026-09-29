@@ -20,20 +20,15 @@ for target in linux-x64 linux-arm64 windows-x64 darwin-arm64 darwin-x64; do
   echo "built ${out}$( [ "$target" = windows-x64 ] && echo .exe )"
 done
 
-# Smoke test of the host's executable: it must start, report its version and
-# render a diagram. The node test suite never runs the compiled binary, so
-# runtime-only breakage (a dependency picking a browser code path under bun)
-# is only visible here.
+# Smoke test of the host's executable. The assertions live in
+# scripts/smoke_binary.sh so that this host check and the per-platform
+# jobs on the mirror (.github/workflows/binaries.yml) verify the same
+# thing; the other four binaries are cross-compiled here and can only be
+# run on their own platform.
 host="$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/x64/;s/aarch64/arm64/')"
 smoke="dist/plantuml-render-${version}-${host}"
 if [ -x "$smoke" ]; then
-  tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
-  printf '@startuml\nclass Order {\n  +total(): Money\n}\nclass Line\nOrder *-- Line\n@enduml\n' > "$tmp/smoke.puml"
-  got=$("$smoke" --version)
-  [ "$got" = "$version" ] || { echo "smoke: --version printed '$got', expected '$version'" >&2; exit 1; }
-  "$smoke" "$tmp/smoke.puml" -o "$tmp/smoke.svg" >/dev/null
-  grep -q '<svg' "$tmp/smoke.svg" || { echo "smoke: no SVG produced" >&2; exit 1; }
-  echo "smoke test passed (${host}: --version, render)"
+  bash scripts/smoke_binary.sh "$smoke" "$version"
 else
   echo "smoke test skipped: no executable for host ${host}"
 fi
