@@ -42,7 +42,10 @@ jobs:
       - name: build the executables and their checksums
         run: npm run binaries
       - name: pack the npm tarball
-        run: npm pack --pack-destination pack
+        # --pack-destination does not create the directory it is given.
+        run: |
+          mkdir -p pack
+          npm pack --pack-destination pack
       - uses: actions/upload-artifact@v7.0.1
         with:
           name: release-assets
