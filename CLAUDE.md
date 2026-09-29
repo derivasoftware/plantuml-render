@@ -41,3 +41,7 @@ npm test && pre-commit run --all-files
 - `W-REQ-NO-DESIGN` on REQ-00022-1 (release checksums): realised by
   scripts/checksums.sh, scripts/release.sh and the tag job, not by a code
   module, so no LLD chapter claims it; VER-00022-1 tests the script.
+- `W-REQ-NO-DESIGN` on REQ-00028-1 and REQ-00029-1 (verified binaries,
+  unattended release): realised by scripts/smoke_binary.sh and
+  .github/workflows/binaries.yml — the release path, not a code module.
+  VER-00028-1 tests the script and the target-to-platform coverage.

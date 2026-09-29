@@ -1,0 +1,24 @@
+requirement:
+  id: REQ-00029-1
+  title: Tagging a release shall attach every asset without a manual step
+  description: >
+    Tagging a release shall attach every asset without a manual step
+  rationale: >
+    The GitLab tag job cannot finish the release: its shell runners have
+    no Windows or macOS to verify on, and five ~90 MB executables overrun
+    the artifact limit, so it can only push them to the generic package
+    registry. The GitHub assets were therefore attached by running
+    scripts/release.sh from a developer's machine, uploading ~400 MB over
+    a home uplink one asset at a time — a step that can be forgotten,
+    interrupted or done from a stale checkout. Driving it from the
+    mirror's workflow makes the tag the only action a release needs, and
+    moves the ~400 MB inside GitHub. The per-asset upload loop is kept:
+    one call carrying every asset is fragile.
+  status: DRAFT
+  asil: QM
+  parent_ids:
+    - SREQ-00001-1
+  tags:
+    - distribution
+    - release
+    - ci

@@ -1,0 +1,10 @@
+verification:
+  id: VER-00028-1
+  req_id: REQ-00028-1
+  title: The built targets and the platforms that run them are compared, and the smoke script is exercised on a passing and a stale executable
+  description: >
+    The built targets and the platforms that run them are compared, and the smoke script is exercised on a passing and a stale executable
+  method: test
+  test_ids:
+    - tests/release-binaries.test.ts::release binaries
+  status: DRAFT

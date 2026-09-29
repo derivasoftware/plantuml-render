@@ -1,0 +1,26 @@
+requirement:
+  id: REQ-00028-1
+  title: Each release shall publish executables that were run on the platform they target
+  description: >
+    Each release shall publish executables that were run on the platform they target
+  rationale: >
+    The five executables are cross-compiled from a single host — which is
+    what makes them reproducible — but only the host's own binary is
+    smoke-tested at build time, so the windows, macos and arm files used
+    to be published without ever having been executed. That is not
+    theoretical: v0.12.0 shipped binaries that crashed at start-up
+    (bun defines `self`, so elkjs took its web-worker path) and had to be
+    replaced by v0.12.1, and the windows-x64 executable of v0.15.0 was
+    first run natively on 2026-09-29, by hand, months after release. The
+    mirror's workflow now runs each binary on its own runner — version
+    plus a real render whose SVG is asserted — before anything is
+    attached. The assertions live in scripts/smoke_binary.sh so the host
+    check in scripts/build_binaries.sh and the per-platform jobs mean the
+    same thing by "verified".
+  status: DRAFT
+  asil: QM
+  parent_ids:
+    - SREQ-00001-1
+  tags:
+    - distribution
+    - release
