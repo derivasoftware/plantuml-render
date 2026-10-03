@@ -25,7 +25,7 @@ requirement:
     (from 48), widest 8020 px (from 9336), tallest 5671 px (from 18100),
     slowest 586 ms for a 175-class aggregate, 7.7 s for all 590. Dragging a node (REQ-00006-1) falls back to straight
     edges until the next full layout.
-  status: DRAFT
+  status: APPROVED
   asil: QM
   parent_ids:
     - SREQ-00004-1
