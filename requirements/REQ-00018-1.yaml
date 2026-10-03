@@ -14,7 +14,7 @@ requirement:
     fills gaps, notes and frames are never linked. `applyLinks` is a pure
     IR→IR function exported next to the view filters, so the library and
     the browser bundle decorate the same way as the command line.
-  status: DRAFT
+  status: APPROVED
   asil: QM
   parent_ids:
     - SREQ-00007-1

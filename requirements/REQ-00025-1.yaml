@@ -18,7 +18,7 @@ requirement:
     the branch labels next to their source. Known limits of this first
     version: the router does not avoid nodes on long vertical drops and
     back edges share a channel.
-  status: DRAFT
+  status: APPROVED
   asil: QM
   parent_ids:
     - SREQ-00009-1

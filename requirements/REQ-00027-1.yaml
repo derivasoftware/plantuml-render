@@ -12,7 +12,7 @@ requirement:
     rows it governs. The spike page proved focus, fold with reflow and a
     scenario selector in about 120 lines of page script over these
     attributes; folio's navigation script is the consumer (follow-up).
-  status: DRAFT
+  status: APPROVED
   asil: QM
   parent_ids:
     - SREQ-00006-1

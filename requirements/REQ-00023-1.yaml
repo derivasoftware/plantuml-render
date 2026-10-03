@@ -15,7 +15,7 @@ requirement:
     grammar to 0.11.0 (config.grammar and the embedded wasm rebuilt from
     that tag), which makes the activity control flow structural for the
     activity frontend that follows.
-  status: DRAFT
+  status: APPROVED
   asil: QM
   parent_ids:
     - SREQ-00001-1

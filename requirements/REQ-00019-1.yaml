@@ -18,7 +18,7 @@ requirement:
     Activation bars wait for the grammar repin that makes
     activate/deactivate structural (0.10); until then lifecycle lines are
     raw and draw nothing.
-  status: DRAFT
+  status: APPROVED
   asil: QM
   parent_ids:
     - SREQ-00006-1

@@ -7,10 +7,19 @@
 
 namespace render.cli {
   class main <<function>> {
-    + main(argv: string[], deps: CliDeps) : Promise<number>
+    + main()
   }
   class helpText <<function>> {
-    + helpText(version: string) : string
+    + helpText()
+  }
+  class packagedDocs <<function>> {
+    + packagedDocs()
+  }
+  class renderFile <<function>> {
+    + renderFile()
+  }
+  class walk <<function>> {
+    + walk()
   }
 }
 

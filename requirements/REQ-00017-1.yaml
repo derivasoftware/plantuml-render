@@ -17,7 +17,7 @@ requirement:
     model (design-render from the argos GDD) fill them; the spike
     PUML-40 proved the navigation on folio's page with the entity ids
     alone.
-  status: DRAFT
+  status: APPROVED
   asil: QM
   parent_ids:
     - SREQ-00002-1

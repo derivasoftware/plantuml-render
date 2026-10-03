@@ -21,7 +21,7 @@ requirement:
     side. Observable contract change: element ids are now
     `<prefix><logical id>`, so interaction layers (serve page, editor
     webviews) key on `data-id`. Byte-determinism (REQ-00002-1) is kept.
-  status: DRAFT
+  status: APPROVED
   asil: QM
   parent_ids:
     - SREQ-00003-1

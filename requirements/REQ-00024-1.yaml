@@ -21,7 +21,7 @@ requirement:
     solid arrowhead on flows, laid out top-down by the layered algorithm
     with 36 px between layers. The legacy syntax stays a raw, not-drawn
     kind with its notice (REQ-00021-1).
-  status: DRAFT
+  status: APPROVED
   asil: QM
   parent_ids:
     - SREQ-00009-1

@@ -17,7 +17,7 @@ requirement:
     and the parser assets can be injected in memory (`configureParser`)
     so a standalone executable embeds them. The stable set keeps reading
     the grammar pin from `config.grammar`.
-  status: DRAFT
+  status: APPROVED
   asil: QM
   parent_ids:
     - SREQ-00004-1
