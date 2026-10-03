@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { IrValidationError, validateIr } from "../src/render/ir.js";
+import { IrValidationError, validateIr } from "../../src/render/ir.js";
 
 const MINIMAL = { ir: 1, nodes: [], edges: [] };
 

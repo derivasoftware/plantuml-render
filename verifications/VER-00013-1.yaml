@@ -6,7 +6,16 @@ verification:
     Frontend and CLI tests parse through the wasm grammar with no native binding installed
   method: test
   test_ids:
-    - tests/frontend.test.ts::puml frontend
-    - tests/cli.test.ts::cli
-    - tests/manual.test.ts::command line
+    - "tests/integration/frontend.test.ts::projects the class subset into render-IR"
+    - "tests/integration/frontend.test.ts::requalifies relation endpoints and maps kinds"
+    - "tests/integration/frontend.test.ts::emits notes with attachments"
+    - "tests/integration/frontend.test.ts::frontend output always validates against the schema"
+    - "tests/integration/cli.test.ts::renders puml files and prebuilt IR documents"
+    - "tests/integration/cli.test.ts::reports a kind that is not drawn on stderr, draws the notice and exits 0"
+    - "tests/integration/cli.test.ts::reports an invalid --ir document as one line with exit code 1"
+    - "tests/integration/cli.test.ts::fails usage without input"
+    - "tests/integration/manual.test.ts::prints the version and a help screen that names every subcommand"
+    - "tests/integration/manual.test.ts::serves the manual from the package and from injected copies"
+    - "tests/integration/manual.test.ts::renders a directory into a mirrored tree of SVGs"
+    - "tests/integration/manual.test.ts::parses through the wasm grammar: no native binding in the dependencies"
   status: DRAFT

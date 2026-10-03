@@ -6,4 +6,6 @@ verification:
     Frontend tests cover the corpus constructs, implicit lifelines and mode detection
   method: test
   test_ids:
-    - tests/sequence.test.ts::frontend sequence mapping
+    - "tests/integration/sequence.test.ts::maps the evidence-scoped corpus constructs"
+    - "tests/integration/sequence.test.ts::creates lifelines on first use for undeclared names"
+    - "tests/integration/sequence.test.ts::keeps class diagrams on the class pipeline"

@@ -6,4 +6,5 @@ verification:
     Namespace tests cover reopen merge and dotted nesting
   method: test
   test_ids:
-    - tests/interactive.test.ts::namespace semantics
+    - "tests/integration/interactive.test.ts::reopened namespaces merge into one container"
+    - "tests/integration/interactive.test.ts::dotted names nest one container per segment sharing prefixes"

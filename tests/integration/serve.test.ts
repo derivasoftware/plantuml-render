@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { startServer, type Serving } from "../src/render/serve.js";
+import { startServer, type Serving } from "../../src/render/serve.js";
 
 let dir: string;
 let file: string;

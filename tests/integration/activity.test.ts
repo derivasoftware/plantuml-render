@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { renderSvg } from "../src/render/engine.js";
-import { pumlToIr } from "../src/render/frontend.js";
-import { type RenderIr, validateIr } from "../src/render/ir.js";
+import { renderSvg } from "../../src/render/engine.js";
+import { pumlToIr } from "../../src/render/frontend.js";
+import { type RenderIr, validateIr } from "../../src/render/ir.js";
 
 const kinds = (ir: RenderIr) => ir.nodes.map((n) => n.kind);
 const flows = (ir: RenderIr) =>

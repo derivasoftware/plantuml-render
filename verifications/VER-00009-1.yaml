@@ -6,4 +6,6 @@ verification:
     Engine tests cover determinism, row monotony and self-message loops
   method: test
   test_ids:
-    - tests/sequence.test.ts::sequence engine layout
+    - "tests/integration/sequence.test.ts::renders deterministically with lifelines, rows and frames"
+    - "tests/integration/sequence.test.ts::orders message rows top to bottom and keeps lifeline x stable"
+    - "tests/integration/sequence.test.ts::draws a self-message as a loop with its label"

@@ -6,4 +6,7 @@ verification:
     Filter tests cover each projection and input immutability
   method: test
   test_ids:
-    - tests/filters.test.ts::view filters
+    - "tests/integration/filters.test.ts::stripSections removes compartments only"
+    - "tests/integration/filters.test.ts::flattenContainers drops containers, parents and their edges"
+    - "tests/integration/filters.test.ts::hideNotes drops notes and attachments"
+    - "tests/integration/filters.test.ts::filters never mutate their input"

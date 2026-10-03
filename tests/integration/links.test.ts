@@ -4,12 +4,12 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { main } from "../src/render/cli.js";
-import { renderSvg } from "../src/render/engine.js";
-import { IrValidationError, validateIr } from "../src/render/ir.js";
-import { pumlToIr } from "../src/render/frontend.js";
-import { applyLinks } from "../src/render/links.js";
-import { renderSequenceSvg } from "../src/render/sequence.js";
+import { main } from "../../src/render/cli.js";
+import { renderSvg } from "../../src/render/engine.js";
+import { IrValidationError, validateIr } from "../../src/render/ir.js";
+import { pumlToIr } from "../../src/render/frontend.js";
+import { applyLinks } from "../../src/render/links.js";
+import { renderSequenceSvg } from "../../src/render/sequence.js";
 
 const ir = () => ({
   ir: 1 as const,

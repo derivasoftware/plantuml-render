@@ -6,4 +6,7 @@ verification:
     Frontend tests pin qualification, kinds, notes and schema validity
   method: test
   test_ids:
-    - tests/frontend.test.ts::puml frontend
+    - "tests/integration/frontend.test.ts::projects the class subset into render-IR"
+    - "tests/integration/frontend.test.ts::requalifies relation endpoints and maps kinds"
+    - "tests/integration/frontend.test.ts::emits notes with attachments"
+    - "tests/integration/frontend.test.ts::frontend output always validates against the schema"

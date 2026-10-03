@@ -6,5 +6,10 @@ verification:
     Sequence layout tests cover per-gap lane spacing, frames bounded to their participants and variable row heights
   method: test
   test_ids:
-    - tests/sequence-layout.test.ts::sequence layout
+    - "tests/integration/sequence-layout.test.ts::widens only the gap a long label crosses"
+    - "tests/integration/sequence-layout.test.ts::gives a spanning label the room it needs across several gaps"
+    - "tests/integration/sequence-layout.test.ts::bounds a frame to the lanes its messages touch"
+    - "tests/integration/sequence-layout.test.ts::grows a row to fit a multi-line note instead of overlapping the next message"
+    - "tests/integration/sequence-layout.test.ts::keeps self-message loops and right-hand notes inside the frame"
+    - "tests/integration/sequence-layout.test.ts::stays deterministic and keeps lanes ordered"
   status: DRAFT

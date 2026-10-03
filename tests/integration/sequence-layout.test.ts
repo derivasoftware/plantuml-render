@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { renderSequenceSvg } from "../src/render/sequence.js";
-import { type RenderIr } from "../src/render/ir.js";
+import { renderSequenceSvg } from "../../src/render/sequence.js";
+import { type RenderIr } from "../../src/render/ir.js";
 
 const lanes = (...ids: string[]) => ids.map((id) => ({ id, kind: "lifeline" as const, label: id, classifier: "participant" }));
 const msg = (from: string, to: string, order: number, label?: string) => ({ from, to, kind: "message" as const, order, label });

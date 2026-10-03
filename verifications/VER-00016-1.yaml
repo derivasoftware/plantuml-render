@@ -6,6 +6,16 @@ verification:
     Style tests cover bands, badges, folded notes, paint order, sequence tabs and the token palette
   method: test
   test_ids:
-    - tests/style.test.ts::visual style
-    - tests/embed.test.ts::embedding
+    - "tests/integration/style.test.ts::tokenises members: visibility, static and abstract, name, params, types"
+    - "tests/integration/style.test.ts::draws visibility dots, a header band and a classifier badge per kind"
+    - "tests/integration/style.test.ts::breaks note lines on the PlantUML "
+    - "tests/integration/style.test.ts::paints containers parent-first and edge labels above the leaves"
+    - "tests/integration/style.test.ts::styles the sequence: actor glyph, frame tab with condition, note line breaks"
+    - "tests/integration/style.test.ts::declares the palette as overridable tokens in light and dark"
+    - "tests/integration/embed.test.ts::scopes every style rule under .pr-diagram and never targets the host root"
+    - "tests/integration/embed.test.ts::keeps ids unique across diagrams while the logical id stays in data-id"
+    - "tests/integration/embed.test.ts::derives the prefix deterministically from the title"
+    - "tests/integration/embed.test.ts::declares light and dark tokens on the diagram itself"
+    - "tests/integration/embed.test.ts::sizes the root naturally and fluidly"
+    - "tests/integration/embed.test.ts::frames the content with the same margin on every side"
   status: DRAFT

@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { main } from "../src/render/cli.js";
+import { main } from "../../src/render/cli.js";
 
 describe("cli", () => {
   it("renders puml files and prebuilt IR documents", async () => {

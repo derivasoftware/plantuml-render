@@ -6,5 +6,6 @@ verification:
     The checksum script is exercised on a temporary directory; the file lists every executable, nothing else, and verifies with sha256sum -c
   method: test
   test_ids:
-    - tests/checksums.test.ts::release checksums
+    - "tests/integration/checksums.test.ts::writes a SHA256SUMS that covers every executable and verifies with sha256sum -c"
+    - "tests/integration/checksums.test.ts::refuses a directory without executables"
   status: DRAFT

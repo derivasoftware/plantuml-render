@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { renderSvg } from "../src/render/engine.js";
-import { renderSequenceSvg } from "../src/render/sequence.js";
-import { BADGE, memberMarkup } from "../src/render/shared.js";
+import { renderSvg } from "../../src/render/engine.js";
+import { renderSequenceSvg } from "../../src/render/sequence.js";
+import { BADGE, memberMarkup } from "../../src/render/shared.js";
 
 const box = (id: string, extra: Record<string, unknown> = {}) => ({ id, kind: "box" as const, label: id.split(".").pop()!, ...extra });
 

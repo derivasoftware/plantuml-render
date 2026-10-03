@@ -6,7 +6,17 @@ verification:
     Frontend tests classify state, activity, use case and mindmap sources into notices and keep class and sequence untouched; engine tests draw the notice in both layouts and for an empty document; CLI tests check stderr, exit codes and the --ir error line
   method: test
   test_ids:
-    - tests/frontend.test.ts::diagram kinds that are not drawn
-    - tests/engine.test.ts::engine
-    - tests/cli.test.ts::cli
+    - "tests/integration/frontend.test.ts::returns an empty IR with a notice naming the kind"
+    - "tests/integration/frontend.test.ts::recognises use case, component sources and non-UML start tags"
+    - "tests/integration/frontend.test.ts::says so when relations only reference undeclared entities"
+    - "tests/integration/frontend.test.ts::leaves class and sequence diagrams without a notice"
+    - "tests/integration/frontend.test.ts::notices validate against the schema"
+    - "tests/integration/engine.test.ts::is byte-deterministic"
+    - "tests/integration/engine.test.ts::emits stable ids, theming classes and typed markers"
+    - "tests/integration/engine.test.ts::layers inheritance targets above sources"
+    - "tests/integration/engine.test.ts::escapes markup in labels"
+    - "tests/integration/cli.test.ts::renders puml files and prebuilt IR documents"
+    - "tests/integration/cli.test.ts::reports a kind that is not drawn on stderr, draws the notice and exits 0"
+    - "tests/integration/cli.test.ts::reports an invalid --ir document as one line with exit code 1"
+    - "tests/integration/cli.test.ts::fails usage without input"
   status: DRAFT

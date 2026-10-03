@@ -5,7 +5,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-const SCRIPT = join(__dirname, "..", "scripts", "checksums.sh");
+const SCRIPT = join(__dirname, "..", "..", "scripts", "checksums.sh");
 
 describe("release checksums", () => {
   it("writes a SHA256SUMS that covers every executable and verifies with sha256sum -c", () => {

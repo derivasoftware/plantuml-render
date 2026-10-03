@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { renderSvg } from "../src/render/engine.js";
+import { renderSvg } from "../../src/render/engine.js";
 
 const IR = {
   ir: 1 as const,

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { renderSvg } from "../src/render/engine.js";
-import { type RenderIr } from "../src/render/ir.js";
+import { renderSvg } from "../../src/render/engine.js";
+import { type RenderIr } from "../../src/render/ir.js";
 
 const box = (id: string, extra: Record<string, unknown> = {}) => ({ id, kind: "box" as const, label: id.split(".").pop()!, ...extra });
 const rectOf = (svg: string, id: string) => {

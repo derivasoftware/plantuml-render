@@ -6,5 +6,10 @@ verification:
     Style tests cover member tokenisation, visibility dots, static and abstract notation
   method: test
   test_ids:
-    - tests/style.test.ts::visual style
+    - "tests/integration/style.test.ts::tokenises members: visibility, static and abstract, name, params, types"
+    - "tests/integration/style.test.ts::draws visibility dots, a header band and a classifier badge per kind"
+    - "tests/integration/style.test.ts::breaks note lines on the PlantUML "
+    - "tests/integration/style.test.ts::paints containers parent-first and edge labels above the leaves"
+    - "tests/integration/style.test.ts::styles the sequence: actor glyph, frame tab with condition, note line breaks"
+    - "tests/integration/style.test.ts::declares the palette as overridable tokens in light and dark"
   status: DRAFT
