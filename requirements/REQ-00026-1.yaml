@@ -16,7 +16,7 @@ requirement:
     step in 14 px per level and closing borders stack instead of touching.
     Chosen by the Owner among four sketched variants (spike branch
     spike/sequence-frames).
-  status: DRAFT
+  status: APPROVED
   asil: QM
   parent_ids:
     - SREQ-00006-1
