@@ -14,7 +14,7 @@ requirement:
     parameters; generics and nested parentheses stay whole. Approved on
     the spike PUML-40 bench by the owner; the glyph-and-cream 0.6.x look
     read as a wireframe.
-  status: DRAFT
+  status: APPROVED
   asil: QM
   parent_ids:
     - SREQ-00003-1
