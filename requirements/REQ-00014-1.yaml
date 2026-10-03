@@ -20,7 +20,7 @@ requirement:
     executable run from cmd.exe renders a folder with `!includesub`
     byte-identical to the Linux one. Distribution decision: GitHub
     releases, no npm publication.
-  status: DRAFT
+  status: APPROVED
   asil: QM
   parent_ids:
     - SREQ-00001-1
