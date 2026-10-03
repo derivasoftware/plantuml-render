@@ -17,7 +17,7 @@ requirement:
     attached. The assertions live in scripts/smoke_binary.sh so the host
     check in scripts/build_binaries.sh and the per-platform jobs mean the
     same thing by "verified".
-  status: DRAFT
+  status: APPROVED
   asil: QM
   parent_ids:
     - SREQ-00001-1
