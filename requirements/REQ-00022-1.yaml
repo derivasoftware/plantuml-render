@@ -16,7 +16,7 @@ requirement:
     binaries it describes. A downloader pins a version and runs
     `sha256sum -c SHA256SUMS --ignore-missing` (`shasum -a 256 -c` on
     macOS). A detached signature is a possible later step.
-  status: DRAFT
+  status: APPROVED
   asil: QM
   parent_ids:
     - SREQ-00001-1
