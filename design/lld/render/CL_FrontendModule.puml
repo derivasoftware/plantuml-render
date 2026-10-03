@@ -9,10 +9,16 @@
 
 namespace render.frontend {
   class configureParser <<function>> {
-    + configureParser(next: ParserAssets) : void
+    + configureParser()
   }
   class pumlToIr <<function>> {
-    + pumlToIr(source: string) : Promise<RenderIr>
+    + pumlToIr()
+  }
+  class load <<function>> {
+    + load()
+  }
+  class packagedAssets <<function>> {
+    + packagedAssets()
   }
 }
 

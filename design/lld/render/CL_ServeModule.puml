@@ -5,10 +5,10 @@
 
 namespace render.serve {
   class renderFile <<function>> {
-    + renderFile(file: string, state: ViewState) : Promise<string>
+    + renderFile()
   }
   class startServer <<function>> {
-    + startServer(file: string, port: number) : Promise<Serving>
+    + startServer()
   }
 }
 

@@ -5,7 +5,13 @@
 
 namespace render.links {
   class applyLinks <<function>> {
-    + applyLinks(ir: RenderIr, spec: LinkSpec) : RenderIr
+    + applyLinks()
+  }
+  class entryFor <<function>> {
+    + entryFor()
+  }
+  class shortName <<function>> {
+    + shortName()
   }
 }
 

@@ -8,7 +8,52 @@
 
 namespace render.engine {
   class renderSvg <<function>> {
-    + renderSvg(input: unknown, opts: RenderOptions) : Promise<string>
+    + renderSvg()
+  }
+  class absolutePositions <<function>> {
+    + absolutePositions()
+  }
+  class adaptContainers <<function>> {
+    + adaptContainers()
+  }
+  class anchor <<function>> {
+    + anchor()
+  }
+  class applyDeltas <<function>> {
+    + applyDeltas()
+  }
+  class classifierOf <<function>> {
+    + classifierOf()
+  }
+  class emit <<function>> {
+    + emit()
+  }
+  class emitEdge <<function>> {
+    + emitEdge()
+  }
+  class emitNode <<function>> {
+    + emitNode()
+  }
+  class headerText <<function>> {
+    + headerText()
+  }
+  class layout <<function>> {
+    + layout()
+  }
+  class layoutLanes <<function>> {
+    + layoutLanes()
+  }
+  class markers <<function>> {
+    + markers()
+  }
+  class nodeSize <<function>> {
+    + nodeSize()
+  }
+  class noteLines <<function>> {
+    + noteLines()
+  }
+  class toElk <<function>> {
+    + toElk()
   }
 }
 

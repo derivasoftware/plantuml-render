@@ -9,7 +9,7 @@
 
 namespace render.sequence {
   class renderSequenceSvg <<function>> {
-    + renderSequenceSvg(ir: RenderIr) : string
+    + renderSequenceSvg()
   }
 }
 

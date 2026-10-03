@@ -5,13 +5,13 @@
 
 namespace render.filters {
   class stripSections <<function>> {
-    + stripSections(ir: RenderIr) : RenderIr
+    + stripSections()
   }
   class flattenContainers <<function>> {
-    + flattenContainers(ir: RenderIr) : RenderIr
+    + flattenContainers()
   }
   class hideNotes <<function>> {
-    + hideNotes(ir: RenderIr) : RenderIr
+    + hideNotes()
   }
 }
 

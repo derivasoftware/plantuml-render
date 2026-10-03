@@ -5,10 +5,16 @@
 
 namespace render.activity {
   class isActivity <<function>> {
-    + isActivity(root: CstNode) : boolean
+    + isActivity()
   }
   class activityToIr <<function>> {
-    + activityToIr(root: CstNode) : RenderIr
+    + activityToIr()
+  }
+  class actionText <<function>> {
+    + actionText()
+  }
+  class paren <<function>> {
+    + paren()
   }
 }
 

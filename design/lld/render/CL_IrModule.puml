@@ -7,7 +7,7 @@
 
 namespace render.ir {
   class validateIr <<function>> {
-    + validateIr(value: unknown) : RenderIr
+    + validateIr()
   }
 }
 
