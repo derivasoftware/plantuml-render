@@ -18,7 +18,7 @@ requirement:
     figures, frames carry a keyword tab and their condition in brackets.
     The neutral slate values are a starting point; the final tokens may
     come from deriva/core/ui-kit (open decision, PUML-43).
-  status: DRAFT
+  status: APPROVED
   asil: QM
   parent_ids:
     - SREQ-00003-1
