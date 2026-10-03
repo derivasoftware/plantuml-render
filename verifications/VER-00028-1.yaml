@@ -6,5 +6,9 @@ verification:
     The built targets and the platforms that run them are compared, and the smoke script is exercised on a passing and a stale executable
   method: test
   test_ids:
-    - tests/release-binaries.test.ts::release binaries
+    - "tests/integration/release-binaries.test.ts::runs every cross-compiled target on its own platform"
+    - "tests/integration/release-binaries.test.ts::checks the host binary through the same script the platform jobs use"
+    - "tests/integration/release-binaries.test.ts::attaches assets only for a version tag"
+    - "tests/integration/release-binaries.test.ts::accepts an executable that reports its version and draws the class it was given"
+    - "tests/integration/release-binaries.test.ts::rejects an executable whose version does not match the build"
   status: DRAFT

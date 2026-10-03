@@ -6,7 +6,18 @@ verification:
     Layout tests cover layering, routed edges, packed components, containers and determinism; the corpus metrics are recorded in the rationale
   method: test
   test_ids:
-    - tests/layout.test.ts::class layout
-    - tests/engine.test.ts::engine
-    - tests/interactive.test.ts::interactive rendering
+    - "tests/integration/layout.test.ts::puts bases above subtypes and interfaces above their implementations"
+    - "tests/integration/layout.test.ts::routes edges orthogonally between the boxes they join"
+    - "tests/integration/layout.test.ts::packs disconnected boxes into a grid instead of one row"
+    - "tests/integration/layout.test.ts::lays containers out with their children and routes across them"
+    - "tests/integration/layout.test.ts::ends a composition or aggregation path on the whole, where the diamond belongs"
+    - "tests/integration/layout.test.ts::draws an edge to the node's own container as a straight line and stays deterministic"
+    - "tests/integration/engine.test.ts::is byte-deterministic"
+    - "tests/integration/engine.test.ts::emits stable ids, theming classes and typed markers"
+    - "tests/integration/engine.test.ts::layers inheritance targets above sources"
+    - "tests/integration/engine.test.ts::escapes markup in labels"
+    - "tests/integration/interactive.test.ts::edges carry endpoint data attributes"
+    - "tests/integration/interactive.test.ts::leaf deltas move the node and its container adapts around it"
+    - "tests/integration/interactive.test.ts::container deltas cascade to the whole subtree"
+    - "tests/integration/interactive.test.ts::negative deltas stay inside the covering viewBox"
   status: DRAFT

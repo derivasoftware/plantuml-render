@@ -6,5 +6,7 @@ verification:
     Layout tests read data-row-tops, data-span, the pr-branch pills with their rows and data-row on messages and notes back from the SVG, and check determinism
   method: test
   test_ids:
-    - tests/sequence-layout.test.ts::sequence frames
+    - "tests/integration/sequence-layout.test.ts::leaves air above and below a frame and after each else, and insets nested frames"
+    - "tests/integration/sequence-layout.test.ts::colours frames by kind and wraps a long condition into the tab band"
+    - "tests/integration/sequence-layout.test.ts::exposes rows, spans and branches to a host page"
   status: DRAFT

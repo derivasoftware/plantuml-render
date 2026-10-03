@@ -6,5 +6,5 @@ verification:
     Layout tests read the lane rectangles and the nodes back from the SVG, lanes are disjoint columns in declaration order, every node sits inside its lane, a chain inside a lane runs straight, and the output is deterministic
   method: test
   test_ids:
-    - tests/activity.test.ts::swimlane layout
+    - "tests/integration/activity.test.ts::lays lanes out as disjoint columns in declaration order, nodes inside their lane, chains straight"
   status: DRAFT

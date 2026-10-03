@@ -7,6 +7,12 @@ verification:
   method: test
   test_ids:
     - tests/frontend.test.ts::diagram kinds that are not drawn
-    - tests/engine.test.ts::engine
-    - tests/cli.test.ts::cli
+    - "tests/integration/engine.test.ts::is byte-deterministic"
+    - "tests/integration/engine.test.ts::emits stable ids, theming classes and typed markers"
+    - "tests/integration/engine.test.ts::layers inheritance targets above sources"
+    - "tests/integration/engine.test.ts::escapes markup in labels"
+    - "tests/integration/cli.test.ts::renders puml files and prebuilt IR documents"
+    - "tests/integration/cli.test.ts::reports a kind that is not drawn on stderr, draws the notice and exits 0"
+    - "tests/integration/cli.test.ts::reports an invalid --ir document as one line with exit code 1"
+    - "tests/integration/cli.test.ts::fails usage without input"
   status: DRAFT

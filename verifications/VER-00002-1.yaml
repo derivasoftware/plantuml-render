@@ -6,4 +6,7 @@ verification:
     Engine tests pin determinism, ids, markers and layering
   method: test
   test_ids:
-    - tests/engine.test.ts::engine
+    - "tests/integration/engine.test.ts::is byte-deterministic"
+    - "tests/integration/engine.test.ts::emits stable ids, theming classes and typed markers"
+    - "tests/integration/engine.test.ts::layers inheritance targets above sources"
+    - "tests/integration/engine.test.ts::escapes markup in labels"

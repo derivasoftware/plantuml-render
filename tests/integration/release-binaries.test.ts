@@ -5,7 +5,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-const ROOT = join(__dirname, "..");
+const ROOT = join(__dirname, "..", "..");
 const BUILD = readFileSync(join(ROOT, "scripts", "build_binaries.sh"), "utf8");
 const WORKFLOW = readFileSync(join(ROOT, ".github", "workflows", "binaries.yml"), "utf8");
 

@@ -6,5 +6,8 @@ verification:
     CLI tests cover the subcommands, the embedded manual, the version and the batch mode; the binaries by release review
   method: test
   test_ids:
-    - tests/manual.test.ts::command line
+    - "tests/integration/manual.test.ts::prints the version and a help screen that names every subcommand"
+    - "tests/integration/manual.test.ts::serves the manual from the package and from injected copies"
+    - "tests/integration/manual.test.ts::renders a directory into a mirrored tree of SVGs"
+    - "tests/integration/manual.test.ts::parses through the wasm grammar: no native binding in the dependencies"
   status: DRAFT

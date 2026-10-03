@@ -7,5 +7,8 @@ verification:
   method: test
   test_ids:
     - tests/frontend.test.ts::hyperlinks on entity heads
-    - tests/links.test.ts::links
+    - "tests/integration/links.test.ts::accepts href, title and refs on nodes and edges and rejects malformed refs"
+    - "tests/integration/links.test.ts::wraps linked elements in <a href>, adds the tooltip and the data-ref attributes"
+    - "tests/integration/links.test.ts::links sequence participants and messages the same way"
+    - "tests/integration/links.test.ts::applies a map by id, by unique short name, and a template to the rest"
   status: DRAFT

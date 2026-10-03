@@ -6,5 +6,5 @@ verification:
     CLI tests cover --links maps and --link-template
   method: test
   test_ids:
-    - tests/links.test.ts::link options
+    - "tests/integration/links.test.ts::decorates from --links and --link-template in the puml and --ir forms"
   status: DRAFT

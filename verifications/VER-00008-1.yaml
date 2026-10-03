@@ -6,4 +6,5 @@ verification:
     Contract tests validate the sequence vocabulary and reject orderless messages
   method: test
   test_ids:
-    - tests/sequence.test.ts::sequence IR vocabulary
+    - "tests/integration/sequence.test.ts::validates lifelines, frames, dividers, anchored notes and messages"
+    - "tests/integration/sequence.test.ts::rejects a message without an order"

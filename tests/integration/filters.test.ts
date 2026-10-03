@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { flattenContainers, hideNotes, stripSections } from "../src/render/filters.js";
-import { type RenderIr } from "../src/render/ir.js";
+import { flattenContainers, hideNotes, stripSections } from "../../src/render/filters.js";
+import { type RenderIr } from "../../src/render/ir.js";
 
 const IR: RenderIr = {
   ir: 1,

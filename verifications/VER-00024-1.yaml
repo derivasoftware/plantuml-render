@@ -6,6 +6,11 @@ verification:
     Frontend tests fold if/elseif/else, loops with break and backward, fork/join, end merge, split, switch, notes, arrow labels and kill into the expected flow graph; drawing tests check the shapes, the solid arrowhead and determinism
   method: test
   test_ids:
-    - tests/activity.test.ts::activity frontend
-    - tests/activity.test.ts::activity drawing
+    - "tests/integration/activity.test.ts::folds if/elseif/else with branch labels into chained decisions"
+    - "tests/integration/activity.test.ts::turns while with break and repeat with backward into back edges"
+    - "tests/integration/activity.test.ts::draws fork and join as bars, converges end merge and split, and branches a switch"
+    - "tests/integration/activity.test.ts::assigns lanes and partitions, attaches notes, labels arrows and stops the flow at kill"
+    - "tests/integration/activity.test.ts::validates against the schema and leaves class diagrams alone"
+    - "tests/integration/activity.test.ts::draws the shapes with their classes and the solid flow arrowhead"
+    - "tests/integration/activity.test.ts::is byte-deterministic for a flow with loops and lanes"
   status: DRAFT

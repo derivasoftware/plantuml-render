@@ -6,4 +6,7 @@ verification:
     Interactive tests cover cascade, adaptive bounds, viewBox and edge data
   method: test
   test_ids:
-    - tests/interactive.test.ts::interactive rendering
+    - "tests/integration/interactive.test.ts::edges carry endpoint data attributes"
+    - "tests/integration/interactive.test.ts::leaf deltas move the node and its container adapts around it"
+    - "tests/integration/interactive.test.ts::container deltas cascade to the whole subtree"
+    - "tests/integration/interactive.test.ts::negative deltas stay inside the covering viewBox"

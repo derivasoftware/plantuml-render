@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { renderSvg } from "../src/render/engine.js";
-import { idPrefix } from "../src/render/shared.js";
+import { renderSvg } from "../../src/render/engine.js";
+import { idPrefix } from "../../src/render/shared.js";
 
 const classIr = (title: string) => ({
   ir: 1 as const,

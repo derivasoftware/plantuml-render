@@ -6,5 +6,10 @@ verification:
     Embedding tests cover scoped styles, per-diagram ids, theme tokens, fluid root and symmetric margins
   method: test
   test_ids:
-    - tests/embed.test.ts::embedding
+    - "tests/integration/embed.test.ts::scopes every style rule under .pr-diagram and never targets the host root"
+    - "tests/integration/embed.test.ts::keeps ids unique across diagrams while the logical id stays in data-id"
+    - "tests/integration/embed.test.ts::derives the prefix deterministically from the title"
+    - "tests/integration/embed.test.ts::declares light and dark tokens on the diagram itself"
+    - "tests/integration/embed.test.ts::sizes the root naturally and fluidly"
+    - "tests/integration/embed.test.ts::frames the content with the same margin on every side"
   status: DRAFT

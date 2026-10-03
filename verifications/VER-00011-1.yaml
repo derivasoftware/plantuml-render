@@ -6,4 +6,8 @@ verification:
     Serve tests cover the page, stateful rendering, drag deltas and SSE reloads
   method: test
   test_ids:
-    - tests/serve.test.ts::serve mode
+    - "tests/integration/serve.test.ts::serves the interaction page"
+    - "tests/integration/serve.test.ts::renders the watched file with view state"
+    - "tests/integration/serve.test.ts::applies drag positions"
+    - "tests/integration/serve.test.ts::notifies file changes over SSE"
+    - "tests/integration/serve.test.ts::reports parse-stage failures as 422, never a crash"

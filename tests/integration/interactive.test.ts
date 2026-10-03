@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { renderSvg } from "../src/render/engine.js";
-import { pumlToIr } from "../src/render/frontend.js";
+import { renderSvg } from "../../src/render/engine.js";
+import { pumlToIr } from "../../src/render/frontend.js";
 
 const IR = {
   ir: 1 as const,

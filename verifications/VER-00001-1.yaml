@@ -6,4 +6,7 @@ verification:
     IR validation tests reject every malformed shape
   method: test
   test_ids:
-    - tests/ir.test.ts::render-IR validation
+    - "tests/integration/ir.test.ts::accepts a minimal document"
+    - "tests/integration/ir.test.ts::rejects unknown node kinds"
+    - "tests/integration/ir.test.ts::rejects unknown edge kinds and extra fields"
+    - "tests/integration/ir.test.ts::rejects a wrong contract version"
