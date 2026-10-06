@@ -42,6 +42,11 @@ consumer, the engine. Anything that emits valid IR renders identically.
   it to CSS classes, never colors), `stereotype` and `abstract`.
 - Edge kinds (8): `inheritance`, `realization`, `composition`,
   `aggregation`, `dependency`, `association`, `attachment`, `message`.
+- **An edge's `from` and `to` name nodes of the same document.** The
+  engine draws an edge only when both ends were placed; an end that
+  names nothing is reported in the rendered notice, with the names it
+  could not find, rather than dropped in silence. A producer that emits
+  a partial model gets a drawing that says what is missing from it.
 
 ### Sequence vocabulary (additive, still contract v1)
 

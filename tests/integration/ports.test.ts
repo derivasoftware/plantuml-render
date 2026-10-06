@@ -227,3 +227,43 @@ describe("a container as a block", () => {
     expect(Math.abs(inbound[1] - onward[1])).toBeLessThanOrEqual(target.h + 2);
   });
 });
+
+describe("one output driving several destinations", () => {
+  const FANOUT = `@startuml fanout
+package System <<block>> {
+  class in1 <<in>>
+  class out1 <<out>>
+  class Source <<block>> {
+    + in u
+    + out y
+  }
+  class ConsumerA
+  class ConsumerB
+  class ConsumerC
+  in1 --> Source::u
+  Source::y --> ConsumerA
+  Source::y --> ConsumerB
+  Source::y --> ConsumerC
+  ConsumerA --> out1
+}
+@enduml
+`;
+
+  it("starts every wire of a fan-out at the one port they share", async () => {
+    const svg = await renderSvg(await pumlToIr(FANOUT));
+    const starts = [...svg.matchAll(/data-from="System\.Source\.y" data-to="[^"]+" d="M([\d.]+),([\d.]+)/g)]
+      .map((m) => `${m[1]},${m[2]}`);
+    expect(starts).toHaveLength(3);
+    // One output, three consumers: the drawing must not read as three outputs.
+    expect(new Set(starts).size).toBe(1);
+  });
+
+  it("without the port, each wire leaves the box at its own place", async () => {
+    const plain = FANOUT.replace(/class Source <<block>> \{[^}]*\}/s, "class Source").replace(/Source::[uy]/g, "Source");
+    const svg = await renderSvg(await pumlToIr(plain));
+    const starts = [...svg.matchAll(/data-from="System\.Source" data-to="[^"]+" d="M([\d.]+),([\d.]+)/g)]
+      .map((m) => `${m[1]},${m[2]}`);
+    expect(starts).toHaveLength(3);
+    expect(new Set(starts).size).toBeGreaterThan(1);
+  });
+});

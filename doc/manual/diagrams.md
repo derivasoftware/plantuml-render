@@ -17,6 +17,11 @@ an error.
   cardinalities in quotes are accepted.
 - `namespace` and `package` blocks become containers; dotted names nest
   (`namespace a.b.c`).
+- A relation names an entity inside a container by its declared name
+  (`A`) or by any qualified tail of it (`o.A`, `inner.o.A` for
+  `Top.o.A`). The declared name wins; a tail that two entities share
+  names neither, and the relation is reported rather than wired to a
+  guess.
 - `note left|right|top|bottom of X : text` with `\n` line breaks.
 - `class f <<function>>` marks a module-level function (badge `f`).
 - `!include file` and `!includesub file!NAME` are expanded before parsing.
@@ -89,10 +94,44 @@ same square on the border. Children without `<<in>>`/`<<out>>` stay ordinary
 boxes, and a container without `<<block>>` reads `<<in>>` as what it is, a
 stereotype.
 
-Two limits worth knowing. **`north` and `south` sides are IR-only**: the text
-syntax says direction, and direction picks the side. And a relation line
-cannot start with `ref`, which the grammar reads as the sequence-diagram
-keyword — name that port something else.
+### One output, several destinations
+
+A block whose output drives more than one consumer should say so with a port.
+Without one, each relation leaves the box wherever the router finds room, and
+a reader counting the lines that leave the box counts outputs that do not
+exist:
+
+```plantuml
+package System <<block>> {
+  class Source <<block>> {
+    + out y
+  }
+  class ConsumerA
+  class ConsumerB
+  Source::y --> ConsumerA
+  Source::y --> ConsumerB
+}
+```
+
+Every wire written `Source::y` starts at the same square, so the drawing says
+one output that branches. This works at any depth — a `<<block>>` class
+nested inside a `<<block>>` package is still a block with a boundary.
+
+### Two limits worth knowing
+
+**`north` and `south` sides are IR-only**: the text syntax says direction, and
+direction picks the side. And a relation line cannot start with `ref`, which
+the grammar reads as the sequence-diagram keyword — name that port something
+else.
+
+## When a wire does not appear
+
+A relation is drawn only when both of its ends name something the diagram
+declares. When one does not — a misspelled name, a reference to an entity that
+another file was supposed to bring in, or `Block::out` on a class that is not a
+block and therefore has no ports — the relation cannot be drawn, and the
+drawing carries a notice naming what it could not find. A silently missing wire
+is the one failure a diagram cannot show you.
 
 ## Sequence diagrams
 

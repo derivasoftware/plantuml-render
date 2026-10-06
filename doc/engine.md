@@ -32,6 +32,11 @@ routed to the square: ELK reports their geometry relative to the lowest common
 ancestor of the two ends, and a port counts as inside its owner, so the engine
 resolves a port to its owner before deciding which frame the path belongs to.
 
+A notice sits under the drawing: the producer's own (`notice` on the document),
+and the engine's own line for the relations it could not draw, which names up
+to four endpoints that match no node and counts the rest. A document that drew
+nothing at all is left to its producer, which has already said why.
+
 ## Theming — themable, never themed
 
 The SVG hard-codes **no colors**: everything styles through CSS custom

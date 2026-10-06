@@ -795,6 +795,36 @@ function emitEdge(edge: IrEdge, byId: Map<string, Placed>, px: string, route?: R
   return { path: linked(edge.href, path), label };
 }
 
+/** How many names a notice lists before it starts counting instead. */
+const NAMED = 4;
+
+/**
+ * The endpoints that name nothing this document declares, as one line.
+ *
+ * The engine draws an edge only when both of its ends were placed, so this
+ * is the difference between what the producer asked for and what the
+ * drawing can show.
+ */
+function danglingNotice(ir: RenderIr, placed: Placed[]): string | undefined {
+  const drawn = new Set(placed.map((p) => p.node.id));
+  const missing: string[] = [];
+  let lost = 0;
+  for (const edge of ir.edges) {
+    const ends = [edge.from, edge.to].filter((end) => !drawn.has(end));
+    if (ends.length === 0) continue;
+    lost += 1;
+    for (const end of ends) if (!missing.includes(end)) missing.push(end);
+  }
+  if (lost === 0) return undefined;
+  const shown = missing.slice(0, NAMED).join(", ");
+  const rest = missing.length - NAMED;
+  return (
+    `${lost} relation${lost === 1 ? "" : "s"} not drawn: ` +
+    `${shown}${rest > 0 ? ` and ${rest} more` : ""} ` +
+    `${missing.length === 1 ? "is" : "are"} not declared in this diagram.`
+  );
+}
+
 function emit(ir: RenderIr, placed: Placed[], routes: Map<number, Route>): string {
   // The frame is the content's bounding box plus PAD on every side.
   // The frame is the bounding box of the nodes and of the routed edges,
@@ -811,8 +841,14 @@ function emit(ir: RenderIr, placed: Placed[], routes: Map<number, Route>): strin
   }
   for (const route of routes.values()) for (const p of route.points) { xs.push(p.x); ys.push(p.y); }
   // A producer's notice sits below the content, or alone when there is
-  // nothing else; an IR with nothing to draw says so (REQ-00021-1).
-  const notice = ir.notice ?? (placed.length === 0 ? "Nothing to draw." : undefined);
+  // nothing else; an IR with nothing to draw says so (REQ-00021-1). An edge
+  // whose end names nothing cannot be drawn either, and dropping it in
+  // silence is how a diagram ends up quietly missing a wire: the names that
+  // resolved to nothing are reported the same way. When the document drew
+  // nothing at all its producer has already said so, so this stays quiet.
+  const notice = [ir.notice, placed.length === 0 ? undefined : danglingNotice(ir, placed)]
+    .filter(Boolean)
+    .join("\n") || (placed.length === 0 ? "Nothing to draw." : undefined);
   let noticeBlock = "";
   if (notice) {
     const x = xs.length ? Math.min(...xs) : 0;
