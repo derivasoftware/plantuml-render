@@ -43,6 +43,9 @@ export interface IrLinks {
   refs?: Record<string, string | string[]>;
 }
 
+/** What a `sections` compartment holds. */
+export type SectionKind = "attributes" | "methods";
+
 export interface IrNode extends IrLinks {
   id: string;
   kind: NodeKind;
@@ -51,6 +54,10 @@ export interface IrNode extends IrLinks {
   stereotype?: string;
   abstract?: boolean;
   sections?: string[][];
+  /** What each `sections` compartment holds, in the same order. Absent when
+   *  the compartments are not class members. Order alone cannot say it: a
+   *  class with no attributes puts its methods first. */
+  sectionKinds?: SectionKind[];
   parent?: string;
   /** Sequence row this node occupies (dividers, anchored notes). */
   at?: number;

@@ -8,7 +8,7 @@
  */
 
 import { activityToIr, isActivity } from "./activity.js";
-import { type IrEdge, type IrNode, type RenderIr } from "./ir.js";
+import { type IrEdge, type IrNode, type RenderIr, type SectionKind } from "./ir.js";
 
 /** Structural view of a tree-sitter node — satisfied by both the node
  * binding and web-tree-sitter, so one mapping serves CLI and webview. */
@@ -340,7 +340,7 @@ export function treeToIr(root: CstNode): RenderIr {
           stereotype: stereotypeNode
             ? stereotypeNode.text.replace(/^<<|>>$/g, "").trim()
             : undefined,
-          sections: memberSections(node),
+          ...memberSections(node),
           parent: containerId,
           ...(link ? hyperlink(link.text) : {}),
         });
@@ -403,7 +403,9 @@ export function treeToIr(root: CstNode): RenderIr {
   return { ir: 1, title, nodes, edges };
 }
 
-function memberSections(decl: Node): string[][] | undefined {
+function memberSections(
+  decl: Node,
+): { sections: string[][]; sectionKinds: SectionKind[] } | undefined {
   const body = decl.childForFieldName("body");
   if (!body) return undefined;
   const attrs: string[] = [];
@@ -414,6 +416,16 @@ function memberSections(decl: Node): string[][] | undefined {
     const isMethod = member.namedChildren.some((c) => c.type === "method");
     (isMethod ? methods : attrs).push(text);
   }
-  const sections = [attrs, methods].filter((s) => s.length > 0);
-  return sections.length > 0 ? sections : undefined;
+  // The grammar already told us which is which; keeping it is what lets a
+  // consumer fold methods without counting compartments.
+  const compartments: [SectionKind, string[]][] = [
+    ["attributes", attrs],
+    ["methods", methods],
+  ];
+  const present = compartments.filter(([, lines]) => lines.length > 0);
+  if (present.length === 0) return undefined;
+  return {
+    sections: present.map(([, lines]) => lines),
+    sectionKinds: present.map(([kind]) => kind),
+  };
 }

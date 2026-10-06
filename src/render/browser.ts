@@ -5,7 +5,13 @@
  */
 
 export { renderSvg, type RenderOptions } from "./engine.js";
-export { flattenContainers, hideNotes, stripSections } from "./filters.js";
+export {
+  filterMembers,
+  flattenContainers,
+  hideNotes,
+  type MemberContext,
+  stripSections,
+} from "./filters.js";
 export { applyLinks, type LinkEntry, type LinkSpec } from "./links.js";
 export { treeToIr, type CstNode } from "./frontend-core.js";
 export { expandIncludes, type IncludeLoader } from "./preprocess.js";

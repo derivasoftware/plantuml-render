@@ -31,6 +31,11 @@ consumer, the engine. Anything that emits valid IR renders identically.
 - **`id`s are stable, qualified names** — the load-bearing decision.
   They make SVG output diffable, let drag positions survive re-renders,
   and give containers/edges unambiguous anchors.
+- `sectionKinds` names what each `sections` compartment holds —
+  `attributes` or `methods` — in the same order. The order alone cannot
+  say it: a class with no attributes puts its methods first, so a
+  consumer that folds or filters members reads this instead of counting
+  positions. Absent when the compartments are not class members.
 - `kind`: `box` (classifier with optional `sections` compartments),
   `container` (nests children via their `parent`), `note`. Boxes also
   carry optional `classifier` (free-form theming hook — the engine maps
