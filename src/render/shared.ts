@@ -16,18 +16,22 @@ export const STYLE = `
     --pr-note-fill: #fffbeb; --pr-note-stroke: #fcd34d; --pr-head-class: #eef2ff; --pr-head-interface: #ecfdf5; --pr-head-enum: #fff7ed; --pr-head-function: #f1f5f9; --pr-head-abstract: #f5f3ff;
     --pr-badge-class: #4f46e5; --pr-badge-interface: #059669; --pr-badge-enum: #d97706; --pr-badge-function: #475569; --pr-badge-abstract: #7c3aed;
     --pr-name: #0f172a; --pr-type: #2563eb; --pr-param: #475569; --pr-punct: #94a3b8;
-    --pr-vis-public: #16a34a; --pr-vis-private: #dc2626; --pr-vis-protected: #d97706; --pr-vis-package: #2563eb; }
+    --pr-vis-public: #16a34a; --pr-vis-private: #dc2626; --pr-vis-protected: #d97706; --pr-vis-package: #2563eb;
+    --pr-port-in: #2563eb; --pr-port-out: #c2730a; }
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pr-diagram { --pr-text: #e2e8f0; --pr-muted: #94a3b8; --pr-stroke: #475569; --pr-edge: #94a3b8; --pr-box-fill: #1e293b; --pr-container-fill: #0f172a; --pr-container-stroke: #334155;
     --pr-note-fill: #3b3418; --pr-note-stroke: #a16207; --pr-head-class: #312e81; --pr-head-interface: #064e3b; --pr-head-enum: #78350f; --pr-head-function: #334155; --pr-head-abstract: #4c1d95;
     --pr-badge-class: #a5b4fc; --pr-badge-interface: #6ee7b7; --pr-badge-enum: #fcd34d; --pr-badge-function: #cbd5e1; --pr-badge-abstract: #c4b5fd;
-    --pr-name: #f8fafc; --pr-type: #7dd3fc; --pr-param: #cbd5e1; --pr-punct: #64748b; --pr-vis-public: #4ade80; --pr-vis-private: #f87171; --pr-vis-protected: #fbbf24; --pr-vis-package: #60a5fa; } }
+    --pr-name: #f8fafc; --pr-type: #7dd3fc; --pr-param: #cbd5e1; --pr-punct: #64748b; --pr-vis-public: #4ade80; --pr-vis-private: #f87171; --pr-vis-protected: #fbbf24; --pr-vis-package: #60a5fa; --pr-port-in: #60a5fa; --pr-port-out: #fbbf24; } }
   [data-theme="dark"] .pr-diagram { --pr-text: #e2e8f0; --pr-muted: #94a3b8; --pr-stroke: #475569; --pr-edge: #94a3b8; --pr-box-fill: #1e293b; --pr-container-fill: #0f172a; --pr-container-stroke: #334155;
     --pr-note-fill: #3b3418; --pr-note-stroke: #a16207; --pr-head-class: #312e81; --pr-head-interface: #064e3b; --pr-head-enum: #78350f; --pr-head-function: #334155; --pr-head-abstract: #4c1d95;
     --pr-badge-class: #a5b4fc; --pr-badge-interface: #6ee7b7; --pr-badge-enum: #fcd34d; --pr-badge-function: #cbd5e1; --pr-badge-abstract: #c4b5fd;
-    --pr-name: #f8fafc; --pr-type: #7dd3fc; --pr-param: #cbd5e1; --pr-punct: #64748b; --pr-vis-public: #4ade80; --pr-vis-private: #f87171; --pr-vis-protected: #fbbf24; --pr-vis-package: #60a5fa; }
+    --pr-name: #f8fafc; --pr-type: #7dd3fc; --pr-param: #cbd5e1; --pr-punct: #64748b; --pr-vis-public: #4ade80; --pr-vis-private: #f87171; --pr-vis-protected: #fbbf24; --pr-vis-package: #60a5fa; --pr-port-in: #60a5fa; --pr-port-out: #fbbf24; }
   .pr-diagram text { fill: var(--pr-text); }
   .pr-diagram rect, .pr-diagram line.pr-sep { shape-rendering: crispEdges; }
   .pr-diagram .pr-box > rect { fill: var(--pr-box-fill); stroke: var(--pr-stroke); }
+  .pr-diagram .pr-port > rect { fill: var(--pr-port-in); stroke: none; }
+  .pr-diagram .pr-port-out > rect { fill: var(--pr-port-out); }
+  .pr-diagram .pr-port-label { fill: var(--pr-muted); font-size: 10px; }
   .pr-diagram .pr-head { fill: var(--pr-head-class); stroke: none; }
   .pr-diagram .pr-classifier-interface .pr-head { fill: var(--pr-head-interface); }
   .pr-diagram .pr-classifier-enum .pr-head { fill: var(--pr-head-enum); }

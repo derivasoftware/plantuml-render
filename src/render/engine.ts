@@ -16,7 +16,7 @@
  */
 
 import ElkModule from "elkjs/lib/elk.bundled.js";
-import type { ElkExtendedEdge, ElkNode } from "elkjs/lib/elk-api.js";
+import type { ElkExtendedEdge, ElkNode, ElkPort } from "elkjs/lib/elk-api.js";
 
 import { type IrEdge, type IrNode, type RenderIr, validateIr } from "./ir.js";
 import { renderSequenceSvg } from "./sequence.js";
@@ -131,7 +131,11 @@ function noteLines(node: IrNode): string[] {
   return node.label.split(/\\n|\n/);
 }
 
+/** A port is a fixed marker on its block's border, not a laid-out box. */
+const PORT = 11;
+
 function nodeSize(node: IrNode): { w: number; h: number } {
+  if (node.kind === "port") return { w: PORT, h: PORT };
   if (node.kind === "action") {
     const lines = noteLines(node);
     return { w: Math.max(1, ...lines.map((l) => l.length)) * CHAR_W + 2 * PAD + 8, h: lines.length * LINE_H + 2 * PAD - 4 };
@@ -222,9 +226,15 @@ function toElk(ir: RenderIr): ElkGraph {
   const byId = new Map(ir.nodes.map((n) => [n.id, n]));
   const containers = new Set(ir.nodes.filter((n) => n.kind === "container").map((n) => n.id));
   const parentOf = (n: IrNode) => (n.parent && containers.has(n.parent) && byId.has(n.parent) && n.parent !== n.id ? n.parent : "root");
+  // A port belongs to its block's boundary, so it is neither a node of the
+  // graph nor a child of anything: it becomes an ELK port on its owner, and
+  // every piece of hierarchy logic below reads the owner in its place.
+  const ports = ir.nodes.filter((n) => n.kind === "port" && n.parent && byId.has(n.parent));
+  const ownerOf = (id: string): string => byId.get(id)?.kind === "port" ? (byId.get(id)!.parent ?? id) : id;
   const elkNodes = new Map<string, ElkNode>();
   const kids = new Map<string, IrNode[]>();
   for (const node of ir.nodes) {
+    if (node.kind === "port") continue;
     if (elkNodes.has(node.id)) continue; // a reopened container is one compound node
     const { w, h } = nodeSize(node);
     elkNodes.set(node.id, {
@@ -246,7 +256,9 @@ function toElk(ir: RenderIr): ElkGraph {
   }
   // the child of `level` on the way up from `id`
   const childAt = (id: string, level: string): string | undefined => {
-    let cur: IrNode | undefined = byId.get(id);
+    // A port stands for its block here: the block is what the level holds,
+    // and without this the edge is dropped and drawn as a straight line.
+    let cur: IrNode | undefined = byId.get(ownerOf(id));
     while (cur) {
       const p = parentOf(cur);
       if (p === level) return cur.id;
@@ -278,15 +290,51 @@ function toElk(ir: RenderIr): ElkGraph {
       (pinned.get(level) ?? pinned.set(level, new Set()).get(level)!).add(cur.id);
     }
   };
+  const PORT_GAP = 18;
+  const perSide = new Map<string, number>();
+  for (const port of ports) {
+    const host = elkNodes.get(port.parent!);
+    if (!host) continue;
+    const side = (port.side ?? (port.direction === "out" ? "east" : "west")).toUpperCase();
+    (host.ports ??= []).push({
+      id: port.id,
+      width: PORT,
+      height: PORT,
+      layoutOptions: { "elk.port.side": side },
+    } as ElkPort);
+    // Fixed sides only where ports were declared: switching it on globally
+    // would move every diagram that has none. A container with ports also
+    // routes across its own boundary, which ELK only does when the level is
+    // laid out together with its children.
+    host.layoutOptions = {
+      ...host.layoutOptions,
+      "elk.portConstraints": "FIXED_SIDE",
+      "elk.spacing.portPort": `${PORT_GAP}`,
+      ...(byId.get(port.parent!)?.kind === "container"
+        ? { "elk.hierarchyHandling": "INCLUDE_CHILDREN" }
+        : {}),
+    };
+    // A block must be tall (or wide) enough for the side that carries the
+    // most ports, or ELK stacks them past its own border.
+    const key = `${port.parent}:${side}`;
+    const n = (perSide.get(key) ?? 0) + 1;
+    perSide.set(key, n);
+    const span = n * PORT + (n - 1) * PORT_GAP + 2 * PORT_GAP;
+    if (side === "WEST" || side === "EAST") host.height = Math.max(host.height ?? 0, span);
+    else host.width = Math.max(host.width ?? 0, span);
+  }
   ir.edges.forEach((e, i) => {
-    if (!elkNodes.has(e.from) || !elkNodes.has(e.to)) return;
+    if (!elkNodes.has(ownerOf(e.from)) || !elkNodes.has(ownerOf(e.to))) return;
     // an edge between a node and its own container is not a graph edge
-    // for the router: it is drawn as a straight anchored line instead
-    if (isAncestor(e.from, e.to) || isAncestor(e.to, e.from)) return;
-    const level = lcaOf(e.from, e.to);
+    // for the router: it is drawn as a straight anchored line instead.
+    // A port is the exception — a boundary signal wired to something
+    // inside is exactly what the router's hierarchical ports are for.
+    const onBoundary = byId.get(e.from)?.kind === "port" || byId.get(e.to)?.kind === "port";
+    if (!onBoundary && (isAncestor(ownerOf(e.from), ownerOf(e.to)) || isAncestor(ownerOf(e.to), ownerOf(e.from)))) return;
+    const level = lcaOf(ownerOf(e.from), ownerOf(e.to));
     (edgesAt.get(level) ?? edgesAt.set(level, []).get(level)!).push(i);
-    pin(e.from, level);
-    pin(e.to, level);
+    pin(ownerOf(e.from), level);
+    pin(ownerOf(e.to), level);
   });
   const edgeHome = new Map<number, string>();
   const elkEdge = (i: number): ElkExtendedEdge => {
@@ -324,7 +372,9 @@ function toElk(ir: RenderIr): ElkGraph {
     const loose = children.filter((c) => !linked.has(c.id) && !spine.has(c.id));
     const components = [...groups.values()].filter((g) => g.some((c) => linked.has(c.id)) && !spine.has(g[0].id));
     const pieces = components.length + loose.length;
-    if (pieces <= 1 || (spine.size === 0 && components.length === 1 && loose.length === 0)) {
+    // A host with ports keeps one layout: its children are placed against a
+    // boundary, and packing them into sub-components would fight it.
+    if ((host.ports?.length ?? 0) > 0 || pieces <= 1 || (spine.size === 0 && components.length === 1 && loose.length === 0)) {
       // one piece: the host's own layered layout handles it
       for (const c of children) host.children!.push(elkNodes.get(c.id)!);
       for (const i of edges) {
@@ -368,6 +418,17 @@ function toElk(ir: RenderIr): ElkGraph {
     for (const c of children) if (c.kind === "container") place(c.id, elkNodes.get(c.id)!);
   };
   place("root", root);
+  // A port is part of its owner's boundary, so an edge between a port and
+  // something inside that owner is reported in the owner's coordinates,
+  // whichever edge list it ended up in. The frame has to say the same.
+  for (const [i, e] of ir.edges.entries()) {
+    const from = byId.get(e.from);
+    const to = byId.get(e.to);
+    if (from?.kind !== "port" && to?.kind !== "port") continue;
+    const owner = from?.kind === "port" ? parentOf(from) : parentOf(to!);
+    const other = from?.kind === "port" ? e.to : e.from;
+    if (edgeHome.has(i) && isAncestor(owner, ownerOf(other))) edgeHome.set(i, owner);
+  }
   return { root, edgeHome };
 }
 
@@ -379,6 +440,14 @@ function absolutePositions(root: ElkNode): Map<string, { x: number; y: number; w
       const x = ox + (child.x ?? 0);
       const y = oy + (child.y ?? 0);
       out.set(child.id, { x: Math.round(x), y: Math.round(y), w: Math.round(child.width ?? 0), h: Math.round(child.height ?? 0) });
+      for (const port of child.ports ?? []) {
+        out.set(port.id, {
+          x: Math.round(x + (port.x ?? 0)),
+          y: Math.round(y + (port.y ?? 0)),
+          w: Math.round(port.width ?? 0),
+          h: Math.round(port.height ?? 0),
+        });
+      }
       walk(child, x, y);
     }
   };
@@ -592,6 +661,7 @@ function emitNode(p: Placed, px: string): string {
   const classifier = classifierOf(node);
   const classes = [
     `pr-${node.kind}`,
+    node.kind === "port" && (node.side ?? (node.direction === "out" ? "east" : "west")) === "east" ? "pr-port-out" : "",
     classifier ? `pr-classifier-${classifier}` : "",
     node.stereotype ? `pr-stereotype-${node.stereotype.replace(/\W+/g, "-")}` : "",
     node.abstract ? "pr-abstract" : "",
@@ -602,7 +672,15 @@ function emitNode(p: Placed, px: string): string {
     `<g id="${px}${esc(node.id)}" data-id="${esc(node.id)}" class="${classes}"${refAttrs(node.refs)}>`,
     tooltip(node.title),
   ];
-  if (node.kind === "container" && classifier === "swimlane") {
+  if (node.kind === "port") {
+    // A square on its block's border, with the name above it. The name does
+    // not sit beside the square because that is where the wire arrives, and
+    // a label laid over a line is unreadable.
+    parts.push(`<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}"/>`);
+    parts.push(
+      `<text class="pr-port-label" x="${p.x + p.w / 2}" y="${p.y - 3}" text-anchor="middle">${esc(node.label)}</text>`,
+    );
+  } else if (node.kind === "container" && classifier === "swimlane") {
     parts.push(`<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}"/>`);
     parts.push(`<line class="pr-sep" x1="${p.x}" y1="${p.y + LANE_HEAD}" x2="${p.x + p.w}" y2="${p.y + LANE_HEAD}"/>`);
     parts.push(`<text class="pr-header" x="${p.x + p.w / 2}" y="${p.y + 18}" text-anchor="middle">${esc(node.label)}</text>`);
@@ -717,6 +795,14 @@ function emit(ir: RenderIr, placed: Placed[], routes: Map<number, Route>): strin
   // with the same pad on every side.
   const xs = [...placed.map((p) => p.x), ...placed.map((p) => p.x + p.w)];
   const ys = [...placed.map((p) => p.y), ...placed.map((p) => p.y + p.h)];
+  // A port's name is drawn outside its block, so the frame has to know
+  // about it or the first letter falls off the canvas.
+  for (const p of placed) {
+    if (p.node.kind !== "port") continue;
+    const half = (p.node.label.length * 6) / 2 + 2;
+    xs.push(p.x + p.w / 2 - half, p.x + p.w / 2 + half);
+    ys.push(p.y - 14);
+  }
   for (const route of routes.values()) for (const p of route.points) { xs.push(p.x); ys.push(p.y); }
   // A producer's notice sits below the content, or alone when there is
   // nothing else; an IR with nothing to draw says so (REQ-00021-1).

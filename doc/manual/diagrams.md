@@ -21,6 +21,79 @@ an error.
 - `class f <<function>>` marks a module-level function (badge `f`).
 - `!include file` and `!includesub file!NAME` are expanded before parsing.
 
+## Blocks with boundary ports
+
+A class marked `<<block>>` is drawn the way a block diagram is drawn: its
+`in` and `out` members become named squares on its border, and relations
+address those squares instead of the box.
+
+```plantuml
+@startuml control
+class Source
+class Controller <<block>> {
+  + in ref : double
+  + in y
+  + out u
+  - gain : double
+}
+class Plant
+
+Source --> Controller::ref
+Plant --> Controller::y
+Controller::u --> Plant
+@enduml
+```
+
+- A member reads as a port when it starts with `in` or `out` after the
+  optional visibility: `+ in ref`, `out u`. A type after `:` is kept as the
+  port's tooltip, since a border square has no room for it.
+- `in` ports are drawn on the left edge, `out` ports on the right.
+- `Block::port` on either side of a relation wires to that port. The wire
+  routes to the square, so the drawing shows which signal goes where rather
+  than three arrows into the same box.
+- Members that are not ports stay in their compartments, so a block can
+  carry parameters (`- gain : double`) beside its signals.
+- Everything else is unchanged: without the `<<block>>` stereotype a member
+  called `in x` is an ordinary attribute, and no other stereotype triggers
+  this reading.
+
+A subsystem — a box with things inside it and a boundary around them — is a
+`package` marked `<<block>>`. There is no member syntax inside a package, so
+its ports are declared as children marked `<<in>>` or `<<out>>`:
+
+```plantuml
+@startuml plant
+class Source
+package Controller <<block>> {
+  class target <<in>>
+  class measured <<in>>
+  class drive <<out>>
+  class Error
+  class Gain
+  target --> Error
+  measured --> Error
+  Error --> Gain
+  Gain --> drive
+}
+class Plant
+
+Source --> Controller::target
+Controller::drive --> Plant
+Plant --> Controller::measured
+@enduml
+```
+
+The same name is the port on the outside and the signal on the inside, so a
+wire arriving from outside and the wire leaving towards a child meet at the
+same square on the border. Children without `<<in>>`/`<<out>>` stay ordinary
+boxes, and a container without `<<block>>` reads `<<in>>` as what it is, a
+stereotype.
+
+Two limits worth knowing. **`north` and `south` sides are IR-only**: the text
+syntax says direction, and direction picks the side. And a relation line
+cannot start with `ref`, which the grammar reads as the sequence-diagram
+keyword — name that port something else.
+
 ## Sequence diagrams
 
 Participants of every kind (`actor` is drawn as a stick figure), `->` and

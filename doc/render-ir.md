@@ -54,6 +54,36 @@ consumer, the engine. Anything that emits valid IR renders identically.
 - `divider` nodes (`== phase ==`) and anchored notes (`at` + `anchor`,
   position hint in `classifier`) each claim one row.
 
+### Boundary ports (additive, still contract v1)
+
+A `port` node is a named signal on another node's border, not a box in
+the flow: block diagrams (Simulink, SysML) address the inputs and outputs
+of a part rather than the part itself.
+
+```jsonc
+{ "id": "Controller.ref", "kind": "port", "label": "ref",
+  "parent": "Controller", "direction": "in", "title": "ref : double" }
+```
+
+- `parent` is the node the port sits on, and is **required** — a port
+  with no owner is dropped, since there is no border to sit on. A `box`
+  and a `container` can both own ports; on a container the ports are the
+  subsystem's boundary and may be wired to its children.
+- `direction` (`in` | `out`) is what the signal does, and picks the
+  default side: `in` west, `out` east.
+- `side` (`west` | `east` | `north` | `south`) overrides that placement
+  when the drawing reads better another way. Direction stays the
+  meaning; side is only where it is drawn.
+- Edges reference a port by its `id`, exactly like any other node, and
+  the engine routes them to the square on the border instead of to the
+  owner's centre.
+- `label` is the name drawn above the square; `title` carries the
+  signal type, which is too long for a border marker.
+
+The owner grows to fit its ports and its layout constrains them to their
+declared side, so a block with ports is still laid out by the same pass
+as everything else.
+
 ### Links (additive, still contract v1)
 
 Nodes and edges may carry `href` (a URL or a fragment such as

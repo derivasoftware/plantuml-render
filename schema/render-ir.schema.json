@@ -2,7 +2,7 @@
  "$schema": "https://json-schema.org/draft/2020-12/schema",
  "$id": "https://github.com/derivasoftware/plantuml-render/schema/render-ir.schema.json",
  "title": "render-IR",
- "description": "Origin-neutral diagram intermediate representation consumed by the plantuml-render engine. Versioned under semver alongside the engine: removing or renaming a field is a breaking change; new drawing capabilities are minor. Emitters (the bundled PlantUML frontend, argos design-render, any future producer) validate against this schema in their own CI. Links: href, title and refs are optional on nodes and edges (contract v1, additive). A root notice is optional (contract v1, additive). Activity diagrams add the node kinds action, decision, start, end and bar and the edge kind flow; swimlanes and partitions are containers with classifier swimlane / partition (contract v1, additive). Nodes may carry sectionKinds, naming what each sections compartment holds (contract v1, additive).",
+ "description": "Origin-neutral diagram intermediate representation consumed by the plantuml-render engine. Versioned under semver alongside the engine: removing or renaming a field is a breaking change; new drawing capabilities are minor. Emitters (the bundled PlantUML frontend, argos design-render, any future producer) validate against this schema in their own CI. Links: href, title and refs are optional on nodes and edges (contract v1, additive). A root notice is optional (contract v1, additive). Activity diagrams add the node kinds action, decision, start, end and bar and the edge kind flow; swimlanes and partitions are containers with classifier swimlane / partition (contract v1, additive). Nodes may carry sectionKinds, naming what each sections compartment holds (contract v1, additive). A port is a node of kind port whose parent is the block it belongs to; it is drawn on that block's boundary and edges address it by id (contract v1, additive).",
  "type": "object",
  "required": [
   "ir",
@@ -62,7 +62,8 @@
       "decision",
       "start",
       "end",
-      "bar"
+      "bar",
+      "port"
      ]
     },
     "label": {
@@ -98,6 +99,24 @@
        "methods"
       ]
      }
+    },
+    "direction": {
+     "description": "Port only: which way the signal crosses its block's boundary.",
+     "type": "string",
+     "enum": [
+      "in",
+      "out"
+     ]
+    },
+    "side": {
+     "description": "Port only: the edge of the owning block the port sits on. Derived from direction when absent — an input goes west, an output east.",
+     "type": "string",
+     "enum": [
+      "west",
+      "east",
+      "north",
+      "south"
+     ]
     },
     "parent": {
      "description": "Id of the enclosing container node.",

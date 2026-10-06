@@ -295,6 +295,10 @@ export function treeToIr(root: CstNode): RenderIr {
     return strip((alias ?? name)?.text ?? "?");
   };
 
+  // Containers whose stereotype is BLOCK: their `<<in>>`/`<<out>>` children
+  // are ports on the boundary, not boxes inside it.
+  const blockContainers = new Set<string>();
+
   const visit = (node: Node, containerId: string | undefined) => {
     switch (node.type) {
       case "diagram": {
@@ -306,20 +310,26 @@ export function treeToIr(root: CstNode): RenderIr {
       case "package_block": {
         const nameNode = node.childForFieldName("name");
         const label = strip(nameNode?.text ?? "");
+        const stereo = node.childForFieldName("stereotype")?.text.replace(/^<<|>>$/g, "").trim();
         // Dotted names open one container per segment: argos.toolkit.x
         // and argos.toolkit.y share the argos.toolkit box.
         let id = containerId;
-        for (const segment of label.split(".")) {
+        const segments = label.split(".");
+        segments.forEach((segment, i) => {
           const segmentId = id ? `${id}.${segment}` : segment;
           pushNode({
             id: segmentId,
             kind: "container",
             label: segment,
             classifier: node.type === "package_block" ? "package" : "namespace",
+            // Only the innermost segment is the declared container; the
+            // outer ones are shared boxes that this declaration opened.
+            ...(stereo && i === segments.length - 1 ? { stereotype: stereo } : {}),
             parent: id || undefined,
           });
           id = segmentId;
-        }
+        });
+        if (stereo === BLOCK && id) blockContainers.add(id);
         for (const child of node.namedChildren) visit(child, id);
         return;
       }
@@ -331,19 +341,35 @@ export function treeToIr(root: CstNode): RenderIr {
         shortToId.set(label, id);
         const stereotypeNode = node.childForFieldName("stereotype");
         const link = node.childForFieldName("link");
+        const stereotype = stereotypeNode
+          ? stereotypeNode.text.replace(/^<<|>>$/g, "").trim()
+          : undefined;
+        // Inside a block container there is no member syntax to carry a
+        // port, so a child marked <<in>>/<<out>> is the boundary signal.
+        const asPort = containerId && blockContainers.has(containerId)
+          ? portDirection(stereotype)
+          : undefined;
+        if (asPort) {
+          pushNode({ id, kind: "port", label, direction: asPort, parent: containerId });
+          return;
+        }
+        // A block reads its members as ports on its boundary; every other
+        // classifier reads them as it always has.
+        const split = stereotype === BLOCK ? splitPorts(node) : undefined;
         pushNode({
           id,
           kind: "box",
           label,
           classifier: node.type.replace("_declaration", ""),
           abstract: node.children.some((c) => c.type === "abstract") || undefined,
-          stereotype: stereotypeNode
-            ? stereotypeNode.text.replace(/^<<|>>$/g, "").trim()
-            : undefined,
-          ...memberSections(node),
+          stereotype,
+          ...(split ? split.rest : memberSections(node)),
           parent: containerId,
           ...(link ? hyperlink(link.text) : {}),
         });
+        for (const port of split?.ports ?? []) {
+          pushNode({ ...port, id: `${id}.${port.id}`, parent: id });
+        }
         return;
       }
       case "relation": {
@@ -388,9 +414,18 @@ export function treeToIr(root: CstNode): RenderIr {
   visit(root, undefined);
 
   // Relation endpoints reference short names; requalify to placed ids.
+  // `Block::port` addresses a port: the owner is requalified and the port
+  // name appended, which is the id the port node was given.
+  const requalify = (ref: string): string => {
+    const at = ref.indexOf("::");
+    if (at === -1) return shortToId.get(ref) ?? ref;
+    const owner = ref.slice(0, at);
+    const port = ref.slice(at + 2);
+    return `${shortToId.get(owner) ?? owner}.${port}`;
+  };
   for (const edge of edges) {
-    edge.from = shortToId.get(edge.from) ?? edge.from;
-    edge.to = shortToId.get(edge.to) ?? edge.to;
+    edge.from = requalify(edge.from);
+    edge.to = requalify(edge.to);
   }
 
   // Relations alone draw nothing (the engine drops edges without both
@@ -401,6 +436,74 @@ export function treeToIr(root: CstNode): RenderIr {
     return { ir: 1, title, nodes, edges, notice };
   }
   return { ir: 1, title, nodes, edges };
+}
+
+/** The stereotype that turns a classifier's members into boundary ports. */
+export const BLOCK = "block";
+
+const PORT_MEMBER = /^([+\-#~]\s*)?(in|out)\s+(\S.*)$/i;
+
+/** `<<in>>` / `<<out>>`, the port marker a container's children can carry. */
+function portDirection(stereotype: string | undefined): "in" | "out" | undefined {
+  const s = stereotype?.toLowerCase();
+  return s === "in" || s === "out" ? s : undefined;
+}
+/** `ref : double` on a port line: the name addresses it, the type annotates it. */
+const PORT_TYPE = /^([^:]+?)\s*:\s*(\S.*)$/;
+
+/**
+ * Split a block's members into ports and whatever is not one.
+ *
+ * `+ in ref` is a port; anything else stays an ordinary member, so a block
+ * may still carry parameters beside its signals. Only the stereotype
+ * decides that this reading applies at all — every other classifier is
+ * untouched.
+ */
+function splitPorts(decl: Node): {
+  ports: IrNode[];
+  rest: { sections?: string[][]; sectionKinds?: SectionKind[] };
+} | undefined {
+  const body = decl.childForFieldName("body");
+  if (!body) return undefined;
+  const ports: IrNode[] = [];
+  const attrs: string[] = [];
+  const methods: string[] = [];
+  for (const member of body.namedChildren) {
+    if (member.type !== "member") continue;
+    const text = member.text.trim();
+    const match = PORT_MEMBER.exec(text);
+    const isMethod = member.namedChildren.some((c) => c.type === "method");
+    if (match && !isMethod) {
+      const direction = match[2].toLowerCase() === "in" ? "in" : "out";
+      const typed = PORT_TYPE.exec(match[3].trim());
+      const name = (typed ? typed[1] : match[3]).trim();
+      ports.push({
+        id: name,
+        kind: "port",
+        label: name,
+        direction,
+        // The signal type is too long to draw on a border marker, so it
+        // rides as the tooltip instead of widening the block.
+        ...(typed ? { title: `${name} : ${typed[2]}` } : {}),
+      });
+      continue;
+    }
+    (isMethod ? methods : attrs).push(text);
+  }
+  const compartments: [SectionKind, string[]][] = [
+    ["attributes", attrs],
+    ["methods", methods],
+  ];
+  const present = compartments.filter(([, lines]) => lines.length > 0);
+  return {
+    ports,
+    rest: present.length
+      ? {
+          sections: present.map(([, lines]) => lines),
+          sectionKinds: present.map(([kind]) => kind),
+        }
+      : {},
+  };
 }
 
 function memberSections(

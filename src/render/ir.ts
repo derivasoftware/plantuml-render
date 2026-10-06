@@ -11,6 +11,7 @@ import compiledValidate from "./validate.gen.js";
 export type NodeKind =
   | "box"
   | "container"
+  | "port"
   | "note"
   | "lifeline"
   | "frame"
@@ -46,6 +47,13 @@ export interface IrLinks {
 /** What a `sections` compartment holds. */
 export type SectionKind = "attributes" | "methods";
 
+/** Which way a signal crosses a block's boundary. */
+export type PortDirection = "in" | "out";
+
+/** Which edge of its block a port sits on. Derived from the direction when
+ *  the producer says nothing: an input goes west, an output east. */
+export type PortSide = "west" | "east" | "north" | "south";
+
 export interface IrNode extends IrLinks {
   id: string;
   kind: NodeKind;
@@ -58,6 +66,10 @@ export interface IrNode extends IrLinks {
    *  the compartments are not class members. Order alone cannot say it: a
    *  class with no attributes puts its methods first. */
   sectionKinds?: SectionKind[];
+  /** `port` only: which way the signal crosses the boundary. */
+  direction?: PortDirection;
+  /** `port` only: the edge of the owning block it sits on. */
+  side?: PortSide;
   parent?: string;
   /** Sequence row this node occupies (dividers, anchored notes). */
   at?: number;

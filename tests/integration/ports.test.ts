@@ -1,0 +1,222 @@
+import { describe, expect, it } from "vitest";
+
+import { renderSvg } from "../../src/render/engine.js";
+import { pumlToIr } from "../../src/render/frontend.js";
+import { validateIr } from "../../src/render/ir.js";
+
+const BLOCK = `@startuml control
+class Source
+class Controller <<block>> {
+  + in ref : double
+  + in y
+  + out u
+  - gain : double
+  + step() : void
+}
+class Plant
+Source --> Controller::ref
+Plant --> Controller::y
+Controller::u --> Plant
+@enduml
+`;
+
+describe("boundary ports on a block", () => {
+  it("reads in/out members as ports owned by the block", async () => {
+    const ir = await pumlToIr(BLOCK);
+    const ports = ir.nodes.filter((n) => n.kind === "port");
+    expect(ports.map((p) => [p.id, p.label, p.direction])).toEqual([
+      ["Controller.ref", "ref", "in"],
+      ["Controller.y", "y", "in"],
+      ["Controller.u", "u", "out"],
+    ]);
+    expect(ports.every((p) => p.parent === "Controller")).toBe(true);
+    // A typed signal keeps its type as the tooltip, not on the border.
+    expect(ports[0].title).toBe("ref : double");
+    expect(ports[1].title).toBeUndefined();
+  });
+
+  it("leaves a block's other members in their compartments", async () => {
+    const ir = await pumlToIr(BLOCK);
+    const block = ir.nodes.find((n) => n.id === "Controller")!;
+    expect(block.stereotype).toBe("block");
+    expect(block.sections).toEqual([["- gain : double"], ["+ step() : void"]]);
+    expect(block.sectionKinds).toEqual(["attributes", "methods"]);
+  });
+
+  it("resolves Block::port endpoints to the port node", async () => {
+    const ir = await pumlToIr(BLOCK);
+    expect(ir.edges).toEqual([
+      { from: "Source", to: "Controller.ref", kind: "association", label: undefined },
+      { from: "Plant", to: "Controller.y", kind: "association", label: undefined },
+      { from: "Controller.u", to: "Plant", kind: "association", label: undefined },
+    ]);
+  });
+
+  it("only applies to the block stereotype", async () => {
+    const plain = await pumlToIr(
+      "@startuml\nclass Filter {\n  + in x\n  + out y\n}\n@enduml\n",
+    );
+    expect(plain.nodes.filter((n) => n.kind === "port")).toEqual([]);
+    expect(plain.nodes[0].sections).toEqual([["+ in x", "+ out y"]]);
+    const other = await pumlToIr(
+      "@startuml\nclass Filter <<entity>> {\n  + in x\n}\n@enduml\n",
+    );
+    expect(other.nodes.filter((n) => n.kind === "port")).toEqual([]);
+  });
+
+  it("validates against the render-IR schema", async () => {
+    const ir = structuredClone(await pumlToIr(BLOCK));
+    expect(() => validateIr(ir)).not.toThrow();
+  });
+});
+
+describe("drawing a block with ports", () => {
+  it("places each port on its block's border and sizes the block to fit", async () => {
+    const svg = await renderSvg(await pumlToIr(BLOCK));
+    const port = (id: string) => {
+      const g = new RegExp(`<g id="[^"]*${id}" data-id="${id}"[^>]*>.*?<rect x="(\\d+)" y="(\\d+)" width="(\\d+)" height="(\\d+)"`, "s").exec(svg)!;
+      return { x: +g[1], y: +g[2], w: +g[3], h: +g[4] };
+    };
+    const block = /<g id="[^"]*Controller" data-id="Controller"[^>]*>.*?<rect x="(\d+)" y="(\d+)" width="(\d+)" height="(\d+)"/s.exec(svg)!;
+    const [bx, by, bw, bh] = block.slice(1, 5).map(Number);
+
+    const ref = port("Controller\\.ref");
+    const y = port("Controller\\.y");
+    const u = port("Controller\\.u");
+    // Inputs on the west border, the output on the east one.
+    expect(ref.x + ref.w).toBeLessThanOrEqual(bx + 1);
+    expect(y.x + y.w).toBeLessThanOrEqual(bx + 1);
+    expect(u.x).toBeGreaterThanOrEqual(bx + bw - 1);
+    // Every port sits within the block's own height, which grew for them.
+    for (const p of [ref, y, u]) {
+      expect(p.y).toBeGreaterThanOrEqual(by);
+      expect(p.y + p.h).toBeLessThanOrEqual(by + bh);
+    }
+    expect(ref.y).not.toBe(y.y);
+  });
+
+  it("marks outputs apart and draws the name clear of the wire", async () => {
+    const svg = await renderSvg(await pumlToIr(BLOCK));
+    expect(svg).toContain('data-id="Controller.u" class="pr-port pr-port-out"');
+    expect(svg).toContain('data-id="Controller.ref" class="pr-port"');
+    expect(svg).toContain('<title>ref : double</title>');
+    expect(svg).toMatch(/<text class="pr-port-label"[^>]*text-anchor="middle">u<\/text>/);
+  });
+
+  it("routes the wire to the port, not to the block's centre", async () => {
+    const svg = await renderSvg(await pumlToIr(BLOCK));
+    const ref = /<g id="[^"]*Controller\.ref"[^>]*>.*?<rect x="(\d+)" y="(\d+)" width="(\d+)" height="(\d+)"/s.exec(svg)!;
+    const [px, py, pw, ph] = ref.slice(1, 5).map(Number);
+    const block = /<g id="[^"]*Controller" data-id="Controller"[^>]*>.*?<rect x="\d+" y="(\d+)" width="\d+" height="(\d+)"/s.exec(svg)!;
+    const [by, bh] = block.slice(1, 3).map(Number);
+    const wire = /<path class="pr-edge[^"]*" data-from="Source" data-to="Controller\.ref" d="([^"]+)"/.exec(svg)!;
+    const points = wire[1].split(/[ML]\s*/).filter(Boolean).map((p) => p.split(",").map(Number));
+    const [ex, ey] = points[points.length - 1];
+    expect(Math.abs(ex - px)).toBeLessThanOrEqual(pw + 8);
+    expect(Math.abs(ey - (py + ph / 2))).toBeLessThanOrEqual(ph);
+    // A wire that ignored the port would end at the block's own border.
+    expect(ey).not.toBe(by + bh / 2);
+  });
+
+  it("keeps the port names inside the canvas", async () => {
+    const svg = await renderSvg(await pumlToIr(BLOCK));
+    const [, vx, vy, vw, vh] = /viewBox="(-?[\d.]+) (-?[\d.]+) ([\d.]+) ([\d.]+)"/.exec(svg)!.map(Number);
+    for (const m of svg.matchAll(/<text class="pr-port-label" x="([\d.]+)" y="([\d.]+)"/g)) {
+      expect(+m[1]).toBeGreaterThan(vx);
+      expect(+m[1]).toBeLessThan(vx + vw);
+      expect(+m[2]).toBeGreaterThan(vy);
+      expect(+m[2]).toBeLessThan(vy + vh);
+    }
+  });
+
+  it("is byte-deterministic", async () => {
+    const ir = await pumlToIr(BLOCK);
+    expect(await renderSvg(ir)).toBe(await renderSvg(ir));
+  });
+});
+
+const SUBSYSTEM = `@startuml plant
+class Source
+package Controller <<block>> {
+  class target <<in>>
+  class measured <<in>>
+  class drive <<out>>
+  class Error
+  class Gain
+  target --> Error
+  measured --> Error
+  Error --> Gain
+  Gain --> drive
+}
+class Plant
+Source --> Controller::target
+Controller::drive --> Plant
+Plant --> Controller::measured
+@enduml
+`;
+
+describe("a container as a block", () => {
+  it("reads <<in>>/<<out>> children of a block container as its ports", async () => {
+    const ir = await pumlToIr(SUBSYSTEM);
+    const kinds = new Map(ir.nodes.map((n) => [n.id, n.kind]));
+    expect(kinds.get("Controller")).toBe("container");
+    expect(kinds.get("Controller.target")).toBe("port");
+    expect(kinds.get("Controller.drive")).toBe("port");
+    // Children without the marker stay what they are.
+    expect(kinds.get("Controller.Gain")).toBe("box");
+    const ports = ir.nodes.filter((n) => n.kind === "port");
+    expect(ports.map((p) => p.direction)).toEqual(["in", "in", "out"]);
+    expect(ports.every((p) => p.parent === "Controller")).toBe(true);
+    expect(ir.nodes.find((n) => n.id === "Controller")?.stereotype).toBe("block");
+  });
+
+  it("wires the inside and the outside to the same ports", async () => {
+    const ir = await pumlToIr(SUBSYSTEM);
+    const wires = ir.edges.map((e) => `${e.from}->${e.to}`);
+    expect(wires).toContain("Source->Controller.target");
+    expect(wires).toContain("Controller.target->Controller.Error");
+    expect(wires).toContain("Controller.Gain->Controller.drive");
+    expect(wires).toContain("Controller.drive->Plant");
+  });
+
+  it("only applies inside a block container", async () => {
+    const plain = await pumlToIr(
+      "@startuml\npackage P {\n  class a <<in>>\n}\n@enduml\n",
+    );
+    expect(plain.nodes.filter((n) => n.kind === "port")).toEqual([]);
+    expect(plain.nodes.find((n) => n.id === "P.a")?.stereotype).toBe("in");
+    const nested = await pumlToIr(
+      "@startuml\npackage A.B <<block>> {\n  class a <<in>>\n}\n@enduml\n",
+    );
+    // The stereotype belongs to the declared container, not to the box the
+    // dotted name opened on the way there.
+    expect(nested.nodes.find((n) => n.id === "A")?.stereotype).toBeUndefined();
+    expect(nested.nodes.find((n) => n.id === "A.B")?.stereotype).toBe("block");
+    expect(nested.nodes.find((n) => n.id === "A.B.a")?.kind).toBe("port");
+  });
+
+  it("draws the ports on the container border and routes both sides to them", async () => {
+    const svg = await renderSvg(await pumlToIr(SUBSYSTEM));
+    const rect = (id: string) => {
+      const m = new RegExp(`data-id="${id}"[^>]*>(?:<title>[^<]*</title>)?<rect x="(\\d+)" y="(\\d+)" width="(\\d+)" height="(\\d+)"`).exec(svg)!;
+      return { x: +m[1], y: +m[2], w: +m[3], h: +m[4] };
+    };
+    const box = rect("Controller");
+    const target = rect("Controller.target");
+    const drive = rect("Controller.drive");
+    expect(target.x + target.w).toBeLessThanOrEqual(box.x + 1);
+    expect(drive.x).toBeGreaterThanOrEqual(box.x + box.w - 1);
+
+    const end = (from: string, to: string) => {
+      const m = new RegExp(`data-from="${from}" data-to="${to}" d="([^"]+)"`).exec(svg)!;
+      const pts = m[1].split(/[ML]\s*/).filter(Boolean).map((p) => p.split(",").map(Number));
+      return { first: pts[0], last: pts[pts.length - 1] };
+    };
+    // The outside arrives at the port, and the inside leaves from it: both
+    // are drawn in the same place, which is what makes the boundary read.
+    const inbound = end("Source", "Controller\\.target").last;
+    const onward = end("Controller\\.target", "Controller\\.Error").first;
+    expect(Math.abs(inbound[0] - onward[0])).toBeLessThanOrEqual(target.w + 2);
+    expect(Math.abs(inbound[1] - onward[1])).toBeLessThanOrEqual(target.h + 2);
+  });
+});
