@@ -20,6 +20,18 @@ derived — then flow left-to-right with `GAP_X`/`GAP_Y`. The viewBox
 covers the placed extent, including negative coordinates introduced by
 position overrides.
 
+A `port` node leaves the node graph: it becomes an ELK port on its owner,
+which switches that owner to `FIXED_SIDE` constraints so a signal stays on
+the border it was declared for. Only owners that declared ports are
+constrained, so every other box keeps the free placement it had. The owner's
+minimum height grows to the span its busiest side needs, and the viewBox
+accounts for the names, which are drawn outside the border and above the
+square: beside it is where the wire arrives, over it is the block's own
+content, and the corner between the two is free. Edges that end at a port are
+routed to the square: ELK reports their geometry relative to the lowest common
+ancestor of the two ends, and a port counts as inside its owner, so the engine
+resolves a port to its owner before deciding which frame the path belongs to.
+
 ## Theming — themable, never themed
 
 The SVG hard-codes **no colors**: everything styles through CSS custom
@@ -31,6 +43,7 @@ properties on stable classes, with neutral fallbacks.
 | `--pr-text` | all text |
 | `--pr-box-fill`, `--pr-note-fill`, `--pr-container-fill` | fills |
 | `--pr-font` | font family |
+| `--pr-port-in`, `--pr-port-out` | boundary port squares, by direction |
 
 Per-classifier (`pr-classifier-class`, `-interface`, `-enum`, …) and
 per-edge-kind (`pr-edge-inheritance`, …) classes allow finer theming.

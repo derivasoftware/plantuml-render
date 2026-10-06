@@ -14,11 +14,39 @@ Each is a pure IR → IR projection (input never mutated, output still
 contract-valid):
 
 - `stripSections` — drop member compartments (headers only).
+- `filterMembers` — keep the members a predicate accepts; the granular
+  half of `stripSections`.
 - `flattenContainers` — remove containers, `parent` references and
   container-touching edges: a flat entity view.
 - `hideNotes` — drop notes and their attachment edges.
 
 Compose freely; order does not matter.
+
+### Folding members
+
+A box generated from an external model often carries many low-value
+members beside the few that matter. Hiding them after the fact does not
+work — the layout places everything absolutely, so a hidden member
+leaves a hole and the box keeps its size. Folding belongs before layout:
+
+```ts
+filterMembers(ir, (m) => m.startsWith("+"));            // public only
+filterMembers(ir, (_m, c) => c.kind !== "methods");     // attributes only
+filterMembers(ir, (m, c) => c.kind === "methods" || !m.includes("cfg"));
+```
+
+The predicate receives the member verbatim — the visibility marker is its
+first character — plus the compartment's `kind` and index and the node it
+belongs to. A compartment that empties is dropped, its `sectionKinds`
+entry with it, and the engine lays the smaller box out as it would any
+other: the box shrinks, with no gap.
+
+Select by `kind` rather than by index. Position lies: a class with no
+attributes puts its methods in compartment zero.
+
+The producer keeps every member; only the view folds. That is the whole
+reason this is a filter and not a flag in the IR — what is secondary
+depends on who is looking.
 
 ## Position overrides
 

@@ -16,3 +16,7 @@ src/render/validate.gen.d.ts
 test-results/
 !doc/assets/*.svg
 src/render/version.gen.ts
+
+# Worktrees of other sessions; never part of a commit, and vitest
+# would otherwise collect their tests as if they were this tree's.
+.worktrees/
