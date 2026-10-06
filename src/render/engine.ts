@@ -295,7 +295,7 @@ function toElk(ir: RenderIr): ElkGraph {
   for (const port of ports) {
     const host = elkNodes.get(port.parent!);
     if (!host) continue;
-    const side = (port.side ?? (port.direction === "out" ? "east" : "west")).toUpperCase();
+    const side = sideOf(port).toUpperCase();
     (host.ports ??= []).push({
       id: port.id,
       width: PORT,
@@ -656,12 +656,17 @@ function classifierOf(node: IrNode): string | undefined {
   return node.classifier ?? (node.stereotype === "function" ? "function" : undefined);
 }
 
+/** Where a port sits on its owner's border: as declared, else by direction. */
+function sideOf(node: IrNode): string {
+  return node.side ?? (node.direction === "out" ? "east" : "west");
+}
+
 function emitNode(p: Placed, px: string): string {
   const node = p.node;
   const classifier = classifierOf(node);
   const classes = [
     `pr-${node.kind}`,
-    node.kind === "port" && (node.side ?? (node.direction === "out" ? "east" : "west")) === "east" ? "pr-port-out" : "",
+    node.kind === "port" && sideOf(node) === "east" ? "pr-port-out" : "",
     classifier ? `pr-classifier-${classifier}` : "",
     node.stereotype ? `pr-stereotype-${node.stereotype.replace(/\W+/g, "-")}` : "",
     node.abstract ? "pr-abstract" : "",
@@ -673,12 +678,13 @@ function emitNode(p: Placed, px: string): string {
     tooltip(node.title),
   ];
   if (node.kind === "port") {
-    // A square on its block's border, with the name above it. The name does
-    // not sit beside the square because that is where the wire arrives, and
-    // a label laid over a line is unreadable.
+    // A square on its block's border, with the name outside it and raised:
+    // beside the square is where the wire arrives, and over the square is
+    // the block's own content. The corner between them is free.
+    const east = sideOf(node) === "east";
     parts.push(`<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}"/>`);
     parts.push(
-      `<text class="pr-port-label" x="${p.x + p.w / 2}" y="${p.y - 3}" text-anchor="middle">${esc(node.label)}</text>`,
+      `<text class="pr-port-label" x="${east ? p.x + p.w + 2 : p.x - 2}" y="${p.y - 3}"${east ? "" : ' text-anchor="end"'}>${esc(node.label)}</text>`,
     );
   } else if (node.kind === "container" && classifier === "swimlane") {
     parts.push(`<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}"/>`);
@@ -799,8 +805,8 @@ function emit(ir: RenderIr, placed: Placed[], routes: Map<number, Route>): strin
   // about it or the first letter falls off the canvas.
   for (const p of placed) {
     if (p.node.kind !== "port") continue;
-    const half = (p.node.label.length * 6) / 2 + 2;
-    xs.push(p.x + p.w / 2 - half, p.x + p.w / 2 + half);
+    const reach = p.node.label.length * 6 + 4;
+    xs.push(sideOf(p.node) === "east" ? p.x + p.w + reach : p.x - reach);
     ys.push(p.y - 14);
   }
   for (const route of routes.values()) for (const p of route.points) { xs.push(p.x); ys.push(p.y); }

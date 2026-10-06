@@ -25,7 +25,9 @@ which switches that owner to `FIXED_SIDE` constraints so a signal stays on
 the border it was declared for. Only owners that declared ports are
 constrained, so every other box keeps the free placement it had. The owner's
 minimum height grows to the span its busiest side needs, and the viewBox
-accounts for the names drawn outside the border. Edges that end at a port are
+accounts for the names, which are drawn outside the border and above the
+square: beside it is where the wire arrives, over it is the block's own
+content, and the corner between the two is free. Edges that end at a port are
 routed to the square: ELK reports their geometry relative to the lowest common
 ancestor of the two ends, and a port counts as inside its owner, so the engine
 resolves a port to its owner before deciding which frame the path belongs to.

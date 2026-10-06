@@ -100,7 +100,14 @@ describe("drawing a block with ports", () => {
     expect(svg).toContain('data-id="Controller.u" class="pr-port pr-port-out"');
     expect(svg).toContain('data-id="Controller.ref" class="pr-port"');
     expect(svg).toContain('<title>ref : double</title>');
-    expect(svg).toMatch(/<text class="pr-port-label"[^>]*text-anchor="middle">u<\/text>/);
+    // The name is drawn outside the border and above the square, clear of
+    // both the wire that arrives and the block's own content.
+    const u = /data-id="Controller\.u"[^>]*>(?:<title>[^<]*<\/title>)?<rect x="(\d+)" y="(\d+)" width="(\d+)"/.exec(svg)!;
+    const label = /<text class="pr-port-label" x="(\d+)" y="(\d+)">u<\/text>/.exec(svg)!;
+    expect(+label[1]).toBeGreaterThanOrEqual(+u[1] + +u[3]);
+    expect(+label[2]).toBeLessThan(+u[2]);
+    // A west port's name reads towards the block, so it ends at the square.
+    expect(svg).toMatch(/<text class="pr-port-label" x="\d+" y="\d+" text-anchor="end">ref<\/text>/);
   });
 
   it("routes the wire to the port, not to the block's centre", async () => {
