@@ -413,15 +413,32 @@ export function treeToIr(root: CstNode): RenderIr {
 
   visit(root, undefined);
 
-  // Relation endpoints reference short names; requalify to placed ids.
+  // A reference may also name an entity by a qualified tail — `o.A` for
+  // `Top.o.A` — which is how a generated diagram addresses a child that an
+  // include wrapped in a namespace. Every tail of every placed id is
+  // indexed; a tail that two entities share resolves to nothing, because a
+  // guess here silently wires the diagram to the wrong box.
+  const byTail = new Map<string, string | null>();
+  for (const id of nodeIds) {
+    const parts = id.split(".");
+    for (let i = 1; i < parts.length; i++) {
+      const tail = parts.slice(i).join(".");
+      byTail.set(tail, byTail.has(tail) ? null : id);
+    }
+  }
+  // Relation endpoints reference short names; requalify to placed ids. The
+  // declared name comes first — that is what a declaration registers — then
+  // the qualified tail.
+  const resolve = (ref: string): string =>
+    nodeIds.has(ref) ? ref : (shortToId.get(ref) ?? byTail.get(ref) ?? ref);
   // `Block::port` addresses a port: the owner is requalified and the port
   // name appended, which is the id the port node was given.
   const requalify = (ref: string): string => {
     const at = ref.indexOf("::");
-    if (at === -1) return shortToId.get(ref) ?? ref;
+    if (at === -1) return resolve(ref);
     const owner = ref.slice(0, at);
     const port = ref.slice(at + 2);
-    return `${shortToId.get(owner) ?? owner}.${port}`;
+    return `${resolve(owner)}.${port}`;
   };
   for (const edge of edges) {
     edge.from = requalify(edge.from);

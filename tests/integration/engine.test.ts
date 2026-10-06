@@ -86,3 +86,61 @@ describe("engine", () => {
     expect(svg).toContain("Something to say.");
   });
 });
+
+describe("relations that cannot be drawn", () => {
+  const withEdges = (edges: { from: string; to: string }[]) => ({
+    ir: 1 as const,
+    nodes: [
+      { id: "A", kind: "box" as const, label: "A", classifier: "class" },
+      { id: "B", kind: "box" as const, label: "B", classifier: "class" },
+    ],
+    edges: edges.map((e) => ({ ...e, kind: "association" as const })),
+  });
+
+  it("names the endpoints that nothing declares", async () => {
+    const svg = await renderSvg(withEdges([{ from: "A", to: "Bee" }]));
+    expect(svg).toContain('<g class="pr-notice">');
+    expect(svg).toContain("1 relation not drawn: Bee is not declared in this diagram.");
+  });
+
+  it("counts the relations and lists the names once each", async () => {
+    const svg = await renderSvg(
+      withEdges([
+        { from: "A", to: "Bee" },
+        { from: "Bee", to: "B" },
+        { from: "A", to: "Cee" },
+      ]),
+    );
+    expect(svg).toContain("3 relations not drawn: Bee, Cee are not declared");
+  });
+
+  it("stops naming after four and counts the rest", async () => {
+    const svg = await renderSvg(
+      withEdges(["p", "q", "r", "s", "t", "u"].map((n) => ({ from: "A", to: n }))),
+    );
+    expect(svg).toContain("6 relations not drawn: p, q, r, s and 2 more are not declared");
+  });
+
+  it("says nothing when every relation is drawn", async () => {
+    const svg = await renderSvg(withEdges([{ from: "A", to: "B" }]));
+    // `pr-notice` is always in the stylesheet; the block itself is what counts.
+    expect(svg).not.toContain('<g class="pr-notice">');
+  });
+
+  it("keeps the producer's own notice and adds its line below", async () => {
+    const svg = await renderSvg({ ...withEdges([{ from: "A", to: "Bee" }]), notice: "Produced from a partial model." });
+    expect(svg).toContain("Produced from a partial model.");
+    expect(svg).toContain("1 relation not drawn: Bee");
+  });
+
+  it("leaves a document that drew nothing to its producer", async () => {
+    const svg = await renderSvg({
+      ir: 1 as const,
+      nodes: [],
+      edges: [{ from: "A", to: "B", kind: "association" as const }],
+      notice: "Nothing drawn: 1 relation references entities that are not declared in this diagram.",
+    });
+    expect(svg).toContain("Nothing drawn: 1 relation references");
+    expect(svg).not.toContain("not drawn: A");
+  });
+});

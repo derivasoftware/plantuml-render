@@ -120,3 +120,78 @@ describe("hyperlinks on entity heads", () => {
     expect(by("Kind").href).toBeUndefined();
   });
 });
+
+describe("references to an entity inside a container", () => {
+  const NESTED = `@startuml
+package Top <<block>> {
+  class p1 <<in>>
+  namespace o.i {
+    class A
+  }
+  namespace o {
+    class B
+  }
+  p1 --> o.i.A
+  p1 --> B
+  i.A --> o.B
+}
+@enduml
+`;
+
+  it("resolves a qualified tail to the entity that ends with it", async () => {
+    const ir = await pumlToIr(NESTED);
+    expect(ir.nodes.map((n) => n.id)).toContain("Top.o.i.A");
+    const wires = ir.edges.map((e) => `${e.from}->${e.to}`);
+    // The whole tail, the bare leaf and a middle slice all land on the entity.
+    expect(wires).toContain("Top.p1->Top.o.i.A");
+    expect(wires).toContain("Top.p1->Top.o.B");
+    expect(wires).toContain("Top.o.i.A->Top.o.B");
+  });
+
+  it("leaves an ambiguous tail unresolved rather than guessing", async () => {
+    const ir = await pumlToIr(`@startuml
+namespace one.o {
+  class A
+}
+namespace two.o {
+  class A
+}
+class Caller
+Caller --> o.A
+@enduml
+`);
+    // Two entities end with `o.A`; wiring to either one would be a guess, so
+    // the reference stays as written and the engine reports it undrawable.
+    expect(ir.edges.find((e) => e.from === "Caller")!.to).toBe("o.A");
+  });
+
+  it("keeps the declared name ahead of any tail", async () => {
+    const ir = await pumlToIr(`@startuml
+namespace deep {
+  class Sink
+}
+class Sink
+class Caller
+Caller --> Sink
+@enduml
+`);
+    // `Sink` is declared at the top level, so that is what it names, even
+    // though `deep.Sink` also ends with it.
+    expect(ir.edges.find((e) => e.from === "Caller")!.to).toBe("Sink");
+  });
+
+  it("resolves the owner of a port reference the same way", async () => {
+    const ir = await pumlToIr(`@startuml
+namespace o {
+  class Blk <<block>> {
+    + out y
+  }
+}
+class Sink
+o.Blk::y --> Sink
+@enduml
+`);
+    expect(ir.edges[0]).toMatchObject({ from: "o.Blk.y", to: "Sink" });
+    expect(ir.nodes.some((n) => n.id === "o.Blk.y" && n.kind === "port")).toBe(true);
+  });
+});
