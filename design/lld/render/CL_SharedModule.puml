@@ -25,6 +25,9 @@ namespace render.shared {
   class tooltip <<function>> {
     + tooltip()
   }
+  class tokenStyle <<function>> {
+    + tokenStyle()
+  }
   class svgRoot <<function>> {
     + svgRoot()
   }

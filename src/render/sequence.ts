@@ -19,7 +19,7 @@
  */
 
 import { type IrEdge, type IrNode, type RenderIr } from "./ir.js";
-import { CHAR_W, LINE_H, PAD, STYLE, esc, idPrefix, linked, noticeMarkup, refAttrs, svgRoot, tooltip } from "./shared.js";
+import { CHAR_W, LINE_H, PAD, STYLE, esc, idPrefix, linked, noticeMarkup, refAttrs, svgRoot, tokenStyle, tooltip } from "./shared.js";
 
 const HEAD_H = LINE_H + 2 * PAD;
 const ROW_H = 30;
@@ -57,7 +57,7 @@ const SEQ_STYLE = `
   .pr-diagram .pr-actor circle, .pr-diagram .pr-actor path { fill: none; stroke: var(--pr-text); stroke-width: 1.4; stroke-linecap: round; }
 `;
 
-export function renderSequenceSvg(ir: RenderIr): string {
+export function renderSequenceSvg(ir: RenderIr, tokens?: Record<string, string>): string {
   const px = idPrefix(ir.title);
   const lifelines = ir.nodes.filter((n) => n.kind === "lifeline");
   const frames = ir.nodes.filter((n) => n.kind === "frame");
@@ -347,7 +347,7 @@ export function renderSequenceSvg(ir: RenderIr): string {
   return [
     svgRoot(0, 0, width, height).replace("<svg ", `<svg data-row-tops="${tops.join(",")}" data-bottom="${bottom}" `),
     ir.title ? `<title>${esc(ir.title)}</title>` : "",
-    `<style>${STYLE}${SEQ_STYLE}</style>`,
+    `<style>${STYLE}${SEQ_STYLE}${tokenStyle(tokens)}</style>`,
     `<defs><marker id="${px}arrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto"><path class="pr-open" d="M1,1 L11,6 L1,11"/></marker></defs>`,
     parts.join("\n"),
     "</svg>",

@@ -20,7 +20,7 @@ import type { ElkExtendedEdge, ElkNode, ElkPort } from "elkjs/lib/elk-api.js";
 
 import { type IrEdge, type IrNode, type RenderIr, validateIr } from "./ir.js";
 import { renderSequenceSvg } from "./sequence.js";
-import { BADGE, CHAR_W, LINE_H, PAD, STYLE, esc, idPrefix, linked, memberMarkup, refAttrs, svgRoot, tooltip, noticeMarkup } from "./shared.js";
+import { BADGE, CHAR_W, LINE_H, PAD, STYLE, esc, idPrefix, linked, memberMarkup, refAttrs, svgRoot, tokenStyle, tooltip, noticeMarkup } from "./shared.js";
 
 const SECTION_GAP = 4;
 const GAP_X = 40; // between nodes of one layer
@@ -47,6 +47,13 @@ interface Placed {
 export interface RenderOptions {
   /** POC: per-node drag deltas applied after layout; edges re-anchor. */
   positions?: Record<string, { dx: number; dy: number }>;
+  /**
+   * Theme tokens baked into this drawing, overriding the defaults
+   * (`{ "--pr-stroke": "#334155", "--pr-stroke-width": "2" }`). A host page
+   * can set these from outside; an SVG written to a file cannot be reached
+   * that way, so its producer sets them here.
+   */
+  tokens?: Record<string, string>;
 }
 
 export async function renderSvg(input: unknown, opts: RenderOptions = {}): Promise<string> {
@@ -54,12 +61,12 @@ export async function renderSvg(input: unknown, opts: RenderOptions = {}): Promi
   // A lifeline switches the whole document to the time-axis layout;
   // position overrides don't apply there (rows are the layout).
   if (ir.nodes.some((n) => n.kind === "lifeline")) {
-    return renderSequenceSvg(ir);
+    return renderSequenceSvg(ir, opts.tokens);
   }
   // Swimlanes are columns (spike PUML-53): layers from ELK, x from the lane.
   if (ir.nodes.some((n) => n.kind === "container" && n.classifier === "swimlane")) {
     const lanes = await layoutLanes(ir);
-    return emit(ir, lanes.placed, lanes.routes);
+    return emit(ir, lanes.placed, lanes.routes, opts.tokens);
   }
   const { placed, routes } = await layout(ir);
   if (opts.positions && Object.keys(opts.positions).length > 0) {
@@ -69,7 +76,7 @@ export async function renderSvg(input: unknown, opts: RenderOptions = {}): Promi
     adaptContainers(placed);
     routes.clear();
   }
-  return emit(ir, placed, routes);
+  return emit(ir, placed, routes, opts.tokens);
 }
 
 /** A node's effective delta cascades: its own plus every ancestor
@@ -839,7 +846,7 @@ function danglingNotice(ir: RenderIr, placed: Placed[]): string | undefined {
   );
 }
 
-function emit(ir: RenderIr, placed: Placed[], routes: Map<number, Route>): string {
+function emit(ir: RenderIr, placed: Placed[], routes: Map<number, Route>, tokens?: Record<string, string>): string {
   // The frame is the content's bounding box plus PAD on every side.
   // The frame is the bounding box of the nodes and of the routed edges,
   // with the same pad on every side.
@@ -896,7 +903,7 @@ function emit(ir: RenderIr, placed: Placed[], routes: Map<number, Route>): strin
   return [
     svgRoot(minX, minY, width, height),
     ir.title ? `<title>${esc(ir.title)}</title>` : "",
-    `<style>${STYLE}</style>`,
+    `<style>${STYLE}${tokenStyle(tokens)}</style>`,
     `<defs>${markers(px)}</defs>`,
     body,
     noticeBlock,

@@ -27,7 +27,8 @@ export const STYLE = `
     --pr-badge-class: #4f46e5; --pr-badge-interface: #059669; --pr-badge-enum: #d97706; --pr-badge-function: #475569; --pr-badge-abstract: #7c3aed;
     --pr-name: #0f172a; --pr-type: #2563eb; --pr-param: #475569; --pr-punct: #94a3b8;
     --pr-vis-public: #16a34a; --pr-vis-private: #dc2626; --pr-vis-protected: #d97706; --pr-vis-package: #2563eb;
-    --pr-port-in: #2563eb; --pr-port-out: #c2730a; }
+    --pr-port-in: #2563eb; --pr-port-out: #c2730a;
+    --pr-stroke-width: 1; --pr-container-stroke-width: 1; }
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pr-diagram { --pr-text: #e2e8f0; --pr-muted: #94a3b8; --pr-stroke: #94a3b8; --pr-edge: #94a3b8; --pr-box-fill: #1e293b; --pr-container-fill: #0f172a; --pr-container-stroke: #64748b;
     --pr-note-fill: #3b3418; --pr-note-stroke: #a16207; --pr-head-class: #312e81; --pr-head-interface: #064e3b; --pr-head-enum: #78350f; --pr-head-function: #334155; --pr-head-abstract: #4c1d95;
     --pr-badge-class: #a5b4fc; --pr-badge-interface: #6ee7b7; --pr-badge-enum: #fcd34d; --pr-badge-function: #cbd5e1; --pr-badge-abstract: #c4b5fd;
@@ -39,7 +40,7 @@ export const STYLE = `
   .pr-diagram text { fill: var(--pr-text); }
   .pr-diagram rect, .pr-diagram line.pr-sep { shape-rendering: crispEdges; }
   .pr-diagram rect, .pr-diagram path, .pr-diagram line { vector-effect: non-scaling-stroke; }
-  .pr-diagram .pr-box > rect { fill: var(--pr-box-fill); stroke: var(--pr-stroke); }
+  .pr-diagram .pr-box > rect { fill: var(--pr-box-fill); stroke: var(--pr-stroke); stroke-width: var(--pr-stroke-width); }
   .pr-diagram .pr-port > rect { fill: var(--pr-port-in); stroke: none; }
   .pr-diagram .pr-port-out > rect { fill: var(--pr-port-out); }
   .pr-diagram .pr-port-label { fill: var(--pr-muted); font-size: 10px; }
@@ -68,7 +69,7 @@ export const STYLE = `
   .pr-diagram .pr-vis-private { fill: var(--pr-vis-private); }
   .pr-diagram .pr-vis-protected { fill: var(--pr-vis-protected); }
   .pr-diagram .pr-vis-package { fill: var(--pr-vis-package); }
-  .pr-diagram .pr-container > rect { fill: var(--pr-container-fill); stroke: var(--pr-container-stroke); }
+  .pr-diagram .pr-container > rect { fill: var(--pr-container-fill); stroke: var(--pr-container-stroke); stroke-width: var(--pr-container-stroke-width); }
   .pr-diagram .pr-container > .pr-header { fill: var(--pr-muted); font-weight: 600; font-size: 11px; letter-spacing: .4px; }
   .pr-diagram .pr-note path { fill: var(--pr-note-fill); stroke: var(--pr-note-stroke); }
   .pr-diagram .pr-action > rect { fill: var(--pr-box-fill); stroke: var(--pr-stroke); }
@@ -112,6 +113,18 @@ export function idPrefix(title: string | undefined): string {
 
 /** Root attributes shared by both layouts: natural size for `<img>` and
  * standalone use, fluid inside a container (REQ-00012-1). */
+/**
+ * A rule that overrides tokens for this drawing, emitted after the defaults
+ * so it wins. This is how a producer sets what a host page would otherwise
+ * set from outside: a diagram written to a file has no host to style it.
+ */
+export function tokenStyle(tokens: Record<string, string> | undefined): string {
+  const entries = Object.entries(tokens ?? {}).filter(([name]) => /^--[a-z0-9-]+$/i.test(name));
+  if (entries.length === 0) return "";
+  const body = entries.map(([name, value]) => `${name}: ${value.replace(/[;{}<>]/g, "")};`).join(" ");
+  return `\n  .pr-diagram { ${body} }`;
+}
+
 export function svgRoot(minX: number, minY: number, width: number, height: number): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${width} ${height}" width="${width}" height="${height}" style="max-width:100%;height:auto" class="pr-diagram" role="img">`;
 }

@@ -70,6 +70,8 @@ OPTIONS
   -o, --out <path>          output file, or output directory in batch mode (the source tree is mirrored)
   --links <map.json>        link entities: { "<id or unique name>": "<url>" | { href, title, refs } }
   --link-template <tpl>     href for every entity without one; {id} and {name} expand
+  --outline <normal|bold>   how hard the box and container borders read (default normal)
+  --token <name=value>      set any theme token (repeatable), e.g. --token --pr-stroke=#334155
 
 OUTPUT
   Inline-ready SVG: styles scoped under .pr-diagram, ids prefixed per diagram, the entity id in
@@ -78,6 +80,8 @@ OUTPUT
 
 EXAMPLES
   plantuml-render design/lld/CL_Order.puml -o docs/CL_Order.svg
+  plantuml-render big.puml --outline bold -o big.svg
+  plantuml-render big.puml --token --pr-stroke=#334155 --token --pr-stroke-width=2 -o big.svg
   plantuml-render render design/ -o site/svg/
   plantuml-render docs navigation
 `;
@@ -105,14 +109,14 @@ function walk(dir: string, acc: string[] = []): string[] {
   return acc;
 }
 
-async function renderFile(file: string, links: LinkSpec, warn: (text: string) => void): Promise<string> {
+async function renderFile(file: string, links: LinkSpec, warn: (text: string) => void, tokens?: Record<string, string>): Promise<string> {
   const raw = readFileSync(file, "utf8");
   const ir = await pumlToIr(await expandIncludes(raw, dirname(resolve(file)), fsLoader));
   ir.title ??= basename(file, extname(file));
   // A kind that is not drawn is said in the SVG and here (REQ-00021-1);
   // the exit code stays 0, the source is kept as it is.
   if (ir.notice) warn(`${file}: ${ir.notice.replace(/\s*\n\s*/g, " ")}\n`);
-  return await renderSvg(applyLinks(ir, links));
+  return await renderSvg(applyLinks(ir, links), { tokens });
 }
 
 export async function main(argv: string[], deps: CliDeps = {}): Promise<number> {
@@ -174,6 +178,37 @@ export async function main(argv: string[], deps: CliDeps = {}): Promise<number> 
     return new Promise(() => {}); // stay alive until killed
   }
 
+  // How hard the borders read. The SVG's tokens are the real control, and a
+  // host page can set them from outside; a diagram written to a file has no
+  // host, so the producer bakes them in here. `bold` is the one combination
+  // worth a name: the darkest step with a two-pixel stroke, which is what a
+  // large diagram shown small needs.
+  const OUTLINES: Record<string, Record<string, string>> = {
+    normal: {},
+    bold: {
+      "--pr-stroke": "#334155",
+      "--pr-container-stroke": "#475569",
+      "--pr-stroke-width": "2",
+      "--pr-container-stroke-width": "2",
+    },
+  };
+  const outline = takeValue("--outline");
+  if (outline !== undefined && !(outline in OUTLINES)) {
+    err(`unknown --outline '${outline}'. Use: ${Object.keys(OUTLINES).join(", ")}\n`);
+    return 2;
+  }
+  const tokens: Record<string, string> = { ...OUTLINES[outline ?? "normal"] };
+  for (;;) {
+    const pair = takeValue("--token");
+    if (pair === undefined) break;
+    const at = pair.indexOf("=");
+    if (at <= 0) {
+      err(`--token wants name=value, got '${pair}'\n`);
+      return 2;
+    }
+    tokens[pair.slice(0, at)] = pair.slice(at + 1);
+  }
+
   const irMode = takeFlag("--ir");
   const target = takeValue("-o", "--out");
   const linksFile = takeValue("--links");
@@ -193,7 +228,7 @@ export async function main(argv: string[], deps: CliDeps = {}): Promise<number> 
   }
   if (irMode) {
     try {
-      const svg = await renderSvg(applyLinks(validateIr(JSON.parse(readFileSync(input, "utf8"))), links));
+      const svg = await renderSvg(applyLinks(validateIr(JSON.parse(readFileSync(input, "utf8"))), links), { tokens });
       target ? writeFileSync(target, svg) : out(svg);
       return 0;
     } catch (error) {
@@ -212,7 +247,7 @@ export async function main(argv: string[], deps: CliDeps = {}): Promise<number> 
       const dest = join(target, relative(input, file)).replace(PUML, ".svg");
       try {
         mkdirSync(dirname(dest), { recursive: true });
-        writeFileSync(dest, await renderFile(file, links, err));
+        writeFileSync(dest, await renderFile(file, links, err, tokens));
       } catch (error) {
         failed += 1;
         err(`${file}: ${(error as Error).message}\n`);
@@ -222,7 +257,7 @@ export async function main(argv: string[], deps: CliDeps = {}): Promise<number> 
     return failed ? 1 : 0;
   }
   try {
-    const svg = await renderFile(input, links, err);
+    const svg = await renderFile(input, links, err, tokens);
     target ? writeFileSync(target, svg) : out(svg);
     return 0;
   } catch (error) {
