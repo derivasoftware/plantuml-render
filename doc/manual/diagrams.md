@@ -154,6 +154,21 @@ direction picks the side. And a relation line cannot start with `ref`, which
 the grammar reads as the sequence-diagram keyword — name that port something
 else.
 
+### Wire to the port, not to the block
+
+A block that declares a boundary says its signals cross it there, so a relation
+names the port:
+
+```plantuml
+in1 --> Worker::a1
+Worker::r1 --> out1
+```
+
+A relation drawn to the block itself lands wherever the router has room, beside
+ports left looking unconnected, and the drawing then says something the model
+does not. Which port was meant is not something the renderer can know, so it
+says which blocks were reached that way and what they offer.
+
 ## When a wire does not appear
 
 A relation is drawn only when both of its ends name something the diagram

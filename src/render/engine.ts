@@ -306,6 +306,7 @@ function toElk(ir: RenderIr): ElkGraph {
   };
   const PORT_GAP = 18;
   const perSide = new Map<string, number>();
+  const widest = new Map<string, number>();
   for (const port of ports) {
     const host = elkNodes.get(port.parent!);
     if (!host) continue;
@@ -352,6 +353,27 @@ function toElk(ir: RenderIr): ElkGraph {
     const span = n * PORT + (n - 1) * PORT_GAP + 2 * PORT_GAP;
     if (side === "WEST" || side === "EAST") host.height = Math.max(host.height ?? 0, span);
     else host.width = Math.max(host.width ?? 0, span);
+    if (insideOwner) {
+      const wide = `${port.parent}:${side}:label`;
+      widest.set(wide, Math.max(widest.get(wide) ?? 0, port.label.length * PORT_LABEL_W));
+    }
+  }
+  // Names laid out inside need the block to be wide enough to hold both sides
+  // at once. A container with children is sized from them and has room to
+  // spare; one with only ports — a block whose parts live in another file —
+  // is sized from nothing, and the router collapses it to its minimum, piling
+  // every name into the same few pixels. So the minimum is what its own names
+  // need (REQ: the names of a port are readable).
+  for (const [id, host] of elkNodes) {
+    if (!host.ports?.length || byId.get(id)?.kind !== "container") continue;
+    const west = widest.get(`${id}:WEST:label`) ?? 0;
+    const east = widest.get(`${id}:EAST:label`) ?? 0;
+    const header = (byId.get(id)?.label.length ?? 0) * CHAR_W;
+    const width = Math.max(west + east + 4 * CONTAINER_PAD + PORT * 2, header + 2 * CONTAINER_PAD);
+    host.layoutOptions = {
+      ...host.layoutOptions,
+      "elk.nodeSize.minimum": `(${Math.round(width)},${Math.round(host.height ?? 0)})`,
+    };
   }
   ir.edges.forEach((e, i) => {
     if (!elkNodes.has(ownerOf(e.from)) || !elkNodes.has(ownerOf(e.to))) return;
@@ -682,13 +704,29 @@ async function layoutLanes(ir: RenderIr): Promise<{ placed: Placed[]; routes: Ma
 
 // ── SVG emission ─────────────────────────────────────────────────────────────
 
-const markers = (px: string) => `
-  <marker id="${px}tri" viewBox="0 0 14 12" refX="13" refY="6" markerWidth="14" markerHeight="12" orient="auto"><path d="M1,1 L13,6 L1,11 Z"/></marker>
-  <marker id="${px}diamond-filled" viewBox="0 0 16 10" refX="15" refY="5" markerWidth="16" markerHeight="10" orient="auto"><path class="pr-filled" d="M1,5 L8,1 L15,5 L8,9 Z"/></marker>
-  <marker id="${px}diamond" viewBox="0 0 16 10" refX="15" refY="5" markerWidth="16" markerHeight="10" orient="auto"><path d="M1,5 L8,1 L15,5 L8,9 Z"/></marker>
-  <marker id="${px}arrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto"><path class="pr-open" d="M1,1 L11,6 L1,11"/></marker>
-  <marker id="${px}tri-solid" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="11" markerHeight="11" orient="auto"><path class="pr-solid" d="M1,1 L11,6 L1,11 Z"/></marker>
+/**
+ * How big an arrowhead is drawn, as a multiple of its natural size.
+ *
+ * This is geometry, not paint: a marker's size lives in attributes that CSS
+ * cannot reach, so the one token that controls it is read here instead of by
+ * the browser. A diagram of many short wires reads as mostly arrowhead at the
+ * natural size; `--pr-arrow-size: 0.7` gives it back its lines.
+ */
+function arrowScale(tokens: Record<string, string> | undefined): number {
+  const raw = Number(tokens?.["--pr-arrow-size"]);
+  return Number.isFinite(raw) && raw > 0 ? Math.min(raw, 4) : 1;
+}
+
+const markers = (px: string, scale = 1) => {
+  const at = (n: number) => Math.round(n * scale * 100) / 100;
+  return `
+  <marker id="${px}tri" viewBox="0 0 14 12" refX="13" refY="6" markerWidth="${at(14)}" markerHeight="${at(12)}" orient="auto"><path d="M1,1 L13,6 L1,11 Z"/></marker>
+  <marker id="${px}diamond-filled" viewBox="0 0 16 10" refX="15" refY="5" markerWidth="${at(16)}" markerHeight="${at(10)}" orient="auto"><path class="pr-filled" d="M1,5 L8,1 L15,5 L8,9 Z"/></marker>
+  <marker id="${px}diamond" viewBox="0 0 16 10" refX="15" refY="5" markerWidth="${at(16)}" markerHeight="${at(10)}" orient="auto"><path d="M1,5 L8,1 L15,5 L8,9 Z"/></marker>
+  <marker id="${px}arrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="${at(12)}" markerHeight="${at(12)}" orient="auto"><path class="pr-open" d="M1,1 L11,6 L1,11"/></marker>
+  <marker id="${px}tri-solid" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="${at(11)}" markerHeight="${at(11)}" orient="auto"><path class="pr-solid" d="M1,1 L11,6 L1,11 Z"/></marker>
 `;
+};
 
 const MARKER_BY_KIND: Record<string, string> = {
   inheritance: "tri",
@@ -884,6 +922,51 @@ function danglingNotice(ir: RenderIr, placed: Placed[]): string | undefined {
   );
 }
 
+/**
+ * The relations that stop at a block instead of at one of its ports.
+ *
+ * A block that declares a boundary says signals cross it there. A wire drawn
+ * to the block itself lands wherever the router has room, beside ports that
+ * are left looking unconnected — the drawing then says something the model
+ * does not. Which port is meant is not for the engine to guess, so it says
+ * which blocks are involved and what they offer.
+ */
+function unportedNotice(ir: RenderIr, placed: Placed[]): string | undefined {
+  const drawn = new Set(placed.map((p) => p.node.id));
+  const portsOf = new Map<string, { in: string[]; out: string[] }>();
+  for (const node of ir.nodes) {
+    if (node.kind !== "port" || !node.parent) continue;
+    const sides = portsOf.get(node.parent) ?? { in: [], out: [] };
+    sides[node.direction === "out" ? "out" : "in"].push(node.label);
+    portsOf.set(node.parent, sides);
+  }
+  const named = new Map<string, string[]>();
+  let count = 0;
+  for (const edge of ir.edges) {
+    let counted = false;
+    for (const [end, want] of [[edge.to, "in"], [edge.from, "out"]] as const) {
+      const sides = portsOf.get(end);
+      if (!sides || !drawn.has(end) || sides[want].length === 0) continue;
+      if (!counted) {
+        count += 1;
+        counted = true;
+      }
+      // A block can be reached from both sides; name every port that was
+      // available, not only the last one looked at.
+      const seen = named.get(end) ?? [];
+      named.set(end, [...seen, ...sides[want].filter((p) => !seen.includes(p))]);
+    }
+  }
+  if (count === 0) return undefined;
+  const blocks = [...named].map(([id, ports]) => `${id.split(".").pop()} (${ports.join(", ")})`);
+  const shown = blocks.slice(0, NAMED).join("; ");
+  const rest = blocks.length - NAMED;
+  return (
+    `${count} relation${count === 1 ? "" : "s"} reach a block instead of one of its ports: ` +
+    `${shown}${rest > 0 ? ` and ${rest} more` : ""}. Name the port, as in Block::port.`
+  );
+}
+
 function emit(ir: RenderIr, placed: Placed[], routes: Map<number, Route>, tokens?: Record<string, string>): string {
   // The frame is the content's bounding box plus PAD on every side.
   // The frame is the bounding box of the nodes and of the routed edges,
@@ -908,7 +991,11 @@ function emit(ir: RenderIr, placed: Placed[], routes: Map<number, Route>, tokens
   // silence is how a diagram ends up quietly missing a wire: the names that
   // resolved to nothing are reported the same way. When the document drew
   // nothing at all its producer has already said so, so this stays quiet.
-  const notice = [ir.notice, placed.length === 0 ? undefined : danglingNotice(ir, placed)]
+  const notice = [
+    ir.notice,
+    placed.length === 0 ? undefined : danglingNotice(ir, placed),
+    placed.length === 0 ? undefined : unportedNotice(ir, placed),
+  ]
     .filter(Boolean)
     .join("\n") || (placed.length === 0 ? "Nothing to draw." : undefined);
   let noticeBlock = "";
@@ -945,7 +1032,7 @@ function emit(ir: RenderIr, placed: Placed[], routes: Map<number, Route>, tokens
     svgRoot(minX, minY, width, height),
     ir.title ? `<title>${esc(ir.title)}</title>` : "",
     `<style>${STYLE}${tokenStyle(tokens)}</style>`,
-    `<defs>${markers(px)}</defs>`,
+    `<defs>${markers(px, arrowScale(tokens))}</defs>`,
     body,
     noticeBlock,
     "</svg>",

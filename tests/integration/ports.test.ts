@@ -451,3 +451,154 @@ class Controller <<block>> {
     expect(by.get("drive")!.from).toBeGreaterThanOrEqual(bx + bw);
   });
 });
+
+describe("a block whose parts live elsewhere", () => {
+  // The !includesub shape: one file per block, so the parent holds a
+  // container that has ports and nothing else inside it.
+  const EMPTY = `@startuml dense
+package Dense <<block>> {
+  class in1 <<in>>
+  class out1 <<out>>
+  package Worker <<block>> {
+    class a1 <<in>>
+    class a2 <<in>>
+    class a3 <<in>>
+    class r1 <<out>>
+  }
+  in1 --> Worker
+  Worker --> out1
+}
+@enduml
+`;
+
+  it("is still wide enough for its own names", async () => {
+    const svg = await renderSvg(await pumlToIr(EMPTY));
+    const m = /data-id="Dense\.Worker"[^>]*>(?:<title>[^<]*<\/title>)?<rect x="\d+" y="\d+" width="(\d+)" height="(\d+)"/.exec(svg)!;
+    const [w, h] = [+m[1], +m[2]];
+    // Sized from nothing, the router collapses it to its minimum; the
+    // minimum has to be what the names it carries need.
+    expect(w).toBeGreaterThan(80);
+    expect(h).toBeGreaterThan(60);
+  });
+
+  it("leaves none of its names piled on another", async () => {
+    const svg = await renderSvg(await pumlToIr(EMPTY));
+    const labels = [...svg.matchAll(/<text class="pr-port-label" x="([\d.]+)" y="([\d.]+)"([^>]*)>([^<]+)</g)].map((t) => {
+      const end = t[3].includes("end");
+      const width = t[4].length * 6;
+      return { y: +t[2], from: end ? +t[1] - width : +t[1], to: end ? +t[1] : +t[1] + width };
+    });
+    expect(labels.length).toBe(6);
+    for (let i = 0; i < labels.length; i++) {
+      for (let j = i + 1; j < labels.length; j++) {
+        const [a, b] = [labels[i], labels[j]];
+        const apart = Math.abs(a.y - b.y) >= 10 || a.from >= b.to || b.from >= a.to;
+        expect(apart).toBe(true);
+      }
+    }
+  });
+});
+
+describe("how big the arrowheads are", () => {
+  const FLOW = `@startuml flow
+package Flow <<block>> {
+  class in1 <<in>>
+  class out1 <<out>>
+  class StepA
+  in1 --> StepA
+  StepA --> out1
+}
+@enduml
+`;
+
+  const headWidth = (svg: string) => +/<marker id="[^"]*arrow"[^>]*markerWidth="([\d.]+)"/.exec(svg)![1];
+
+  it("draws them at their natural size by default", async () => {
+    expect(headWidth(await renderSvg(await pumlToIr(FLOW)))).toBe(12);
+  });
+
+  it("scales every marker by --pr-arrow-size", async () => {
+    const svg = await renderSvg(await pumlToIr(FLOW), { tokens: { "--pr-arrow-size": "0.5" } });
+    expect(headWidth(svg)).toBe(6);
+    // Every head, not only the one the flow happens to use.
+    expect(svg).toContain('id="');
+    for (const m of svg.matchAll(/<marker [^>]*markerWidth="([\d.]+)" markerHeight="([\d.]+)"/g)) {
+      expect(+m[1]).toBeLessThanOrEqual(8);
+      expect(+m[2]).toBeLessThanOrEqual(6);
+    }
+  });
+
+  it("ignores a size that is not a positive number, and caps a wild one", async () => {
+    for (const bad of ["0", "-1", "wide", ""]) {
+      expect(headWidth(await renderSvg(await pumlToIr(FLOW), { tokens: { "--pr-arrow-size": bad } }))).toBe(12);
+    }
+    expect(headWidth(await renderSvg(await pumlToIr(FLOW), { tokens: { "--pr-arrow-size": "99" } }))).toBe(48);
+  });
+
+  it("gives the line its own width token", async () => {
+    const svg = await renderSvg(await pumlToIr(FLOW), { tokens: { "--pr-edge-width": "1.6" } });
+    expect(svg).toContain("stroke-width: var(--pr-edge-width)");
+    expect(svg).toContain("--pr-edge-width: 1.6;");
+  });
+});
+
+describe("a wire that stops at a block", () => {
+  const to = (how: string) => `@startuml
+package Dense <<block>> {
+  class in1 <<in>>
+  class out1 <<out>>
+  package Worker <<block>> {
+    class a1 <<in>>
+    class a2 <<in>>
+    class r1 <<out>>
+  }
+  ${how}
+}
+@enduml
+`;
+  const notice = (svg: string) => /<g class="pr-notice">[\s\S]*?<text[^>]*>([^<]*)</.exec(svg)?.[1];
+
+  it("says so, and what the block offers", async () => {
+    const svg = await renderSvg(await pumlToIr(to("in1 --> Worker\n  Worker --> out1")));
+    expect(notice(svg)).toBe(
+      "2 relations reach a block instead of one of its ports: Worker (a1, a2, r1). Name the port, as in Block::port.",
+    );
+  });
+
+  it("says nothing once the ports are named", async () => {
+    const svg = await renderSvg(await pumlToIr(to("in1 --> Worker::a1\n  Worker::r1 --> out1")));
+    expect(notice(svg)).toBeUndefined();
+  });
+
+  it("leaves a block without ports alone", async () => {
+    const svg = await renderSvg(await pumlToIr(`@startuml
+package Dense <<block>> {
+  class in1 <<in>>
+  package Plain {
+    class Step
+  }
+  in1 --> Plain
+}
+@enduml
+`));
+    expect(notice(svg)).toBeUndefined();
+  });
+
+  it("only counts the direction the wire needs", async () => {
+    // Worker has no output, so arriving at it is the only thing to report.
+    const svg = await renderSvg(await pumlToIr(`@startuml
+package Dense <<block>> {
+  class in1 <<in>>
+  class out1 <<out>>
+  package Worker <<block>> {
+    class a1 <<in>>
+  }
+  in1 --> Worker
+  Worker --> out1
+}
+@enduml
+`));
+    expect(notice(svg)).toContain("1 relation reach");
+    expect(notice(svg)).toContain("Worker (a1)");
+  });
+});

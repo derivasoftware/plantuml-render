@@ -32,6 +32,12 @@ the west and east borders is laid out left to right, because that is where its
 signals enter and leave. Without that, every wire turns two corners to reach a
 border the content does not run towards.
 
+A container that carries ports is given a minimum size of what its own names
+need — the widest name on each side, plus the padding. One with children is
+sized from them and has room to spare, but a block whose parts live in another
+file has no children at all, and the router would collapse it to nothing and
+pile every name into the same few pixels.
+
 A container's port names are laid out by the router, not placed afterwards:
 each port carries its name as an ELK label with `elk.portLabels.placement:
 INSIDE`, and the container's size constraints include `PORT_LABELS`, so the
@@ -67,6 +73,8 @@ properties on stable classes, with neutral fallbacks.
 | `--pr-stroke` | box and note borders, separators |
 | `--pr-container-stroke` | container borders |
 | `--pr-stroke-width`, `--pr-container-stroke-width` | how hard those borders read |
+| `--pr-edge-width` | how thick a relation's line is |
+| `--pr-arrow-size` | arrowhead size, as a multiple of its natural size |
 | `--pr-text` | all text |
 | `--pr-box-fill`, `--pr-note-fill`, `--pr-container-fill` | fills |
 | `--pr-font` | font family |
@@ -80,6 +88,12 @@ defaults, where a declaration wins by coming later. The CLI exposes it as
 name — the darkest border at two pixels, which is what a large diagram shown
 small needs. A token whose name is not a custom property is dropped, and a
 value cannot close the rule it sits in.
+
+`--pr-arrow-size` is the one token the renderer reads itself rather than
+leaving to the browser: an arrowhead's size lives in marker attributes that CSS
+cannot reach. It scales all five markers, ignores anything that is not a
+positive number, and is capped at four. A diagram of many short wires reads as
+mostly arrowhead at the natural size; `0.6` gives it back its lines.
 
 Per-classifier (`pr-classifier-class`, `-interface`, `-enum`, …) and
 per-edge-kind (`pr-edge-inheritance`, …) classes allow finer theming.
