@@ -127,6 +127,15 @@ reach the border. Ports on the north and south borders — which only a
 render-IR document can ask for — keep the drawing running downwards. A diagram
 with no ports is unaffected.
 
+### A long chain wraps
+
+Six subsystems chained left to right are twenty-six times wider than they are
+tall, and a drawing that wide is shown scaled to fit: the boxes end up a few
+pixels high and their outlines dissolve. A block diagram's chain therefore
+wraps into rows, the same way a paragraph wraps, so the drawing grows in both
+directions and keeps the scale it is read at. The wire that continues the chain
+runs from the end of one row to the start of the next.
+
 ### Two limits worth knowing
 
 **`north` and `south` sides are IR-only**: the text syntax says direction, and

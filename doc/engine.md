@@ -20,6 +20,13 @@ derived — then flow left-to-right with `GAP_X`/`GAP_Y`. The viewBox
 covers the placed extent, including negative coordinates introduced by
 position overrides.
 
+A block diagram's chain also wraps towards the declared aspect ratio
+(`elk.layered.wrapping.strategy`): six chained subsystems go from 3080x116
+(26:1) to 1040x446 (2.3:1), which is the difference between a drawing shown at
+a quarter of its size and one shown whole. Outlines carry
+`vector-effect: non-scaling-stroke` for the same reason — a stroke scaled down
+with the drawing stops reading as a line.
+
 The layout direction follows the ports: a document whose ports mostly sit on
 the west and east borders is laid out left to right, because that is where its
 signals enter and leave. Without that, every wire turns two corners to reach a

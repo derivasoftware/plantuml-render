@@ -10,6 +10,16 @@ export const CHAR_W = 8;
 export const LINE_H = 18;
 export const PAD = 10;
 
+/**
+ * The inlined stylesheet. Every rule is scoped under `.pr-diagram` and
+ * carries no CSS comment: the embedding test reads this text rule by rule
+ * and a comment would be taken for part of a selector.
+ *
+ * `vector-effect: non-scaling-stroke` is what keeps a large diagram legible.
+ * The SVG is shown scaled to fit its container, and a stroke scaled with it
+ * stops being a line — on a wide drawing the outlines of small boxes dissolve
+ * into their fill. A non-scaling stroke keeps its width at any zoom.
+ */
 export const STYLE = `
   .pr-diagram { font-family: var(--pr-font, "JetBrains Mono", "Cascadia Code", "SFMono-Regular", Menlo, Consolas, ui-monospace, monospace); font-size: 12px;
     --pr-text: #1e293b; --pr-muted: #64748b; --pr-stroke: #64748b; --pr-edge: #64748b; --pr-box-fill: #ffffff; --pr-container-fill: #f8fafc; --pr-container-stroke: #94a3b8;
@@ -28,6 +38,7 @@ export const STYLE = `
     --pr-name: #f8fafc; --pr-type: #7dd3fc; --pr-param: #cbd5e1; --pr-punct: #64748b; --pr-vis-public: #4ade80; --pr-vis-private: #f87171; --pr-vis-protected: #fbbf24; --pr-vis-package: #60a5fa; --pr-port-in: #60a5fa; --pr-port-out: #fbbf24; }
   .pr-diagram text { fill: var(--pr-text); }
   .pr-diagram rect, .pr-diagram line.pr-sep { shape-rendering: crispEdges; }
+  .pr-diagram rect, .pr-diagram path, .pr-diagram line { vector-effect: non-scaling-stroke; }
   .pr-diagram .pr-box > rect { fill: var(--pr-box-fill); stroke: var(--pr-stroke); }
   .pr-diagram .pr-port > rect { fill: var(--pr-port-in); stroke: none; }
   .pr-diagram .pr-port-out > rect { fill: var(--pr-port-out); }

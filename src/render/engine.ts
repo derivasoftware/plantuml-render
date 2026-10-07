@@ -353,10 +353,15 @@ function toElk(ir: RenderIr): ElkGraph {
   // corners to reach a port, and a chain of three blocks looks like a
   // detour. Ports on the north or south border say the opposite, so the
   // direction follows whichever border the ports actually use.
+  // A chain of blocks laid out in one direction becomes one very long row,
+  // and a drawing that wide is shown shrunk to fit: the boxes end up a few
+  // pixels tall. Wrapping cuts the chain into rows towards the declared
+  // aspect ratio, which is what keeps a large diagram legible — measured on
+  // six chained subsystems, 3080x116 (26:1) becomes 1040x446 (2.3:1).
   const sides = ir.nodes.filter((n) => n.kind === "port").map((n) => sideOf(n));
   const acrossSides = sides.filter((s) => s === "west" || s === "east").length;
   const blockFlow = acrossSides > sides.length - acrossSides;
-  const root: ElkNode = { id: "root", layoutOptions: { ...LAYOUT_OPTIONS, ...(blockFlow ? { "elk.direction": "RIGHT" } : {}), ...(ir.edges.some((e) => e.kind === "flow") ? { "elk.layered.spacing.nodeNodeBetweenLayers": "36" } : {}) }, children: [], edges: [] };
+  const root: ElkNode = { id: "root", layoutOptions: { ...LAYOUT_OPTIONS, ...(blockFlow ? { "elk.direction": "RIGHT", "elk.layered.wrapping.strategy": "SINGLE_EDGE", "elk.layered.wrapping.correctionFactor": "1.0" } : {}), ...(ir.edges.some((e) => e.kind === "flow") ? { "elk.layered.spacing.nodeNodeBetweenLayers": "36" } : {}) }, children: [], edges: [] };
 
   const place = (level: string, host: ElkNode) => {
     const children = kids.get(level) ?? [];

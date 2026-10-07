@@ -333,3 +333,44 @@ describe("outlines", () => {
     expect(svg).toContain("--pr-container-stroke: #64748b");
   });
 });
+
+describe("a large block diagram stays legible", () => {
+  const chained = (n: number) => {
+    const out: string[] = ["@startuml big"];
+    for (let s = 1; s <= n; s++) {
+      out.push(`package Sub${s} <<block>> {`, `  class i${s} <<in>>`, `  class o${s} <<out>>`);
+      for (const k of "ABCDE") out.push(`  class B${s}${k}`);
+      out.push(`  i${s} --> B${s}A`);
+      for (let j = 0; j < 4; j++) out.push(`  B${s}${"ABCD"[j]} --> B${s}${"BCDE"[j]}`);
+      out.push(`  B${s}E --> o${s}`, "}");
+    }
+    for (let s = 1; s < n; s++) out.push(`Sub${s}::o${s} --> Sub${s + 1}::i${s + 1}`);
+    out.push("@enduml");
+    return out.join("\n");
+  };
+
+  const shape = async (src: string) => {
+    const svg = await renderSvg(await pumlToIr(src));
+    const [, , , w, h] = /viewBox="(-?[\d.]+) (-?[\d.]+) ([\d.]+) ([\d.]+)"/.exec(svg)!.map(Number);
+    return { w, h, ratio: w / h };
+  };
+
+  it("wraps a long chain instead of drawing one endless row", async () => {
+    // Six subsystems in a row are 26 times wider than tall; shown scaled to
+    // fit, the boxes are a few pixels high and their outlines dissolve.
+    const { ratio } = await shape(chained(6));
+    expect(ratio).toBeLessThan(5);
+  });
+
+  it("grows a long chain in both directions, not only sideways", async () => {
+    const two = await shape(chained(2));
+    const six = await shape(chained(6));
+    expect(six.h).toBeGreaterThan(two.h);
+    expect(six.w / two.w).toBeLessThan(3);
+  });
+
+  it("keeps the outlines at the width they were drawn, whatever the zoom", async () => {
+    const svg = await renderSvg(await pumlToIr("@startuml\npackage P {\n  class A\n}\n@enduml\n"));
+    expect(svg).toContain("vector-effect: non-scaling-stroke");
+  });
+});
