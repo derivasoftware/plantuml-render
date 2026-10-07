@@ -28,7 +28,7 @@ export const STYLE = `
     --pr-name: #0f172a; --pr-type: #2563eb; --pr-param: #475569; --pr-punct: #94a3b8;
     --pr-vis-public: #16a34a; --pr-vis-private: #dc2626; --pr-vis-protected: #d97706; --pr-vis-package: #2563eb;
     --pr-port-in: #2563eb; --pr-port-out: #c2730a;
-    --pr-stroke-width: 1; --pr-container-stroke-width: 1; }
+    --pr-stroke-width: 1; --pr-container-stroke-width: 1; --pr-edge-width: 1; }
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pr-diagram { --pr-text: #e2e8f0; --pr-muted: #94a3b8; --pr-stroke: #94a3b8; --pr-edge: #94a3b8; --pr-box-fill: #1e293b; --pr-container-fill: #0f172a; --pr-container-stroke: #64748b;
     --pr-note-fill: #3b3418; --pr-note-stroke: #a16207; --pr-head-class: #312e81; --pr-head-interface: #064e3b; --pr-head-enum: #78350f; --pr-head-function: #334155; --pr-head-abstract: #4c1d95;
     --pr-badge-class: #a5b4fc; --pr-badge-interface: #6ee7b7; --pr-badge-enum: #fcd34d; --pr-badge-function: #cbd5e1; --pr-badge-abstract: #c4b5fd;
@@ -83,7 +83,7 @@ export const STYLE = `
   .pr-diagram marker .pr-solid { fill: var(--pr-edge); stroke: var(--pr-edge); }
   .pr-diagram .pr-notice rect { fill: var(--pr-container-fill); stroke: var(--pr-muted); stroke-dasharray: 5 3; }
   .pr-diagram .pr-notice text { fill: var(--pr-muted); font-style: italic; }
-  .pr-diagram .pr-edge { stroke: var(--pr-edge); fill: none; }
+  .pr-diagram .pr-edge { stroke: var(--pr-edge); stroke-width: var(--pr-edge-width); fill: none; }
   .pr-diagram .pr-edge-realization, .pr-diagram .pr-edge-dependency, .pr-diagram .pr-edge-attachment { stroke-dasharray: 6 4; }
   .pr-diagram .pr-edge-label { fill: var(--pr-muted); font-size: 11px; paint-order: stroke; stroke: var(--pr-box-fill); stroke-width: 3px; stroke-linejoin: round; }
   .pr-diagram marker path { fill: var(--pr-box-fill); stroke: var(--pr-edge); }
