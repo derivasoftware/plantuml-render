@@ -42,6 +42,8 @@ interface Placed {
   y: number;
   w: number;
   h: number;
+  /** Where the router put this port's name, when it laid one out. */
+  label?: { x: number; y: number; w: number; h: number };
 }
 
 export interface RenderOptions {
@@ -140,6 +142,11 @@ function noteLines(node: IrNode): string[] {
 
 /** A port is a fixed marker on its block's border, not a laid-out box. */
 const PORT = 11;
+/** The key a port's laid-out name is filed under, beside the port itself. */
+const LABEL_OF = "\u0000label";
+/** A port name's size, for the layout to reserve room for it. */
+const PORT_LABEL_W = 6;
+const PORT_LABEL_H = 10;
 
 function nodeSize(node: IrNode): { w: number; h: number } {
   if (node.kind === "port") return { w: PORT, h: PORT };
@@ -303,10 +310,19 @@ function toElk(ir: RenderIr): ElkGraph {
     const host = elkNodes.get(port.parent!);
     if (!host) continue;
     const side = sideOf(port).toUpperCase();
+    // A container has empty padding inside its border, so its names are laid
+    // out there: nested blocks put their borders a few pixels apart, and two
+    // names written outwards across that gap land on top of each other. A box
+    // is full of its own text and the router sizes it from that text, not from
+    // its children, so its names stay outside and above, where nothing is.
+    const insideOwner = byId.get(port.parent!)?.kind === "container";
     (host.ports ??= []).push({
       id: port.id,
       width: PORT,
       height: PORT,
+      ...(insideOwner
+        ? { labels: [{ text: port.label, width: port.label.length * PORT_LABEL_W, height: PORT_LABEL_H }] }
+        : {}),
       layoutOptions: { "elk.port.side": side },
     } as ElkPort);
     // Fixed sides only where ports were declared: switching it on globally
@@ -317,6 +333,13 @@ function toElk(ir: RenderIr): ElkGraph {
       ...host.layoutOptions,
       "elk.portConstraints": "FIXED_SIDE",
       "elk.spacing.portPort": `${PORT_GAP}`,
+      ...(insideOwner
+        ? {
+            "elk.portLabels.placement": "INSIDE",
+            "elk.nodeSize.constraints": "PORT_LABELS NODE_LABELS MINIMUM_SIZE",
+            "elk.spacing.labelPort": "5",
+          }
+        : {}),
       ...(byId.get(port.parent!)?.kind === "container"
         ? { "elk.hierarchyHandling": "INCLUDE_CHILDREN" }
         : {}),
@@ -462,12 +485,24 @@ function absolutePositions(root: ElkNode): Map<string, { x: number; y: number; w
       const y = oy + (child.y ?? 0);
       out.set(child.id, { x: Math.round(x), y: Math.round(y), w: Math.round(child.width ?? 0), h: Math.round(child.height ?? 0) });
       for (const port of child.ports ?? []) {
+        const px = x + (port.x ?? 0);
+        const py = y + (port.y ?? 0);
         out.set(port.id, {
-          x: Math.round(x + (port.x ?? 0)),
-          y: Math.round(y + (port.y ?? 0)),
+          x: Math.round(px),
+          y: Math.round(py),
           w: Math.round(port.width ?? 0),
           h: Math.round(port.height ?? 0),
         });
+        // The name the router placed for this port, in the same space.
+        const label = (port as ElkPort & { labels?: { x?: number; y?: number; width?: number; height?: number }[] }).labels?.[0];
+        if (label) {
+          out.set(`${port.id}${LABEL_OF}`, {
+            x: Math.round(px + (label.x ?? 0)),
+            y: Math.round(py + (label.y ?? 0)),
+            w: Math.round(label.width ?? 0),
+            h: Math.round(label.height ?? 0),
+          });
+        }
       }
       walk(child, x, y);
     }
@@ -497,7 +532,7 @@ async function layout(ir: RenderIr): Promise<{ placed: Placed[]; routes: Map<num
     const at = abs.get(node.id);
     if (!at || seen.has(node.id)) continue;
     seen.add(node.id);
-    placed.push({ node, x: at.x, y: at.y, w: at.w, h: at.h });
+    placed.push({ node, x: at.x, y: at.y, w: at.w, h: at.h, label: abs.get(`${node.id}${LABEL_OF}`) });
   }
   const routes = new Map<number, Route>();
   const laidEdges: ElkExtendedEdge[] = [];
@@ -705,7 +740,10 @@ function emitNode(p: Placed, px: string): string {
     const east = sideOf(node) === "east";
     parts.push(`<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}"/>`);
     parts.push(
-      `<text class="pr-port-label" x="${east ? p.x + p.w + 2 : p.x - 2}" y="${p.y - 3}"${east ? "" : ' text-anchor="end"'}>${esc(node.label)}</text>`,
+      p.label
+        // Inside the block, in the room the layout reserved for it.
+        ? `<text class="pr-port-label" x="${east ? p.label.x + p.label.w : p.label.x}" y="${p.label.y + p.label.h - 1}"${east ? ' text-anchor="end"' : ""}>${esc(node.label)}</text>`
+        : `<text class="pr-port-label" x="${east ? p.x + p.w + 2 : p.x - 2}" y="${p.y - 3}"${east ? "" : ' text-anchor="end"'}>${esc(node.label)}</text>`,
     );
   } else if (node.kind === "container" && classifier === "swimlane") {
     parts.push(`<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}"/>`);
@@ -856,6 +894,9 @@ function emit(ir: RenderIr, placed: Placed[], routes: Map<number, Route>, tokens
   // about it or the first letter falls off the canvas.
   for (const p of placed) {
     if (p.node.kind !== "port") continue;
+    // Only a name drawn outside needs room outside; one the layout placed
+    // inside the block is already inside the frame.
+    if (p.label) continue;
     const reach = p.node.label.length * 6 + 4;
     xs.push(sideOf(p.node) === "east" ? p.x + p.w + reach : p.x - reach);
     ys.push(p.y - 14);

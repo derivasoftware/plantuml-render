@@ -32,6 +32,14 @@ the west and east borders is laid out left to right, because that is where its
 signals enter and leave. Without that, every wire turns two corners to reach a
 border the content does not run towards.
 
+A container's port names are laid out by the router, not placed afterwards:
+each port carries its name as an ELK label with `elk.portLabels.placement:
+INSIDE`, and the container's size constraints include `PORT_LABELS`, so the
+room is reserved before the children are placed. A box takes neither — its
+size comes from its own text, so the router has nothing to grow — and its
+names are drawn outside and above the square, clear of both the wire and the
+box's content.
+
 A `port` node leaves the node graph: it becomes an ELK port on its owner,
 which switches that owner to `FIXED_SIDE` constraints so a signal stays on
 the border it was declared for. Only owners that declared ports are

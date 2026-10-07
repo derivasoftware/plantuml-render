@@ -127,6 +127,17 @@ reach the border. Ports on the north and south borders — which only a
 render-IR document can ask for — keep the drawing running downwards. A diagram
 with no ports is unaffected.
 
+### Where a port's name is written
+
+A container's port names are written **inside** it, in room the layout reserves
+for them before placing anything else. Nested blocks put their borders a few
+pixels apart, and names written outwards across that gap land on top of one
+another: an outer block's `reference` over an inner block's `setpoint`.
+
+A `<<block>>` class keeps its names outside, above the square. A box is sized
+from its own text rather than from children, so there is no spare room inside
+it, and outside a box is where nothing else is.
+
 ### A long chain wraps
 
 Six subsystems chained left to right are twenty-six times wider than they are

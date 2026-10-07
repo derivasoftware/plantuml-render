@@ -205,7 +205,7 @@ describe("a container as a block", () => {
   it("draws the ports on the container border and routes both sides to them", async () => {
     const svg = await renderSvg(await pumlToIr(SUBSYSTEM));
     const rect = (id: string) => {
-      const m = new RegExp(`data-id="${id}"[^>]*>(?:<title>[^<]*</title>)?<rect x="(\\d+)" y="(\\d+)" width="(\\d+)" height="(\\d+)"`).exec(svg)!;
+      const m = new RegExp(`data-id="${id.replace(/\./g, "\\.")}"[^>]*>(?:<title>[^<]*</title>)?<rect x="(\\d+)" y="(\\d+)" width="(\\d+)" height="(\\d+)"`).exec(svg)!;
       return { x: +m[1], y: +m[2], w: +m[3], h: +m[4] };
     };
     const box = rect("Controller");
@@ -284,7 +284,7 @@ ${ports}
   const centres = async (src: string, ids: string[]) => {
     const svg = await renderSvg(await pumlToIr(src));
     return ids.map((id) => {
-      const m = new RegExp(`data-id="${id}"[^>]*>(?:<title>[^<]*</title>)?<rect x="(\\d+)" y="(\\d+)" width="(\\d+)" height="(\\d+)"`).exec(svg)!;
+      const m = new RegExp(`data-id="${id.replace(/\./g, "\\.")}"[^>]*>(?:<title>[^<]*</title>)?<rect x="(\\d+)" y="(\\d+)" width="(\\d+)" height="(\\d+)"`).exec(svg)!;
       return { x: +m[1] + +m[3] / 2, y: +m[2] + +m[4] / 2 };
     });
   };
@@ -372,5 +372,82 @@ describe("a large block diagram stays legible", () => {
   it("keeps the outlines at the width they were drawn, whatever the zoom", async () => {
     const svg = await renderSvg(await pumlToIr("@startuml\npackage P {\n  class A\n}\n@enduml\n"));
     expect(svg).toContain("vector-effect: non-scaling-stroke");
+  });
+});
+
+describe("where a port's name goes", () => {
+  const NESTED = `@startuml nest
+package Outer <<block>> {
+  class reference <<in>>
+  class command <<out>>
+  package Inner <<block>> {
+    class setpoint <<in>>
+    class drive <<out>>
+    class Sum
+    setpoint --> Sum
+    Sum --> drive
+  }
+  reference --> Inner::setpoint
+  Inner::drive --> command
+}
+@enduml
+`;
+
+  const labels = (svg: string) =>
+    [...svg.matchAll(/<text class="pr-port-label" x="([\d.]+)" y="([\d.]+)"([^>]*)>([^<]+)</g)].map((m) => ({
+      name: m[4],
+      x: +m[1],
+      y: +m[2],
+      end: m[3].includes("end"),
+      // The drawn extent, which is what can collide with a neighbour's.
+      from: m[3].includes("end") ? +m[1] - m[4].length * 6 : +m[1],
+      to: m[3].includes("end") ? +m[1] : +m[1] + m[4].length * 6,
+    }));
+
+  it("writes a container's names inside it, so neighbours cannot collide", async () => {
+    const svg = await renderSvg(await pumlToIr(NESTED));
+    const box = (id: string) => {
+      const m = new RegExp(`data-id="${id.replace(/\./g, "\\.")}"[^>]*>(?:<title>[^<]*</title>)?<rect x="(\\d+)" y="(\\d+)" width="(\\d+)" height="(\\d+)"`).exec(svg)!;
+      return { x: +m[1], y: +m[2], w: +m[3], h: +m[4] };
+    };
+    const outer = box("Outer");
+    const inner = box("Outer.Inner");
+    const by = new Map(labels(svg).map((l) => [l.name, l]));
+    // Each name sits within the block whose port it belongs to.
+    for (const [name, host] of [["reference", outer], ["command", outer], ["setpoint", inner], ["drive", inner]] as const) {
+      const l = by.get(name)!;
+      expect(l.from).toBeGreaterThanOrEqual(host.x - 1);
+      expect(l.to).toBeLessThanOrEqual(host.x + host.w + 1);
+    }
+  });
+
+  it("leaves no two names overlapping", async () => {
+    const svg = await renderSvg(await pumlToIr(NESTED));
+    const rows = new Map<number, { from: number; to: number; name: string }[]>();
+    for (const l of labels(svg)) {
+      const row = rows.get(l.y) ?? [];
+      for (const other of row) {
+        expect(l.from >= other.to || l.to <= other.from).toBe(true);
+      }
+      row.push(l);
+      rows.set(l.y, row);
+    }
+  });
+
+  it("keeps a leaf block's names outside, where its own text is not", async () => {
+    const svg = await renderSvg(await pumlToIr(`@startuml
+class Controller <<block>> {
+  + in target
+  + out drive
+  - gain : double
+}
+@enduml
+`));
+    const b = /data-id="Controller"[^>]*>(?:<title>[^<]*<\/title>)?<rect x="(\d+)" y="(\d+)" width="(\d+)" height="(\d+)"/.exec(svg)!;
+    const [bx, bw] = [+b[1], +b[3]];
+    const by = new Map(labels(svg).map((l) => [l.name, l]));
+    // A box is sized from its own text, so its border has no room to spare.
+    expect(by.get("target")!.to).toBeLessThanOrEqual(bx);
+    expect(by.get("drive")!.from).toBeGreaterThanOrEqual(bx + bw);
   });
 });
