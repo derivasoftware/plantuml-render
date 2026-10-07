@@ -20,6 +20,26 @@ derived — then flow left-to-right with `GAP_X`/`GAP_Y`. The viewBox
 covers the placed extent, including negative coordinates introduced by
 position overrides.
 
+A block diagram's chain also wraps towards the declared aspect ratio
+(`elk.layered.wrapping.strategy`): six chained subsystems go from 3080x116
+(26:1) to 1040x446 (2.3:1), which is the difference between a drawing shown at
+a quarter of its size and one shown whole. Outlines carry
+`vector-effect: non-scaling-stroke` for the same reason — a stroke scaled down
+with the drawing stops reading as a line.
+
+The layout direction follows the ports: a document whose ports mostly sit on
+the west and east borders is laid out left to right, because that is where its
+signals enter and leave. Without that, every wire turns two corners to reach a
+border the content does not run towards.
+
+A container's port names are laid out by the router, not placed afterwards:
+each port carries its name as an ELK label with `elk.portLabels.placement:
+INSIDE`, and the container's size constraints include `PORT_LABELS`, so the
+room is reserved before the children are placed. A box takes neither — its
+size comes from its own text, so the router has nothing to grow — and its
+names are drawn outside and above the square, clear of both the wire and the
+box's content.
+
 A `port` node leaves the node graph: it becomes an ELK port on its owner,
 which switches that owner to `FIXED_SIDE` constraints so a signal stays on
 the border it was declared for. Only owners that declared ports are
@@ -44,11 +64,22 @@ properties on stable classes, with neutral fallbacks.
 
 | Variable | Styles |
 |---|---|
-| `--pr-stroke` | box/container/note borders, edge lines |
+| `--pr-stroke` | box and note borders, separators |
+| `--pr-container-stroke` | container borders |
+| `--pr-stroke-width`, `--pr-container-stroke-width` | how hard those borders read |
 | `--pr-text` | all text |
 | `--pr-box-fill`, `--pr-note-fill`, `--pr-container-fill` | fills |
 | `--pr-font` | font family |
 | `--pr-port-in`, `--pr-port-out` | boundary port squares, by direction |
+
+A host page sets these from outside, which is the normal way to theme a
+diagram. An SVG written to a file has no host, so its producer bakes them in
+instead: `renderSvg(ir, { tokens })` emits one `.pr-diagram` rule after the
+defaults, where a declaration wins by coming later. The CLI exposes it as
+`--token <name=value>`, and `--outline bold` is the one combination with a
+name — the darkest border at two pixels, which is what a large diagram shown
+small needs. A token whose name is not a custom property is dropped, and a
+value cannot close the rule it sits in.
 
 Per-classifier (`pr-classifier-class`, `-interface`, `-enum`, …) and
 per-edge-kind (`pr-edge-inheritance`, …) classes allow finer theming.

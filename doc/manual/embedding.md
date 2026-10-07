@@ -15,6 +15,21 @@ The SVG is made to live inline inside any page:
 - Override any token from the host, e.g.
   `.pr-diagram { --pr-type: #0a7; --pr-font: "IBM Plex Mono", monospace }`.
 
+## When there is no host to override from
+
+A diagram written to a file and opened on its own — or dropped into a document
+that cannot carry CSS — has nobody to set its tokens, so the renderer bakes
+them in instead:
+
+```
+plantuml-render big.puml --outline bold -o big.svg
+plantuml-render big.puml --token --pr-stroke=#334155 --token --pr-stroke-width=2 -o big.svg
+```
+
+`--outline bold` is the one combination with a name: the darkest border at two
+pixels, for a large diagram that will be shown small. `--token` sets any token
+at all, and a later one wins. From the API it is `renderSvg(ir, { tokens })`.
+
 ## Static image
 
 `<img src="diagram.svg">` also works, with one caveat: browsers do not run

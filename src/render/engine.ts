@@ -20,7 +20,7 @@ import type { ElkExtendedEdge, ElkNode, ElkPort } from "elkjs/lib/elk-api.js";
 
 import { type IrEdge, type IrNode, type RenderIr, validateIr } from "./ir.js";
 import { renderSequenceSvg } from "./sequence.js";
-import { BADGE, CHAR_W, LINE_H, PAD, STYLE, esc, idPrefix, linked, memberMarkup, refAttrs, svgRoot, tooltip, noticeMarkup } from "./shared.js";
+import { BADGE, CHAR_W, LINE_H, PAD, STYLE, esc, idPrefix, linked, memberMarkup, refAttrs, svgRoot, tokenStyle, tooltip, noticeMarkup } from "./shared.js";
 
 const SECTION_GAP = 4;
 const GAP_X = 40; // between nodes of one layer
@@ -42,11 +42,20 @@ interface Placed {
   y: number;
   w: number;
   h: number;
+  /** Where the router put this port's name, when it laid one out. */
+  label?: { x: number; y: number; w: number; h: number };
 }
 
 export interface RenderOptions {
   /** POC: per-node drag deltas applied after layout; edges re-anchor. */
   positions?: Record<string, { dx: number; dy: number }>;
+  /**
+   * Theme tokens baked into this drawing, overriding the defaults
+   * (`{ "--pr-stroke": "#334155", "--pr-stroke-width": "2" }`). A host page
+   * can set these from outside; an SVG written to a file cannot be reached
+   * that way, so its producer sets them here.
+   */
+  tokens?: Record<string, string>;
 }
 
 export async function renderSvg(input: unknown, opts: RenderOptions = {}): Promise<string> {
@@ -54,12 +63,12 @@ export async function renderSvg(input: unknown, opts: RenderOptions = {}): Promi
   // A lifeline switches the whole document to the time-axis layout;
   // position overrides don't apply there (rows are the layout).
   if (ir.nodes.some((n) => n.kind === "lifeline")) {
-    return renderSequenceSvg(ir);
+    return renderSequenceSvg(ir, opts.tokens);
   }
   // Swimlanes are columns (spike PUML-53): layers from ELK, x from the lane.
   if (ir.nodes.some((n) => n.kind === "container" && n.classifier === "swimlane")) {
     const lanes = await layoutLanes(ir);
-    return emit(ir, lanes.placed, lanes.routes);
+    return emit(ir, lanes.placed, lanes.routes, opts.tokens);
   }
   const { placed, routes } = await layout(ir);
   if (opts.positions && Object.keys(opts.positions).length > 0) {
@@ -69,7 +78,7 @@ export async function renderSvg(input: unknown, opts: RenderOptions = {}): Promi
     adaptContainers(placed);
     routes.clear();
   }
-  return emit(ir, placed, routes);
+  return emit(ir, placed, routes, opts.tokens);
 }
 
 /** A node's effective delta cascades: its own plus every ancestor
@@ -133,6 +142,11 @@ function noteLines(node: IrNode): string[] {
 
 /** A port is a fixed marker on its block's border, not a laid-out box. */
 const PORT = 11;
+/** The key a port's laid-out name is filed under, beside the port itself. */
+const LABEL_OF = "\u0000label";
+/** A port name's size, for the layout to reserve room for it. */
+const PORT_LABEL_W = 6;
+const PORT_LABEL_H = 10;
 
 function nodeSize(node: IrNode): { w: number; h: number } {
   if (node.kind === "port") return { w: PORT, h: PORT };
@@ -296,10 +310,19 @@ function toElk(ir: RenderIr): ElkGraph {
     const host = elkNodes.get(port.parent!);
     if (!host) continue;
     const side = sideOf(port).toUpperCase();
+    // A container has empty padding inside its border, so its names are laid
+    // out there: nested blocks put their borders a few pixels apart, and two
+    // names written outwards across that gap land on top of each other. A box
+    // is full of its own text and the router sizes it from that text, not from
+    // its children, so its names stay outside and above, where nothing is.
+    const insideOwner = byId.get(port.parent!)?.kind === "container";
     (host.ports ??= []).push({
       id: port.id,
       width: PORT,
       height: PORT,
+      ...(insideOwner
+        ? { labels: [{ text: port.label, width: port.label.length * PORT_LABEL_W, height: PORT_LABEL_H }] }
+        : {}),
       layoutOptions: { "elk.port.side": side },
     } as ElkPort);
     // Fixed sides only where ports were declared: switching it on globally
@@ -310,6 +333,13 @@ function toElk(ir: RenderIr): ElkGraph {
       ...host.layoutOptions,
       "elk.portConstraints": "FIXED_SIDE",
       "elk.spacing.portPort": `${PORT_GAP}`,
+      ...(insideOwner
+        ? {
+            "elk.portLabels.placement": "INSIDE",
+            "elk.nodeSize.constraints": "PORT_LABELS NODE_LABELS MINIMUM_SIZE",
+            "elk.spacing.labelPort": "5",
+          }
+        : {}),
       ...(byId.get(port.parent!)?.kind === "container"
         ? { "elk.hierarchyHandling": "INCLUDE_CHILDREN" }
         : {}),
@@ -347,7 +377,21 @@ function toElk(ir: RenderIr): ElkGraph {
       labels: edge.label ? [{ text: edge.label, width: edge.label.length * LABEL_CHAR_W + 8, height: LABEL_H }] : undefined,
     } as ElkExtendedEdge;
   };
-  const root: ElkNode = { id: "root", layoutOptions: { ...LAYOUT_OPTIONS, ...(ir.edges.some((e) => e.kind === "flow") ? { "elk.layered.spacing.nodeNodeBetweenLayers": "36" } : {}) }, children: [], edges: [] };
+  // A diagram with boundary ports is a block diagram: its signals enter on
+  // the west border and leave on the east one, so the whole drawing reads
+  // left to right. Laid out downwards instead, every wire has to turn two
+  // corners to reach a port, and a chain of three blocks looks like a
+  // detour. Ports on the north or south border say the opposite, so the
+  // direction follows whichever border the ports actually use.
+  // A chain of blocks laid out in one direction becomes one very long row,
+  // and a drawing that wide is shown shrunk to fit: the boxes end up a few
+  // pixels tall. Wrapping cuts the chain into rows towards the declared
+  // aspect ratio, which is what keeps a large diagram legible — measured on
+  // six chained subsystems, 3080x116 (26:1) becomes 1040x446 (2.3:1).
+  const sides = ir.nodes.filter((n) => n.kind === "port").map((n) => sideOf(n));
+  const acrossSides = sides.filter((s) => s === "west" || s === "east").length;
+  const blockFlow = acrossSides > sides.length - acrossSides;
+  const root: ElkNode = { id: "root", layoutOptions: { ...LAYOUT_OPTIONS, ...(blockFlow ? { "elk.direction": "RIGHT", "elk.layered.wrapping.strategy": "SINGLE_EDGE", "elk.layered.wrapping.correctionFactor": "1.0" } : {}), ...(ir.edges.some((e) => e.kind === "flow") ? { "elk.layered.spacing.nodeNodeBetweenLayers": "36" } : {}) }, children: [], edges: [] };
 
   const place = (level: string, host: ElkNode) => {
     const children = kids.get(level) ?? [];
@@ -441,12 +485,24 @@ function absolutePositions(root: ElkNode): Map<string, { x: number; y: number; w
       const y = oy + (child.y ?? 0);
       out.set(child.id, { x: Math.round(x), y: Math.round(y), w: Math.round(child.width ?? 0), h: Math.round(child.height ?? 0) });
       for (const port of child.ports ?? []) {
+        const px = x + (port.x ?? 0);
+        const py = y + (port.y ?? 0);
         out.set(port.id, {
-          x: Math.round(x + (port.x ?? 0)),
-          y: Math.round(y + (port.y ?? 0)),
+          x: Math.round(px),
+          y: Math.round(py),
           w: Math.round(port.width ?? 0),
           h: Math.round(port.height ?? 0),
         });
+        // The name the router placed for this port, in the same space.
+        const label = (port as ElkPort & { labels?: { x?: number; y?: number; width?: number; height?: number }[] }).labels?.[0];
+        if (label) {
+          out.set(`${port.id}${LABEL_OF}`, {
+            x: Math.round(px + (label.x ?? 0)),
+            y: Math.round(py + (label.y ?? 0)),
+            w: Math.round(label.width ?? 0),
+            h: Math.round(label.height ?? 0),
+          });
+        }
       }
       walk(child, x, y);
     }
@@ -476,7 +532,7 @@ async function layout(ir: RenderIr): Promise<{ placed: Placed[]; routes: Map<num
     const at = abs.get(node.id);
     if (!at || seen.has(node.id)) continue;
     seen.add(node.id);
-    placed.push({ node, x: at.x, y: at.y, w: at.w, h: at.h });
+    placed.push({ node, x: at.x, y: at.y, w: at.w, h: at.h, label: abs.get(`${node.id}${LABEL_OF}`) });
   }
   const routes = new Map<number, Route>();
   const laidEdges: ElkExtendedEdge[] = [];
@@ -684,7 +740,10 @@ function emitNode(p: Placed, px: string): string {
     const east = sideOf(node) === "east";
     parts.push(`<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}"/>`);
     parts.push(
-      `<text class="pr-port-label" x="${east ? p.x + p.w + 2 : p.x - 2}" y="${p.y - 3}"${east ? "" : ' text-anchor="end"'}>${esc(node.label)}</text>`,
+      p.label
+        // Inside the block, in the room the layout reserved for it.
+        ? `<text class="pr-port-label" x="${east ? p.label.x + p.label.w : p.label.x}" y="${p.label.y + p.label.h - 1}"${east ? ' text-anchor="end"' : ""}>${esc(node.label)}</text>`
+        : `<text class="pr-port-label" x="${east ? p.x + p.w + 2 : p.x - 2}" y="${p.y - 3}"${east ? "" : ' text-anchor="end"'}>${esc(node.label)}</text>`,
     );
   } else if (node.kind === "container" && classifier === "swimlane") {
     parts.push(`<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}"/>`);
@@ -825,7 +884,7 @@ function danglingNotice(ir: RenderIr, placed: Placed[]): string | undefined {
   );
 }
 
-function emit(ir: RenderIr, placed: Placed[], routes: Map<number, Route>): string {
+function emit(ir: RenderIr, placed: Placed[], routes: Map<number, Route>, tokens?: Record<string, string>): string {
   // The frame is the content's bounding box plus PAD on every side.
   // The frame is the bounding box of the nodes and of the routed edges,
   // with the same pad on every side.
@@ -835,6 +894,9 @@ function emit(ir: RenderIr, placed: Placed[], routes: Map<number, Route>): strin
   // about it or the first letter falls off the canvas.
   for (const p of placed) {
     if (p.node.kind !== "port") continue;
+    // Only a name drawn outside needs room outside; one the layout placed
+    // inside the block is already inside the frame.
+    if (p.label) continue;
     const reach = p.node.label.length * 6 + 4;
     xs.push(sideOf(p.node) === "east" ? p.x + p.w + reach : p.x - reach);
     ys.push(p.y - 14);
@@ -882,7 +944,7 @@ function emit(ir: RenderIr, placed: Placed[], routes: Map<number, Route>): strin
   return [
     svgRoot(minX, minY, width, height),
     ir.title ? `<title>${esc(ir.title)}</title>` : "",
-    `<style>${STYLE}</style>`,
+    `<style>${STYLE}${tokenStyle(tokens)}</style>`,
     `<defs>${markers(px)}</defs>`,
     body,
     noticeBlock,

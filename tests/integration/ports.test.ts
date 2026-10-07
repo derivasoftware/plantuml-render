@@ -205,7 +205,7 @@ describe("a container as a block", () => {
   it("draws the ports on the container border and routes both sides to them", async () => {
     const svg = await renderSvg(await pumlToIr(SUBSYSTEM));
     const rect = (id: string) => {
-      const m = new RegExp(`data-id="${id}"[^>]*>(?:<title>[^<]*</title>)?<rect x="(\\d+)" y="(\\d+)" width="(\\d+)" height="(\\d+)"`).exec(svg)!;
+      const m = new RegExp(`data-id="${id.replace(/\./g, "\\.")}"[^>]*>(?:<title>[^<]*</title>)?<rect x="(\\d+)" y="(\\d+)" width="(\\d+)" height="(\\d+)"`).exec(svg)!;
       return { x: +m[1], y: +m[2], w: +m[3], h: +m[4] };
     };
     const box = rect("Controller");
@@ -265,5 +265,189 @@ package System <<block>> {
       .map((m) => `${m[1]},${m[2]}`);
     expect(starts).toHaveLength(3);
     expect(new Set(starts).size).toBeGreaterThan(1);
+  });
+});
+
+describe("which way a block diagram flows", () => {
+  const chain = (ports: string) => `@startuml chain
+package Sub <<block>> {
+${ports}
+  class First
+  class Second
+  class Third
+  First --> Second
+  Second --> Third
+}
+@enduml
+`;
+
+  const centres = async (src: string, ids: string[]) => {
+    const svg = await renderSvg(await pumlToIr(src));
+    return ids.map((id) => {
+      const m = new RegExp(`data-id="${id.replace(/\./g, "\\.")}"[^>]*>(?:<title>[^<]*</title>)?<rect x="(\\d+)" y="(\\d+)" width="(\\d+)" height="(\\d+)"`).exec(svg)!;
+      return { x: +m[1] + +m[3] / 2, y: +m[2] + +m[4] / 2 };
+    });
+  };
+
+  it("runs the chain left to right when the ports are on the sides", async () => {
+    const [a, b, c] = await centres(chain("  class i <<in>>\n  class o <<out>>"), [
+      "Sub.First",
+      "Sub.Second",
+      "Sub.Third",
+    ]);
+    expect(a.x).toBeLessThan(b.x);
+    expect(b.x).toBeLessThan(c.x);
+  });
+
+  it("keeps a diagram without ports flowing downwards", async () => {
+    const [a, b, c] = await centres(chain(""), ["Sub.First", "Sub.Second", "Sub.Third"]);
+    expect(a.y).toBeLessThan(b.y);
+    expect(b.y).toBeLessThan(c.y);
+  });
+
+  it("follows the border the ports actually use", async () => {
+    // North and south ports say the signal runs down the page, and only the
+    // IR can say so: the text syntax states direction, not side.
+    const ir = await pumlToIr(chain("  class i <<in>>\n  class o <<out>>"));
+    for (const node of ir.nodes) {
+      if (node.kind === "port") node.side = node.direction === "out" ? "south" : "north";
+    }
+    const svg = await renderSvg(ir);
+    const at = (id: string) => {
+      const m = new RegExp(`data-id="${id}"[^>]*>(?:<title>[^<]*</title>)?<rect x="(\\d+)" y="(\\d+)"`).exec(svg)!;
+      return { x: +m[1], y: +m[2] };
+    };
+    expect(at("Sub.First").y).toBeLessThan(at("Sub.Third").y);
+  });
+});
+
+describe("outlines", () => {
+  it("draws a box and a container in colours a large diagram keeps", async () => {
+    const svg = await renderSvg(await pumlToIr("@startuml\npackage P {\n  class A\n}\n@enduml\n"));
+    // The box takes the grey the edges use, the container the one the box
+    // had: both survive a diagram scaled down to fit a page.
+    expect(svg).toContain("--pr-stroke: #64748b");
+    expect(svg).toContain("--pr-container-stroke: #94a3b8");
+    // Dark mode goes lighter, for contrast against a dark fill.
+    expect(svg).toContain("--pr-stroke: #94a3b8; --pr-edge: #94a3b8; --pr-box-fill: #1e293b");
+    expect(svg).toContain("--pr-container-stroke: #64748b");
+  });
+});
+
+describe("a large block diagram stays legible", () => {
+  const chained = (n: number) => {
+    const out: string[] = ["@startuml big"];
+    for (let s = 1; s <= n; s++) {
+      out.push(`package Sub${s} <<block>> {`, `  class i${s} <<in>>`, `  class o${s} <<out>>`);
+      for (const k of "ABCDE") out.push(`  class B${s}${k}`);
+      out.push(`  i${s} --> B${s}A`);
+      for (let j = 0; j < 4; j++) out.push(`  B${s}${"ABCD"[j]} --> B${s}${"BCDE"[j]}`);
+      out.push(`  B${s}E --> o${s}`, "}");
+    }
+    for (let s = 1; s < n; s++) out.push(`Sub${s}::o${s} --> Sub${s + 1}::i${s + 1}`);
+    out.push("@enduml");
+    return out.join("\n");
+  };
+
+  const shape = async (src: string) => {
+    const svg = await renderSvg(await pumlToIr(src));
+    const [, , , w, h] = /viewBox="(-?[\d.]+) (-?[\d.]+) ([\d.]+) ([\d.]+)"/.exec(svg)!.map(Number);
+    return { w, h, ratio: w / h };
+  };
+
+  it("wraps a long chain instead of drawing one endless row", async () => {
+    // Six subsystems in a row are 26 times wider than tall; shown scaled to
+    // fit, the boxes are a few pixels high and their outlines dissolve.
+    const { ratio } = await shape(chained(6));
+    expect(ratio).toBeLessThan(5);
+  });
+
+  it("grows a long chain in both directions, not only sideways", async () => {
+    const two = await shape(chained(2));
+    const six = await shape(chained(6));
+    expect(six.h).toBeGreaterThan(two.h);
+    expect(six.w / two.w).toBeLessThan(3);
+  });
+
+  it("keeps the outlines at the width they were drawn, whatever the zoom", async () => {
+    const svg = await renderSvg(await pumlToIr("@startuml\npackage P {\n  class A\n}\n@enduml\n"));
+    expect(svg).toContain("vector-effect: non-scaling-stroke");
+  });
+});
+
+describe("where a port's name goes", () => {
+  const NESTED = `@startuml nest
+package Outer <<block>> {
+  class reference <<in>>
+  class command <<out>>
+  package Inner <<block>> {
+    class setpoint <<in>>
+    class drive <<out>>
+    class Sum
+    setpoint --> Sum
+    Sum --> drive
+  }
+  reference --> Inner::setpoint
+  Inner::drive --> command
+}
+@enduml
+`;
+
+  const labels = (svg: string) =>
+    [...svg.matchAll(/<text class="pr-port-label" x="([\d.]+)" y="([\d.]+)"([^>]*)>([^<]+)</g)].map((m) => ({
+      name: m[4],
+      x: +m[1],
+      y: +m[2],
+      end: m[3].includes("end"),
+      // The drawn extent, which is what can collide with a neighbour's.
+      from: m[3].includes("end") ? +m[1] - m[4].length * 6 : +m[1],
+      to: m[3].includes("end") ? +m[1] : +m[1] + m[4].length * 6,
+    }));
+
+  it("writes a container's names inside it, so neighbours cannot collide", async () => {
+    const svg = await renderSvg(await pumlToIr(NESTED));
+    const box = (id: string) => {
+      const m = new RegExp(`data-id="${id.replace(/\./g, "\\.")}"[^>]*>(?:<title>[^<]*</title>)?<rect x="(\\d+)" y="(\\d+)" width="(\\d+)" height="(\\d+)"`).exec(svg)!;
+      return { x: +m[1], y: +m[2], w: +m[3], h: +m[4] };
+    };
+    const outer = box("Outer");
+    const inner = box("Outer.Inner");
+    const by = new Map(labels(svg).map((l) => [l.name, l]));
+    // Each name sits within the block whose port it belongs to.
+    for (const [name, host] of [["reference", outer], ["command", outer], ["setpoint", inner], ["drive", inner]] as const) {
+      const l = by.get(name)!;
+      expect(l.from).toBeGreaterThanOrEqual(host.x - 1);
+      expect(l.to).toBeLessThanOrEqual(host.x + host.w + 1);
+    }
+  });
+
+  it("leaves no two names overlapping", async () => {
+    const svg = await renderSvg(await pumlToIr(NESTED));
+    const rows = new Map<number, { from: number; to: number; name: string }[]>();
+    for (const l of labels(svg)) {
+      const row = rows.get(l.y) ?? [];
+      for (const other of row) {
+        expect(l.from >= other.to || l.to <= other.from).toBe(true);
+      }
+      row.push(l);
+      rows.set(l.y, row);
+    }
+  });
+
+  it("keeps a leaf block's names outside, where its own text is not", async () => {
+    const svg = await renderSvg(await pumlToIr(`@startuml
+class Controller <<block>> {
+  + in target
+  + out drive
+  - gain : double
+}
+@enduml
+`));
+    const b = /data-id="Controller"[^>]*>(?:<title>[^<]*<\/title>)?<rect x="(\d+)" y="(\d+)" width="(\d+)" height="(\d+)"/.exec(svg)!;
+    const [bx, bw] = [+b[1], +b[3]];
+    const by = new Map(labels(svg).map((l) => [l.name, l]));
+    // A box is sized from its own text, so its border has no room to spare.
+    expect(by.get("target")!.to).toBeLessThanOrEqual(bx);
+    expect(by.get("drive")!.from).toBeGreaterThanOrEqual(bx + bw);
   });
 });
