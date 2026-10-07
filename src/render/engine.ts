@@ -922,6 +922,51 @@ function danglingNotice(ir: RenderIr, placed: Placed[]): string | undefined {
   );
 }
 
+/**
+ * The relations that stop at a block instead of at one of its ports.
+ *
+ * A block that declares a boundary says signals cross it there. A wire drawn
+ * to the block itself lands wherever the router has room, beside ports that
+ * are left looking unconnected — the drawing then says something the model
+ * does not. Which port is meant is not for the engine to guess, so it says
+ * which blocks are involved and what they offer.
+ */
+function unportedNotice(ir: RenderIr, placed: Placed[]): string | undefined {
+  const drawn = new Set(placed.map((p) => p.node.id));
+  const portsOf = new Map<string, { in: string[]; out: string[] }>();
+  for (const node of ir.nodes) {
+    if (node.kind !== "port" || !node.parent) continue;
+    const sides = portsOf.get(node.parent) ?? { in: [], out: [] };
+    sides[node.direction === "out" ? "out" : "in"].push(node.label);
+    portsOf.set(node.parent, sides);
+  }
+  const named = new Map<string, string[]>();
+  let count = 0;
+  for (const edge of ir.edges) {
+    let counted = false;
+    for (const [end, want] of [[edge.to, "in"], [edge.from, "out"]] as const) {
+      const sides = portsOf.get(end);
+      if (!sides || !drawn.has(end) || sides[want].length === 0) continue;
+      if (!counted) {
+        count += 1;
+        counted = true;
+      }
+      // A block can be reached from both sides; name every port that was
+      // available, not only the last one looked at.
+      const seen = named.get(end) ?? [];
+      named.set(end, [...seen, ...sides[want].filter((p) => !seen.includes(p))]);
+    }
+  }
+  if (count === 0) return undefined;
+  const blocks = [...named].map(([id, ports]) => `${id.split(".").pop()} (${ports.join(", ")})`);
+  const shown = blocks.slice(0, NAMED).join("; ");
+  const rest = blocks.length - NAMED;
+  return (
+    `${count} relation${count === 1 ? "" : "s"} reach a block instead of one of its ports: ` +
+    `${shown}${rest > 0 ? ` and ${rest} more` : ""}. Name the port, as in Block::port.`
+  );
+}
+
 function emit(ir: RenderIr, placed: Placed[], routes: Map<number, Route>, tokens?: Record<string, string>): string {
   // The frame is the content's bounding box plus PAD on every side.
   // The frame is the bounding box of the nodes and of the routed edges,
@@ -946,7 +991,11 @@ function emit(ir: RenderIr, placed: Placed[], routes: Map<number, Route>, tokens
   // silence is how a diagram ends up quietly missing a wire: the names that
   // resolved to nothing are reported the same way. When the document drew
   // nothing at all its producer has already said so, so this stays quiet.
-  const notice = [ir.notice, placed.length === 0 ? undefined : danglingNotice(ir, placed)]
+  const notice = [
+    ir.notice,
+    placed.length === 0 ? undefined : danglingNotice(ir, placed),
+    placed.length === 0 ? undefined : unportedNotice(ir, placed),
+  ]
     .filter(Boolean)
     .join("\n") || (placed.length === 0 ? "Nothing to draw." : undefined);
   let noticeBlock = "";

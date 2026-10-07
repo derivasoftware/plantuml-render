@@ -541,3 +541,64 @@ package Flow <<block>> {
     expect(svg).toContain("--pr-edge-width: 1.6;");
   });
 });
+
+describe("a wire that stops at a block", () => {
+  const to = (how: string) => `@startuml
+package Dense <<block>> {
+  class in1 <<in>>
+  class out1 <<out>>
+  package Worker <<block>> {
+    class a1 <<in>>
+    class a2 <<in>>
+    class r1 <<out>>
+  }
+  ${how}
+}
+@enduml
+`;
+  const notice = (svg: string) => /<g class="pr-notice">[\s\S]*?<text[^>]*>([^<]*)</.exec(svg)?.[1];
+
+  it("says so, and what the block offers", async () => {
+    const svg = await renderSvg(await pumlToIr(to("in1 --> Worker\n  Worker --> out1")));
+    expect(notice(svg)).toBe(
+      "2 relations reach a block instead of one of its ports: Worker (a1, a2, r1). Name the port, as in Block::port.",
+    );
+  });
+
+  it("says nothing once the ports are named", async () => {
+    const svg = await renderSvg(await pumlToIr(to("in1 --> Worker::a1\n  Worker::r1 --> out1")));
+    expect(notice(svg)).toBeUndefined();
+  });
+
+  it("leaves a block without ports alone", async () => {
+    const svg = await renderSvg(await pumlToIr(`@startuml
+package Dense <<block>> {
+  class in1 <<in>>
+  package Plain {
+    class Step
+  }
+  in1 --> Plain
+}
+@enduml
+`));
+    expect(notice(svg)).toBeUndefined();
+  });
+
+  it("only counts the direction the wire needs", async () => {
+    // Worker has no output, so arriving at it is the only thing to report.
+    const svg = await renderSvg(await pumlToIr(`@startuml
+package Dense <<block>> {
+  class in1 <<in>>
+  class out1 <<out>>
+  package Worker <<block>> {
+    class a1 <<in>>
+  }
+  in1 --> Worker
+  Worker --> out1
+}
+@enduml
+`));
+    expect(notice(svg)).toContain("1 relation reach");
+    expect(notice(svg)).toContain("Worker (a1)");
+  });
+});
