@@ -347,7 +347,16 @@ function toElk(ir: RenderIr): ElkGraph {
       labels: edge.label ? [{ text: edge.label, width: edge.label.length * LABEL_CHAR_W + 8, height: LABEL_H }] : undefined,
     } as ElkExtendedEdge;
   };
-  const root: ElkNode = { id: "root", layoutOptions: { ...LAYOUT_OPTIONS, ...(ir.edges.some((e) => e.kind === "flow") ? { "elk.layered.spacing.nodeNodeBetweenLayers": "36" } : {}) }, children: [], edges: [] };
+  // A diagram with boundary ports is a block diagram: its signals enter on
+  // the west border and leave on the east one, so the whole drawing reads
+  // left to right. Laid out downwards instead, every wire has to turn two
+  // corners to reach a port, and a chain of three blocks looks like a
+  // detour. Ports on the north or south border say the opposite, so the
+  // direction follows whichever border the ports actually use.
+  const sides = ir.nodes.filter((n) => n.kind === "port").map((n) => sideOf(n));
+  const acrossSides = sides.filter((s) => s === "west" || s === "east").length;
+  const blockFlow = acrossSides > sides.length - acrossSides;
+  const root: ElkNode = { id: "root", layoutOptions: { ...LAYOUT_OPTIONS, ...(blockFlow ? { "elk.direction": "RIGHT" } : {}), ...(ir.edges.some((e) => e.kind === "flow") ? { "elk.layered.spacing.nodeNodeBetweenLayers": "36" } : {}) }, children: [], edges: [] };
 
   const place = (level: string, host: ElkNode) => {
     const children = kids.get(level) ?? [];

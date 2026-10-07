@@ -267,3 +267,69 @@ package System <<block>> {
     expect(new Set(starts).size).toBeGreaterThan(1);
   });
 });
+
+describe("which way a block diagram flows", () => {
+  const chain = (ports: string) => `@startuml chain
+package Sub <<block>> {
+${ports}
+  class First
+  class Second
+  class Third
+  First --> Second
+  Second --> Third
+}
+@enduml
+`;
+
+  const centres = async (src: string, ids: string[]) => {
+    const svg = await renderSvg(await pumlToIr(src));
+    return ids.map((id) => {
+      const m = new RegExp(`data-id="${id}"[^>]*>(?:<title>[^<]*</title>)?<rect x="(\\d+)" y="(\\d+)" width="(\\d+)" height="(\\d+)"`).exec(svg)!;
+      return { x: +m[1] + +m[3] / 2, y: +m[2] + +m[4] / 2 };
+    });
+  };
+
+  it("runs the chain left to right when the ports are on the sides", async () => {
+    const [a, b, c] = await centres(chain("  class i <<in>>\n  class o <<out>>"), [
+      "Sub.First",
+      "Sub.Second",
+      "Sub.Third",
+    ]);
+    expect(a.x).toBeLessThan(b.x);
+    expect(b.x).toBeLessThan(c.x);
+  });
+
+  it("keeps a diagram without ports flowing downwards", async () => {
+    const [a, b, c] = await centres(chain(""), ["Sub.First", "Sub.Second", "Sub.Third"]);
+    expect(a.y).toBeLessThan(b.y);
+    expect(b.y).toBeLessThan(c.y);
+  });
+
+  it("follows the border the ports actually use", async () => {
+    // North and south ports say the signal runs down the page, and only the
+    // IR can say so: the text syntax states direction, not side.
+    const ir = await pumlToIr(chain("  class i <<in>>\n  class o <<out>>"));
+    for (const node of ir.nodes) {
+      if (node.kind === "port") node.side = node.direction === "out" ? "south" : "north";
+    }
+    const svg = await renderSvg(ir);
+    const at = (id: string) => {
+      const m = new RegExp(`data-id="${id}"[^>]*>(?:<title>[^<]*</title>)?<rect x="(\\d+)" y="(\\d+)"`).exec(svg)!;
+      return { x: +m[1], y: +m[2] };
+    };
+    expect(at("Sub.First").y).toBeLessThan(at("Sub.Third").y);
+  });
+});
+
+describe("outlines", () => {
+  it("draws a box and a container in colours a large diagram keeps", async () => {
+    const svg = await renderSvg(await pumlToIr("@startuml\npackage P {\n  class A\n}\n@enduml\n"));
+    // The box takes the grey the edges use, the container the one the box
+    // had: both survive a diagram scaled down to fit a page.
+    expect(svg).toContain("--pr-stroke: #64748b");
+    expect(svg).toContain("--pr-container-stroke: #94a3b8");
+    // Dark mode goes lighter, for contrast against a dark fill.
+    expect(svg).toContain("--pr-stroke: #94a3b8; --pr-edge: #94a3b8; --pr-box-fill: #1e293b");
+    expect(svg).toContain("--pr-container-stroke: #64748b");
+  });
+});

@@ -20,6 +20,11 @@ derived — then flow left-to-right with `GAP_X`/`GAP_Y`. The viewBox
 covers the placed extent, including negative coordinates introduced by
 position overrides.
 
+The layout direction follows the ports: a document whose ports mostly sit on
+the west and east borders is laid out left to right, because that is where its
+signals enter and leave. Without that, every wire turns two corners to reach a
+border the content does not run towards.
+
 A `port` node leaves the node graph: it becomes an ELK port on its owner,
 which switches that owner to `FIXED_SIDE` constraints so a signal stays on
 the border it was declared for. Only owners that declared ports are
@@ -44,7 +49,8 @@ properties on stable classes, with neutral fallbacks.
 
 | Variable | Styles |
 |---|---|
-| `--pr-stroke` | box/container/note borders, edge lines |
+| `--pr-stroke` | box and note borders, separators |
+| `--pr-container-stroke` | container borders |
 | `--pr-text` | all text |
 | `--pr-box-fill`, `--pr-note-fill`, `--pr-container-fill` | fills |
 | `--pr-font` | font family |

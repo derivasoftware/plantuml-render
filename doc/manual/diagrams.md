@@ -117,6 +117,16 @@ Every wire written `Source::y` starts at the same square, so the drawing says
 one output that branches. This works at any depth — a `<<block>>` class
 nested inside a `<<block>>` package is still a block with a boundary.
 
+### Which way the drawing flows
+
+A diagram that declares boundary ports is a block diagram, and it is laid out
+in the direction its own ports point: inputs on the west border and outputs on
+the east one mean the drawing runs left to right, so a chain of blocks reads
+as a chain instead of falling down the page while its wires turn corners to
+reach the border. Ports on the north and south borders — which only a
+render-IR document can ask for — keep the drawing running downwards. A diagram
+with no ports is unaffected.
+
 ### Two limits worth knowing
 
 **`north` and `south` sides are IR-only**: the text syntax says direction, and
