@@ -897,7 +897,17 @@ function emitEdge(edge: IrEdge, byId: Map<string, Placed>, px: string, route?: R
     }
     label = `<text class="pr-edge-label" x="${at.x}" y="${at.y}">${esc(edge.label)}</text>`;
   }
-  const path = `<path class="pr-edge pr-edge-${edge.kind}" data-from="${esc(edge.from)}" data-to="${esc(edge.to)}" d="${d}"${markerAttr}${refAttrs(edge.refs)}>${tooltip(edge.title)}</path>`;
+  // A relation is a hair-thin line and a hair-thin line is a hair-thin
+  // target: pointing at one with a mouse is luck. An invisible companion
+  // along the same path takes the pointer, so the line is as easy to hit as
+  // a box. It carries the identity and the tooltip; the drawn line carries
+  // the ink and keeps out of the way.
+  const path =
+    `<g class="pr-edge-group" data-from="${esc(edge.from)}" data-to="${esc(edge.to)}"${refAttrs(edge.refs)}>` +
+    tooltip(edge.title) +
+    `<path class="pr-edge-hit" d="${d}"/>` +
+    `<path class="pr-edge pr-edge-${edge.kind}" d="${d}"${markerAttr}/>` +
+    `</g>`;
   return { path: linked(edge.href, path), label };
 }
 

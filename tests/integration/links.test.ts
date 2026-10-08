@@ -33,7 +33,11 @@ describe("links", () => {
   it("wraps linked elements in <a href>, adds the tooltip and the data-ref attributes", async () => {
     const svg = await renderSvg(ir());
     expect(svg).toMatch(/<a href="#cls-ns-Order" class="pr-link"><g id="[^"]+" data-id="ns.Order"[^>]*data-ref-reqs="REQ-1 REQ-2" data-ref-code="src\/ns\/order.py"><title>The order<\/title>/);
-    expect(svg).toMatch(/<a href="#rel-1" class="pr-link"><path class="pr-edge pr-edge-composition"[^>]*data-ref-kind="composition"><title>owns<\/title><\/path><\/a>/);
+    // The identity, the tooltip and the references sit on the edge's group;
+    // inside it are the invisible target and the drawn line.
+    expect(svg).toMatch(
+      /<a href="#rel-1" class="pr-link"><g class="pr-edge-group" data-from="ns\.Order" data-to="ns\.Line" data-ref-kind="composition"><title>owns<\/title><path class="pr-edge-hit"[^>]*\/><path class="pr-edge pr-edge-composition"[^>]*\/><\/g><\/a>/,
+    );
     expect(svg).not.toMatch(/data-id="ns.Line"[^>]*data-ref/);
     expect(await renderSvg(ir())).toBe(await renderSvg(ir()));
   });

@@ -72,6 +72,46 @@ first declaration wins for duplicate entity ids) — is what makes drag
 stable across aggregate files composed from many `!includesub`
 fragments.
 
+## Highlighting what is connected
+
+The SVG carries the graph: every box has its `data-id`, every relation is a
+`g.pr-edge-group` with `data-from` and `data-to`. A host does not have to reload
+the model to know what touches what — it walks those attributes and switches
+three classes the engine already styles:
+
+| Class | Where | Default |
+|---|---|---|
+| `pr-focusing` | on the root `svg` | dims everything to `--pr-dimmed` |
+| `pr-focus` | on what stays lit | full opacity |
+| `pr-focus-root` | on the one pointed at | outlined in `--pr-focus` |
+
+```js
+svg.addEventListener("mouseover", (e) => {
+  const el = e.target.closest("[data-id], [data-from]");
+  if (!el) return;
+  const id = el.dataset.id;
+  const near = new Set(id ? [id] : [el.dataset.from, el.dataset.to]);
+  for (const g of svg.querySelectorAll("[data-from]")) {
+    const { from, to } = g.dataset;
+    if (near.has(from)) near.add(to);
+    if (near.has(to)) near.add(from);
+  }
+  svg.classList.add("pr-focusing");
+  for (const n of svg.querySelectorAll("[data-id], [data-from]")) {
+    const d = n.dataset;
+    n.classList.toggle("pr-focus", near.has(d.id) || (near.has(d.from) && near.has(d.to)));
+    n.classList.toggle("pr-focus-root", n === el);
+  }
+});
+```
+
+A relation is drawn a pixel wide and a pixel is a poor target, so each one
+carries an invisible band along the same path — `path.pr-edge-hit`,
+`--pr-edge-hit` wide, 12 by default — which takes the pointer. The drawn line
+takes none. On a diagram of a thousand states this is the difference between a
+wall and something that can be read: point at a state and keep its
+neighbourhood.
+
 ## A minimal interactive consumer
 
 ```ts

@@ -74,3 +74,40 @@ describe("namespace semantics", () => {
     expect(byId.get("a.b.c.X")?.parent).toBe("a.b.c");
   });
 });
+
+describe("pointing at a diagram", () => {
+  const IR_HOVER = {
+    ir: 1 as const,
+    nodes: [
+      { id: "A", kind: "action" as const, label: "Idle" },
+      { id: "B", kind: "action" as const, label: "Run" },
+    ],
+    edges: [{ from: "A", to: "B", kind: "flow" as const, label: "start", title: "ev1 [g1]" }],
+  };
+
+  it("gives a relation an invisible band to be pointed at", async () => {
+    const svg = await renderSvg(IR_HOVER);
+    const group = /<g class="pr-edge-group" data-from="A" data-to="B"[^>]*>(.*?)<\/g>/s.exec(svg)!;
+    // Same geometry twice: one to take the pointer, one to take the ink.
+    const ds = [...group[1].matchAll(/<path class="(pr-edge-hit|pr-edge [^"]*)" d="([^"]+)"/g)];
+    expect(ds.map((d) => d[1].split(" ")[0])).toEqual(["pr-edge-hit", "pr-edge"]);
+    expect(ds[0][2]).toBe(ds[1][2]);
+    expect(svg).toContain("pointer-events: stroke");
+    expect(svg).toContain("stroke-width: var(--pr-edge-hit, 12)");
+  });
+
+  it("names each relation once, on the group that holds both paths", async () => {
+    const svg = await renderSvg(IR_HOVER);
+    expect([...svg.matchAll(/data-from="A"/g)]).toHaveLength(1);
+    expect(/<g class="pr-edge-group"[^>]*><title>ev1 \[g1\]<\/title>/.test(svg)).toBe(true);
+  });
+
+  it("styles the three classes a host switches on", async () => {
+    const svg = await renderSvg(IR_HOVER);
+    for (const cls of ["pr-focusing", "pr-focus", "pr-focus-root"]) {
+      expect(svg).toContain(cls);
+    }
+    expect(svg).toContain("--pr-focus:");
+    expect(svg).toContain("--pr-dimmed:");
+  });
+});

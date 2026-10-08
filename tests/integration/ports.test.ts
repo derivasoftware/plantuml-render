@@ -116,7 +116,7 @@ describe("drawing a block with ports", () => {
     const [px, py, pw, ph] = ref.slice(1, 5).map(Number);
     const block = /<g id="[^"]*Controller" data-id="Controller"[^>]*>.*?<rect x="\d+" y="(\d+)" width="\d+" height="(\d+)"/s.exec(svg)!;
     const [by, bh] = block.slice(1, 3).map(Number);
-    const wire = /<path class="pr-edge[^"]*" data-from="Source" data-to="Controller\.ref" d="([^"]+)"/.exec(svg)!;
+    const wire = /data-from="Source" data-to="Controller\.ref"[^>]*>(?:<title>[^<]*<\/title>)?<path class="pr-edge-hit" d="([^"]+)"/.exec(svg)!;
     const points = wire[1].split(/[ML]\s*/).filter(Boolean).map((p) => p.split(",").map(Number));
     const [ex, ey] = points[points.length - 1];
     expect(Math.abs(ex - px)).toBeLessThanOrEqual(pw + 8);
@@ -215,7 +215,7 @@ describe("a container as a block", () => {
     expect(drive.x).toBeGreaterThanOrEqual(box.x + box.w - 1);
 
     const end = (from: string, to: string) => {
-      const m = new RegExp(`data-from="${from}" data-to="${to}" d="([^"]+)"`).exec(svg)!;
+      const m = new RegExp(`data-from="${from}" data-to="${to}"[^>]*>(?:<title>[^<]*</title>)?<path class="pr-edge-hit" d="([^"]+)"`).exec(svg)!;
       const pts = m[1].split(/[ML]\s*/).filter(Boolean).map((p) => p.split(",").map(Number));
       return { first: pts[0], last: pts[pts.length - 1] };
     };
@@ -251,7 +251,7 @@ package System <<block>> {
 
   it("starts every wire of a fan-out at the one port they share", async () => {
     const svg = await renderSvg(await pumlToIr(FANOUT));
-    const starts = [...svg.matchAll(/data-from="System\.Source\.y" data-to="[^"]+" d="M([\d.]+),([\d.]+)/g)]
+    const starts = [...svg.matchAll(/data-from="System\.Source\.y" data-to="[^"]+"[^>]*><path class="pr-edge-hit" d="M([\d.]+),([\d.]+)/g)]
       .map((m) => `${m[1]},${m[2]}`);
     expect(starts).toHaveLength(3);
     // One output, three consumers: the drawing must not read as three outputs.
@@ -261,7 +261,7 @@ package System <<block>> {
   it("without the port, each wire leaves the box at its own place", async () => {
     const plain = FANOUT.replace(/class Source <<block>> \{[^}]*\}/s, "class Source").replace(/Source::[uy]/g, "Source");
     const svg = await renderSvg(await pumlToIr(plain));
-    const starts = [...svg.matchAll(/data-from="System\.Source" data-to="[^"]+" d="M([\d.]+),([\d.]+)/g)]
+    const starts = [...svg.matchAll(/data-from="System\.Source" data-to="[^"]+"[^>]*><path class="pr-edge-hit" d="M([\d.]+),([\d.]+)/g)]
       .map((m) => `${m[1]},${m[2]}`);
     expect(starts).toHaveLength(3);
     expect(new Set(starts).size).toBeGreaterThan(1);

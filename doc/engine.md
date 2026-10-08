@@ -75,6 +75,8 @@ properties on stable classes, with neutral fallbacks.
 | `--pr-stroke-width`, `--pr-container-stroke-width` | how hard those borders read |
 | `--pr-edge-width` | how thick a relation's line is |
 | `--pr-arrow-size` | arrowhead size, as a multiple of its natural size |
+| `--pr-edge-hit` | how wide a relation's invisible pointer target is |
+| `--pr-focus`, `--pr-dimmed` | the highlight colour, and how far the rest fades |
 | `--pr-text` | all text |
 | `--pr-box-fill`, `--pr-note-fill`, `--pr-container-fill` | fills |
 | `--pr-font` | font family |
@@ -99,6 +101,13 @@ Per-classifier (`pr-classifier-class`, `-interface`, `-enum`, …) and
 per-edge-kind (`pr-edge-inheritance`, …) classes allow finer theming.
 The vscode extension's editor-theme mapping (its `client/preview.ts`)
 is the reference consumer.
+
+An edge is emitted as one `g.pr-edge-group` carrying the identity, the tooltip
+and the references, around two paths with the same geometry: `pr-edge-hit`,
+invisible and wide, which takes the pointer, and `pr-edge`, which takes the ink
+and takes no events. One element per relation, so a host that collects
+`[data-from]` gets each one once. See `plantuml-render docs navigation` for the
+highlight classes the group enables.
 
 ## Sequence layout
 
