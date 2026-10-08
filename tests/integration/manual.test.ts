@@ -62,3 +62,36 @@ describe("command line", () => {
     expect(existsSync(new URL("../../grammar/tree-sitter-plantuml.wasm", import.meta.url))).toBe(true);
   });
 });
+
+describe("what the manual promises", () => {
+  it("only sends the reader to topics that exist", async () => {
+    const { TOPICS } = await import("../../src/render/cli.js");
+    const dir = new URL("../../doc/manual/", import.meta.url);
+    const missing: string[] = [];
+    for (const topic of TOPICS) {
+      const text = readFileSync(new URL(`${topic}.md`, dir), "utf8");
+      for (const m of text.matchAll(/plantuml-render docs ([\w-]+)/g)) {
+        if (!(TOPICS as readonly string[]).includes(m[1])) missing.push(`${topic}.md -> ${m[1]}`);
+      }
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it("describes the markup the engine actually emits", async () => {
+    const { renderSvg } = await import("../../src/render/engine.js");
+    const svg = await renderSvg({
+      ir: 1 as const,
+      nodes: [
+        { id: "A", kind: "box" as const, label: "A" },
+        { id: "B", kind: "box" as const, label: "B" },
+      ],
+      edges: [{ from: "A", to: "B", kind: "association" as const }],
+    });
+    const navigation = readFileSync(new URL("../../doc/manual/navigation.md", import.meta.url), "utf8");
+    // Every hook the page names has to be in the drawing it describes.
+    for (const hook of ["data-id", "pr-edge-group", "pr-edge-hit", "pr-focusing", "pr-focus-root"]) {
+      expect(navigation).toContain(hook);
+      expect(svg).toContain(hook);
+    }
+  });
+});

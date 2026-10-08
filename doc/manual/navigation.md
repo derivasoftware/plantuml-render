@@ -1,16 +1,53 @@
 # Navigation: clickable diagrams
 
-Every entity in the SVG is a `<g data-id="qualified.Name">`; every edge a
-`<path data-from=".." data-to="..">`. That is enough for a host page to add:
+Every entity in the SVG is a `<g data-id="qualified.Name">`; every relation a
+`<g class="pr-edge-group" data-from=".." data-to="..">` holding two paths —
+`pr-edge-hit`, an invisible band `--pr-edge-hit` wide (twelve pixels) that
+takes the pointer, because a line a pixel wide is a poor target, and
+`pr-edge`, the drawn line, which takes none. Explanations
+ride as `<title>`, on either, and may run to several lines.
 
-- hover: highlight the entity and its edges, show a card with its facts;
-- click: jump to the entity's own diagram or to its detail anchor.
+That is the graph and the words, inside the drawing, which is enough for a host
+to add behaviour without reloading the model.
 
-A reference implementation (2 KB of plain JavaScript, no framework) ships
-as `plantuml-render docs nav-js`; paste it into the page that embeds the
-diagrams. It resolves the same entity across diagrams by `data-id` and,
-when the page follows the folio anchor rule (`cls-<id with non-alphanumerics
-dashed>`, `fig-<diagram id>`), it navigates to those anchors.
+## Lighting what the pointer is on
+
+Two functions ship from `plantuml-render/browser`, so no surface writes them
+twice:
+
+```ts
+import { attachFocus, neighbourhood } from "plantuml-render/browser";
+
+const release = attachFocus(svg, {
+  onFocus: (focused) => {
+    if (!focused) return hide();
+    // a node: what reaches it, what leaves it, who is at the other end
+    // a relation: what it says, and its two ends
+    show(focused.node ?? focused.relation);
+  },
+});
+```
+
+`attachFocus` dims the drawing and lights what the pointer is on together with
+everything it touches — one hop, not the neighbour of a neighbour — through
+three classes the engine already styles: `pr-focusing` on the root,
+`pr-focus` on what stays lit, `pr-focus-root` on the one pointed at. Redefine
+`--pr-focus` and `--pr-dimmed` for another look, or the classes themselves.
+It returns the function that puts everything back.
+
+`neighbourhood(svg, id)` answers the same question without a pointer, for a
+search box or a keyboard walk.
+
+What to show is the host's decision — a tooltip, a side card, a status line —
+and that part is deliberately not in the package. On a diagram of a thousand
+states a focus update takes about 3.5 ms, so there is nothing to optimise.
+
+## Jumping to the entity
+
+`data-id` is the same across diagrams, so a click can resolve the entity
+elsewhere; when the page follows the folio anchor rule (`cls-<id with
+non-alphanumerics dashed>`, `fig-<diagram id>`), it navigates to those
+anchors.
 
 ## Rows and branches of a sequence
 
@@ -52,3 +89,4 @@ A `--links` map entry for that entity overrides the source link; the
 ## Coming next
 
 - design-render filling `href` and `refs` from the argos model.
+- Keeping a focus pinned on click, which today is the host's to add.
