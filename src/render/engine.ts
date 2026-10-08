@@ -33,7 +33,8 @@ const LABEL_H = 14;
 /** A routed edge: the polyline the router chose and where it put the label. */
 interface Route {
   points: { x: number; y: number }[];
-  label?: { x: number; y: number };
+  /** Where the label is drawn, and how wide it is, so the frame can hold it. */
+  label?: { x: number; y: number; w: number };
 }
 
 interface Placed {
@@ -576,7 +577,10 @@ async function layout(ir: RenderIr): Promise<{ placed: Placed[]; routes: Map<num
     const label = edge.labels?.[0];
     routes.set(index, {
       points,
-      label: label && label.x !== undefined && label.y !== undefined ? shift({ x: label.x, y: label.y + LABEL_H - 3 }) : undefined,
+      label:
+        label && label.x !== undefined && label.y !== undefined
+          ? { ...shift({ x: label.x, y: label.y + LABEL_H - 3 }), w: label.width ?? 0 }
+          : undefined,
     });
   }
   return { placed, routes };
@@ -689,14 +693,19 @@ async function layoutLanes(ir: RenderIr): Promise<{ placed: Placed[]; routes: Ma
       const mid = Math.round((y0 + y1) / 2);
       const points = sx === tx ? [{ x: sx, y: y0 }, { x: tx, y: y1 }] : [{ x: sx, y: y0 }, { x: sx, y: mid }, { x: tx, y: mid }, { x: tx, y: y1 }];
       const left = tx < sx;
-      const label = edge.label ? { x: left ? sx - 6 - edge.label.length * LABEL_CHAR_W : sx + 6, y: y0 + 13 } : undefined;
+      const label = edge.label
+        ? { x: left ? sx - 6 - edge.label.length * LABEL_CHAR_W : sx + 6, y: y0 + 13, w: edge.label.length * LABEL_CHAR_W }
+        : undefined;
       routes.set(index, { points, label });
     } else {
       const channel = Math.max(s.x + s.w, t.x + t.w) + 18 + 10 * (channels++ % 4);
       const sy = Math.round(s.y + s.h / 2);
       const ty = Math.round(t.y + t.h / 2);
       const points = [{ x: s.x + s.w, y: sy }, { x: channel, y: sy }, { x: channel, y: ty }, { x: t.x + t.w, y: ty }];
-      routes.set(index, { points, label: edge.label ? { x: channel + 4, y: Math.round((sy + ty) / 2) } : undefined });
+      routes.set(index, {
+        points,
+        label: edge.label ? { x: channel + 4, y: Math.round((sy + ty) / 2), w: edge.label.length * LABEL_CHAR_W } : undefined,
+      });
     }
   });
   return { placed, routes };
@@ -874,7 +883,7 @@ function emitEdge(edge: IrEdge, byId: Map<string, Placed>, px: string, route?: R
   const markerAttr = marker ? ` marker-end="url(#${px}${marker})"` : "";
   let label = "";
   if (edge.label) {
-    let at = route?.label;
+    let at: { x: number; y: number } | undefined = route?.label;
     if (!at) {
       // no routed label: beside the midpoint of the longest segment
       let best = 0;
@@ -984,7 +993,16 @@ function emit(ir: RenderIr, placed: Placed[], routes: Map<number, Route>, tokens
     xs.push(sideOf(p.node) === "east" ? p.x + p.w + reach : p.x - reach);
     ys.push(p.y - 14);
   }
-  for (const route of routes.values()) for (const p of route.points) { xs.push(p.x); ys.push(p.y); }
+  for (const route of routes.values()) {
+    for (const p of route.points) { xs.push(p.x); ys.push(p.y); }
+    // A relation's label is placed beside its route and can sit outside the
+    // span of the route itself, so the frame counts it too — a label the
+    // canvas does not reach is drawn and then clipped away.
+    if (route.label) {
+      xs.push(route.label.x, route.label.x + route.label.w);
+      ys.push(route.label.y - LABEL_H, route.label.y);
+    }
+  }
   // A producer's notice sits below the content, or alone when there is
   // nothing else; an IR with nothing to draw says so (REQ-00021-1). An edge
   // whose end names nothing cannot be drawn either, and dropping it in

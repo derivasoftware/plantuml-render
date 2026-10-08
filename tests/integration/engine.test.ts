@@ -144,3 +144,32 @@ describe("relations that cannot be drawn", () => {
     expect(svg).not.toContain("not drawn: A");
   });
 });
+
+describe("the frame holds what is drawn", () => {
+  it("reaches a relation's label, even when it sits outside the route", async () => {
+    // A label placed to the left of its route used to fall outside the
+    // viewBox and be clipped away, silently.
+    const svg = await renderSvg({
+      ir: 1 as const,
+      nodes: [
+        { id: "ini", kind: "start" as const, label: "" },
+        { id: "A", kind: "action" as const, label: "Idle" },
+        { id: "B", kind: "action" as const, label: "Running" },
+      ],
+      edges: [
+        { from: "ini", to: "A", kind: "flow" as const },
+        { from: "A", to: "B", kind: "flow" as const, label: "a long transition label" },
+        { from: "B", to: "A", kind: "flow" as const, label: "back" },
+      ],
+    });
+    const [, vx, vy, vw, vh] = /viewBox="(-?[\d.]+) (-?[\d.]+) ([\d.]+) ([\d.]+)"/.exec(svg)!.map(Number);
+    const labels = [...svg.matchAll(/<text class="pr-edge-label" x="([\d.-]+)" y="([\d.-]+)">([^<]+)</g)];
+    expect(labels.length).toBe(2);
+    for (const [, x, y, text] of labels) {
+      expect(+x).toBeGreaterThanOrEqual(vx);
+      expect(+x + text.length * 7).toBeLessThanOrEqual(vx + vw);
+      expect(+y).toBeGreaterThanOrEqual(vy);
+      expect(+y).toBeLessThanOrEqual(vy + vh);
+    }
+  });
+});
