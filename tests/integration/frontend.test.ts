@@ -195,3 +195,40 @@ o.Blk::y --> Sink
     expect(ir.nodes.some((n) => n.id === "o.Blk.y" && n.kind === "port")).toBe(true);
   });
 });
+
+describe("explanations", () => {
+  const ir = (body: string) => pumlToIr(`@startuml\nclass A\nclass B\n${body}\n@enduml\n`);
+
+  it("takes an explanation on an entity without asking for a link", async () => {
+    const node = (await ir("class Order [[{El agregado de pedido}]]")).nodes.find((n) => n.id === "Order")!;
+    expect(node.title).toBe("El agregado de pedido");
+    expect(node.href).toBeUndefined();
+  });
+
+  it("still reads a link, with or without the explanation", async () => {
+    const both = (await ir("class Order [[http://d/o{El agregado}]]")).nodes.find((n) => n.id === "Order")!;
+    expect(both).toMatchObject({ href: "http://d/o", title: "El agregado" });
+    const bare = (await ir("class Order [[http://d/o]]")).nodes.find((n) => n.id === "Order")!;
+    expect(bare.href).toBe("http://d/o");
+    expect(bare.title).toBeUndefined();
+    const empty = (await ir("class Order [[]]")).nodes.find((n) => n.id === "Order")!;
+    expect(empty.href).toBeUndefined();
+  });
+
+  it("takes the link off a relation's label instead of printing it", async () => {
+    const [edge] = (await ir("A --> B : usa [[http://x{por qué usa}]]")).edges;
+    expect(edge).toMatchObject({ label: "usa", href: "http://x", title: "por qué usa" });
+  });
+
+  it("leaves a relation that carries only an explanation without a label", async () => {
+    const [edge] = (await ir("A --> B : [[{por qué}]]")).edges;
+    expect(edge.title).toBe("por qué");
+    expect(edge.label).toBeUndefined();
+  });
+
+  it("does not touch a label that has no link in it", async () => {
+    const [edge] = (await ir("A --> B : usa [1..*]")).edges;
+    expect(edge.label).toBe("usa [1..*]");
+    expect(edge.title).toBeUndefined();
+  });
+});

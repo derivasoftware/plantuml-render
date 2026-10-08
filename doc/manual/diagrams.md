@@ -169,6 +169,25 @@ ports left looking unconnected, and the drawing then says something the model
 does not. Which port was meant is not something the renderer can know, so it
 says which blocks were reached that way and what they offer.
 
+## Explaining an entity or a relation
+
+Anything in the drawing can carry an explanation, shown when the pointer rests
+on it and readable by whatever the SVG is embedded in:
+
+```plantuml
+class Order [[{The order aggregate: one customer, many lines}]]
+Order --> Line : holds [[{a line cannot outlive its order}]]
+```
+
+The square brackets are PlantUML's link syntax, and the braces are the part
+that explains. The link itself is optional — `[[{…}]]` is an explanation and
+nothing else, which is the common case in a generated diagram. On a relation
+the whole thing rides at the end of the label, and it is taken out of the
+label rather than printed in it.
+
+An explanation may run to several lines. That is what makes a collapsed
+relation lossless: twenty triggers on one line, twenty explanations behind it.
+
 ## Relations that say different things along the same line
 
 Twenty transitions between the same two states, each with its own trigger, are
