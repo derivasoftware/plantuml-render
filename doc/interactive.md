@@ -85,6 +85,31 @@ three classes the engine already styles:
 | `pr-focus` | on what stays lit | full opacity |
 | `pr-focus-root` | on the one pointed at | outlined in `--pr-focus` |
 
+Both come with the package, so no surface writes them twice:
+
+```ts
+import { attachFocus, neighbourhood } from "plantuml-render/browser";
+
+const release = attachFocus(svg, {
+  onFocus: (focused) => {
+    if (!focused) return hide();
+    // a node: what reaches it, what leaves it, who is at the other end
+    if (focused.node) show(focused.node);
+    // a relation: what it says, and its two ends
+    else show(focused.relation);
+  },
+});
+// release() puts the drawing back and stops listening.
+```
+
+`neighbourhood(svg, id)` answers the same question without the pointer, for a
+search box or a keyboard walk. Neither touches the model: both read the
+drawing, which carries the graph and the words.
+
+The panel itself is not in the package. What a host shows — a tooltip, a side
+card, a status line — is its own decision; what is shared is the walk and the
+classes. For a host that would rather write it by hand, that walk is this:
+
 ```js
 svg.addEventListener("mouseover", (e) => {
   const el = e.target.closest("[data-id], [data-from]");

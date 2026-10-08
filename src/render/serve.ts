@@ -73,6 +73,19 @@ export function startServer(file: string, port = 0): Promise<Serving> {
       if (req.method === "GET" && req.url === "/") {
         res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
         res.end(PAGE);
+      } else if (req.method === "GET" && req.url === "/focus.js") {
+        // The shared interaction, served as the module it is: the preview
+        // uses the same code an embedder would, not a copy of it. The path
+        // is the built module, which is the same file whether this runs
+        // from `out/` or from `src/` under the test runner.
+        try {
+          const built = await readFile(new URL("../../out/render/focus.js", import.meta.url), "utf8");
+          res.writeHead(200, { "content-type": "text/javascript; charset=utf-8" });
+          res.end(built);
+        } catch {
+          res.writeHead(500, { "content-type": "text/plain; charset=utf-8" });
+          res.end("focus.js is not built; run npm run compile");
+        }
       } else if (req.url === "/events") {
         res.writeHead(200, {
           "content-type": "text/event-stream",

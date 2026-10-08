@@ -6,6 +6,14 @@
 
 export { renderSvg, type RenderOptions } from "./engine.js";
 export {
+  attachFocus,
+  neighbourhood,
+  type Focused,
+  type FocusOptions,
+  type Link,
+  type Neighbourhood,
+} from "./focus.js";
+export {
   filterMembers,
   flattenContainers,
   hideNotes,

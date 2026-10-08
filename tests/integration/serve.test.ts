@@ -78,3 +78,17 @@ describe("serve mode", () => {
     expect(res.status).toBe(404);
   });
 });
+
+describe("the preview uses the shared interaction", () => {
+  it("serves the module and imports it, rather than carrying a copy", async () => {
+    const page = await (await fetch(url("/"))).text();
+    expect(page).toContain('import { attachFocus } from "/focus.js"');
+
+    const module = await fetch(url("/focus.js"));
+    expect(module.status).toBe(200);
+    expect(module.headers.get("content-type")).toContain("javascript");
+    const text = await module.text();
+    expect(text).toContain("export function attachFocus");
+    expect(text).toContain("export function neighbourhood");
+  });
+});
