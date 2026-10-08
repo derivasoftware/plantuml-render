@@ -49,6 +49,17 @@ export const PAGE = `<!DOCTYPE html>
   <span id="status"></span>
 </div>
 <div id="stage"><div id="root">rendering…</div></div>
+<script type="module">
+  import { attachFocus } from "/focus.js";
+  // Point at a node and keep its neighbourhood lit; re-attached after every
+  // render, because the drawing it was watching is gone.
+  let release = null;
+  window.lightUp = () => {
+    release?.();
+    const svg = root().querySelector("svg");
+    release = svg ? attachFocus(svg) : null;
+  };
+</script>
 <script>
   const positions = {};
   const filters = { members: true, namespaces: true, notes: true };
@@ -71,6 +82,7 @@ export const PAGE = `<!DOCTYPE html>
         ? text
         : '<pre class="error">' + text.replace(/</g, "&lt;") + "</pre>";
       applyView();
+      window.lightUp?.();
     } finally {
       inFlight = false;
       if (again) { again = false; rerender(); }
