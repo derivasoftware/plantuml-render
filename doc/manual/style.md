@@ -19,6 +19,8 @@ command line (`renderSvg(ir, { tokens })` from the API).
 | `--pr-stroke-width`, `--pr-container-stroke-width` | how hard box and container borders read |
 | `--pr-edge-width` | how thick a relation's line is |
 | `--pr-port-in`, `--pr-port-out` | boundary port squares, by direction |
+| `--pr-edge-hit` | width of the invisible band that makes a thin relation easy to point at |
+| `--pr-focus`, `--pr-dimmed` | highlight colour, and how far everything else fades |
 
 `--outline bold` on the command line is shorthand for the darkest borders at
 two pixels, which is what a large diagram shown small needs.

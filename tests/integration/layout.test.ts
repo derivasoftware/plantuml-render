@@ -11,7 +11,7 @@ const rectOf = (svg: string, id: string) => {
   return { x, y, w, h, cx: x + w / 2, cy: y + h / 2 };
 };
 const pathOf = (svg: string, from: string, to: string) => {
-  const m = svg.match(new RegExp(`data-from="${from}" data-to="${to}" d="([^"]+)"`));
+  const m = svg.match(new RegExp(`data-from="${from}" data-to="${to}"[^>]*>(?:<title>[^<]*</title>)?<path class="pr-edge-hit" d="([^"]+)"`));
   if (!m) throw new Error(`no edge ${from}->${to}`);
   return m[1].split(" ").map((t) => t.slice(1).split(",").map(Number)) as [number, number][];
 };
