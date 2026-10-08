@@ -215,6 +215,41 @@ block and therefore has no ports — the relation cannot be drawn, and the
 drawing carries a notice naming what it could not find. A silently missing wire
 is the one failure a diagram cannot show you.
 
+## State diagrams
+
+```plantuml
+@startuml
+[*] --> Idle
+Idle --> Running : start
+Running --> Idle : stop
+state Running {
+  [*] --> Warming
+  Warming --> Hot : ready [temp>50] / abrir()
+  Hot --> [*]
+}
+state "Mantenimiento programado" as Mant
+Mant : requiere operador
+Idle --> Mant [[{solo con la llave puesta}]]
+@enduml
+```
+
+- A state is a rounded box; `[*]` is the dot a machine starts from and the
+  bullseye it ends at, one of each per level however many arrows reach it.
+- `state X { … }` nests: a composite is drawn as a box with its own machine
+  inside, terminals included.
+- A state is declared by being used, so `Idle --> Running` names two of them;
+  a `state` line afterwards says more about one that already exists.
+- `state "A long name" as X` shows the long name and answers to `X`.
+- `X : a line` adds to what the state says, shown when the pointer rests on it.
+- A transition's label is its trigger, guard and action as written, and
+  `[[{…}]]` explains it.
+
+Not drawn as their own shapes, and named in a notice when they appear:
+concurrent regions (`--` inside a composite), history (`[H]`, `[H*]`, drawn as
+plain states) and the pseudostates the standard gives a shape — fork and join
+bars, the choice diamond, entry and exit points — which are drawn as states
+carrying their stereotype.
+
 ## Sequence diagrams
 
 Participants of every kind (`actor` is drawn as a stick figure), `->` and

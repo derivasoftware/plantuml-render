@@ -8,6 +8,7 @@
  */
 
 import { activityToIr, isActivity } from "./activity.js";
+import { isState, stateToIr } from "./state.js";
 import { type IrEdge, type IrNode, type RenderIr, type SectionKind } from "./ir.js";
 
 /** Structural view of a tree-sitter node — satisfied by both the node
@@ -277,6 +278,7 @@ export function hyperlink(text: string): { href?: string; title?: string } {
 
 export function treeToIr(root: CstNode): RenderIr {
   if (isActivity(root)) return activityToIr(root);
+  if (isState(root)) return stateToIr(root);
   const kind = notDrawnKind(root);
   if (kind) return { ir: 1, title: diagramTitle(root), nodes: [], edges: [], notice: notDrawnNotice(kind) };
   if (isSequence(root)) return sequenceToIr(root);

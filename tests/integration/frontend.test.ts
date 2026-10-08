@@ -62,19 +62,27 @@ describe("puml frontend", () => {
 
 describe("diagram kinds that are not drawn", () => {
   const STATE = "@startuml demo\n[*] --> Init\nInit --> Nom : ready\nNom --> [*]\n@enduml\n";
+  const DEPLOY = "@startuml demo\nnode Server\nnode Client\nClient --> Server\n@enduml\n";
   const ACTIVITY = "@startuml demo2\nstart\n:Read input;\nif (valid?) then (yes)\n  :Process;\nelse (no)\n  :Reject;\nendif\nstop\n@enduml\n";
 
   it("returns an empty IR with a notice naming the kind", async () => {
-    const state = await pumlToIr(STATE);
-    expect(state.nodes).toEqual([]);
-    expect(state.edges).toEqual([]);
-    expect(state.title).toBe("demo");
-    expect(state.notice).toMatch(/^State diagram: not drawn by plantuml-render/);
+    const deploy = await pumlToIr(DEPLOY);
+    expect(deploy.nodes).toEqual([]);
+    expect(deploy.edges).toEqual([]);
+    expect(deploy.title).toBe("demo");
+    expect(deploy.notice).toMatch(/^Deployment diagram: not drawn by plantuml-render/);
     const activity = await pumlToIr(ACTIVITY);
     expect(activity.notice).toBeUndefined();
     expect(activity.title).toBe("demo2");
     expect(activity.nodes.map((n) => n.kind)).toEqual(["start", "action", "decision", "action", "action", "end"]);
     expect(activity.edges.filter((e) => e.kind === "flow").map((e) => e.label ?? "")).toEqual(["", "", "yes", "no", "", ""]);
+  });
+
+  it("draws a state diagram now, instead of refusing it", async () => {
+    const state = await pumlToIr(STATE);
+    expect(state.notice).toBeUndefined();
+    expect(state.nodes.map((n) => n.kind)).toEqual(["start", "action", "action", "end"]);
+    expect(state.edges.map((e) => e.label ?? "")).toEqual(["", "ready", ""]);
   });
 
   it("recognises use case, component sources and non-UML start tags", async () => {
@@ -101,8 +109,8 @@ describe("diagram kinds that are not drawn", () => {
 
   it("notices validate against the schema", async () => {
     const { validateIr } = await import("../../src/render/ir.js");
-    expect(() => validateIr(JSON.parse(JSON.stringify(pumlToIr(STATE))))).not.toThrow;
-    expect(validateIr(JSON.parse(JSON.stringify(await pumlToIr(STATE)))).notice).toContain("State diagram");
+    expect(() => validateIr(JSON.parse(JSON.stringify(pumlToIr(DEPLOY))))).not.toThrow;
+    expect(validateIr(JSON.parse(JSON.stringify(await pumlToIr(DEPLOY)))).notice).toContain("Deployment diagram");
   });
 });
 

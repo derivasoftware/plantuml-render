@@ -14,7 +14,7 @@ Deterministic SVG renderer for the
 Three guarantees: **byte-deterministic** (same IR, byte-identical SVG, so
 rendered design is diffable in merge requests), **themable, never themed**
 (CSS custom properties on stable classes, neutral fallbacks only), and an
-**honest frontier** (the class, sequence and activity subsets are drawn;
+**honest frontier** (the class, sequence, activity and state subsets are drawn;
 everything else says so in the SVG instead of drawing). Validated over a 6 226-diagram wild corpus:
 zero failures, all deterministic.
 
@@ -111,11 +111,13 @@ The family covers a standard-driven subset of PlantUML, never the whole
 language. Class diagrams: 125 of 149 standard constructs structural;
 sequence: 70 of 111, with the lifecycle verbs (activate, ref, box,
 delays) still raw; activity (new syntax): actions, swimlanes and the
-control flow structural, the legacy syntax raw. Everything else
-(deployment, components, state, mindmaps, gantt) parses lossless as raw
-lines, never an ERROR, but gets no structure. The native engine draws the
-class, sequence and activity subsets; the rest is not drawn and the SVG
-says so.
+control flow structural, the legacy syntax raw; state: states,
+composites, terminals and transitions structural, with concurrent regions,
+history and the shaped pseudostates drawn as plain states and said in a
+notice. Everything else (deployment, components, mindmaps, gantt) parses
+lossless as raw lines, never an ERROR, but gets no structure. The native engine draws the
+class, sequence, activity and state subsets; the rest is not drawn and the
+SVG says so.
 
 ## Documentation
 
