@@ -169,6 +169,24 @@ ports left looking unconnected, and the drawing then says something the model
 does not. Which port was meant is not something the renderer can know, so it
 says which blocks were reached that way and what they offer.
 
+## Relations that say different things along the same line
+
+Twenty transitions between the same two states, each with its own trigger, are
+twenty relations in the model and one line on paper. Drawn apart, each takes a
+channel of its own and every channel wraps the last: two boxes sixty pixels
+apart come out 1813 wide, nested rectangles all the way. Drawn together they
+are 146 wide and read at a glance.
+
+So relations that are indistinguishable apart from their text are drawn as one,
+with the labels stacked along the line and the explanations behind it. Nothing
+the producer said is lost: twenty labels, twenty lines; twenty explanations,
+twenty lines of tooltip.
+
+Indistinguishable means all of it: the same two ends, the same kind, the same
+dash, the same link. Two relations of different kinds between the same pair
+stay two, and so do two that point opposite ways or carry different links. A
+sequence message never collapses, because its row is its order.
+
 ## When a wire does not appear
 
 A relation is drawn only when both of its ends name something the diagram

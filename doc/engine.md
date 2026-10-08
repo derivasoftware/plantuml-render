@@ -102,6 +102,12 @@ per-edge-kind (`pr-edge-inheritance`, …) classes allow finer theming.
 The vscode extension's editor-theme mapping (its `client/preview.ts`)
 is the reference consumer.
 
+Parallel relations collapse before the layout runs, so the router never sees
+the twenty channels it would otherwise open. The collapse is on everything but
+the text — ends, kind, dash, link — and a sequence message is excluded by its
+`order`. References that disagree across a group are dropped rather than
+guessed.
+
 An edge is emitted as one `g.pr-edge-group` carrying the identity, the tooltip
 and the references, around two paths with the same geometry: `pr-edge-hit`,
 invisible and wide, which takes the pointer, and `pr-edge`, which takes the ink

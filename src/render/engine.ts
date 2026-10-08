@@ -30,11 +30,21 @@ const CONTAINER_LABEL_H = 22;
 const LABEL_CHAR_W = 7; // edge labels are 11px
 const LABEL_H = 14;
 
+/** What a relation's text occupies, one line or twenty. */
+function labelBox(text: string): { text: string; width: number; height: number } {
+  const lines = text.split("\n");
+  return {
+    text,
+    width: Math.max(...lines.map((l) => l.length)) * LABEL_CHAR_W + 8,
+    height: LABEL_H * lines.length,
+  };
+}
+
 /** A routed edge: the polyline the router chose and where it put the label. */
 interface Route {
   points: { x: number; y: number }[];
-  /** Where the label is drawn, and how wide it is, so the frame can hold it. */
-  label?: { x: number; y: number; w: number };
+  /** Where the label is drawn and how big it is, so the frame can hold it. */
+  label?: { x: number; y: number; w: number; h: number };
 }
 
 interface Placed {
@@ -59,8 +69,58 @@ export interface RenderOptions {
   tokens?: Record<string, string>;
 }
 
+/**
+ * Relations that differ only in what they say are drawn as one.
+ *
+ * Twenty transitions between two states, each with its own trigger, are
+ * twenty relations in the model and one line on paper: the router gives each
+ * its own channel and every channel wraps the last, so two boxes sixty pixels
+ * apart come out 1813 wide. Collapsed, the same twenty are 104 wide and read
+ * at a glance.
+ *
+ * Only relations that are indistinguishable apart from their text collapse:
+ * same ends, same kind, same dash, same link. A sequence message never does —
+ * its `order` is the row it occupies. The texts are kept, one line each, so
+ * nothing the producer said is lost: the labels become the drawn label and
+ * the explanations become the explanation.
+ */
+function bundleParallel(ir: RenderIr): RenderIr {
+  const key = (e: IrEdge) =>
+    e.order !== undefined ? null : [e.from, e.to, e.kind, e.dashed ?? false, e.href ?? ""].join("\u0000");
+  const groups = new Map<string, IrEdge[]>();
+  for (const edge of ir.edges) {
+    const k = key(edge);
+    if (k === null) continue;
+    (groups.get(k) ?? groups.set(k, []).get(k)!).push(edge);
+  }
+  if (![...groups.values()].some((g) => g.length > 1)) return ir;
+  const lines = (parts: (string | undefined)[]) => {
+    const kept = parts.filter((p): p is string => !!p);
+    return kept.length ? kept.join("\n") : undefined;
+  };
+  const done = new Set<string>();
+  const edges: IrEdge[] = [];
+  for (const edge of ir.edges) {
+    const k = key(edge);
+    if (k === null) { edges.push(edge); continue; }
+    if (done.has(k)) continue;
+    done.add(k);
+    const group = groups.get(k)!;
+    if (group.length === 1) { edges.push(edge); continue; }
+    edges.push({
+      ...edge,
+      label: lines(group.map((e) => e.label)),
+      title: lines(group.map((e) => e.title)),
+      // References that disagree say different things about different
+      // relations; only one they all share survives the collapse.
+      refs: group.every((e) => JSON.stringify(e.refs) === JSON.stringify(edge.refs)) ? edge.refs : undefined,
+    });
+  }
+  return { ...ir, edges };
+}
+
 export async function renderSvg(input: unknown, opts: RenderOptions = {}): Promise<string> {
-  const ir = validateIr(input);
+  const ir = bundleParallel(validateIr(input));
   // A lifeline switches the whole document to the time-axis layout;
   // position overrides don't apply there (rows are the layout).
   if (ir.nodes.some((n) => n.kind === "lifeline")) {
@@ -397,7 +457,7 @@ function toElk(ir: RenderIr): ElkGraph {
       id: `e${i}`,
       sources: [up ? edge.to : edge.from],
       targets: [up ? edge.from : edge.to],
-      labels: edge.label ? [{ text: edge.label, width: edge.label.length * LABEL_CHAR_W + 8, height: LABEL_H }] : undefined,
+      labels: edge.label ? [labelBox(edge.label)] : undefined,
     } as ElkExtendedEdge;
   };
   // A diagram with boundary ports is a block diagram: its signals enter on
@@ -579,7 +639,7 @@ async function layout(ir: RenderIr): Promise<{ placed: Placed[]; routes: Map<num
       points,
       label:
         label && label.x !== undefined && label.y !== undefined
-          ? { ...shift({ x: label.x, y: label.y + LABEL_H - 3 }), w: label.width ?? 0 }
+          ? { ...shift({ x: label.x, y: label.y + LABEL_H - 3 }), w: label.width ?? 0, h: label.height ?? LABEL_H }
           : undefined,
     });
   }
@@ -694,7 +754,7 @@ async function layoutLanes(ir: RenderIr): Promise<{ placed: Placed[]; routes: Ma
       const points = sx === tx ? [{ x: sx, y: y0 }, { x: tx, y: y1 }] : [{ x: sx, y: y0 }, { x: sx, y: mid }, { x: tx, y: mid }, { x: tx, y: y1 }];
       const left = tx < sx;
       const label = edge.label
-        ? { x: left ? sx - 6 - edge.label.length * LABEL_CHAR_W : sx + 6, y: y0 + 13, w: edge.label.length * LABEL_CHAR_W }
+        ? { x: left ? sx - 6 - edge.label.length * LABEL_CHAR_W : sx + 6, y: y0 + 13, w: edge.label.length * LABEL_CHAR_W, h: LABEL_H }
         : undefined;
       routes.set(index, { points, label });
     } else {
@@ -704,7 +764,7 @@ async function layoutLanes(ir: RenderIr): Promise<{ placed: Placed[]; routes: Ma
       const points = [{ x: s.x + s.w, y: sy }, { x: channel, y: sy }, { x: channel, y: ty }, { x: t.x + t.w, y: ty }];
       routes.set(index, {
         points,
-        label: edge.label ? { x: channel + 4, y: Math.round((sy + ty) / 2), w: edge.label.length * LABEL_CHAR_W } : undefined,
+        label: edge.label ? { x: channel + 4, y: Math.round((sy + ty) / 2), w: edge.label.length * LABEL_CHAR_W, h: LABEL_H } : undefined,
       });
     }
   });
@@ -895,7 +955,11 @@ function emitEdge(edge: IrEdge, byId: Map<string, Placed>, px: string, route?: R
       const b = points[best + 1] ?? a;
       at = { x: Math.round((a.x + b.x) / 2) + 6, y: Math.round((a.y + b.y) / 2) - 4 };
     }
-    label = `<text class="pr-edge-label" x="${at.x}" y="${at.y}">${esc(edge.label)}</text>`;
+    const lines = edge.label.split("\n");
+    const rows = lines
+      .map((line, i) => `<tspan x="${at.x}" dy="${i === 0 ? 0 : LABEL_H}">${esc(line)}</tspan>`)
+      .join("");
+    label = `<text class="pr-edge-label" x="${at.x}" y="${at.y}">${lines.length === 1 ? esc(edge.label) : rows}</text>`;
   }
   // A relation is a hair-thin line and a hair-thin line is a hair-thin
   // target: pointing at one with a mouse is luck. An invisible companion
@@ -1010,7 +1074,7 @@ function emit(ir: RenderIr, placed: Placed[], routes: Map<number, Route>, tokens
     // canvas does not reach is drawn and then clipped away.
     if (route.label) {
       xs.push(route.label.x, route.label.x + route.label.w);
-      ys.push(route.label.y - LABEL_H, route.label.y);
+      ys.push(route.label.y - LABEL_H, route.label.y + route.label.h - LABEL_H);
     }
   }
   // A producer's notice sits below the content, or alone when there is
