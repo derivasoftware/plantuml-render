@@ -42,6 +42,11 @@ consumer, the engine. Anything that emits valid IR renders identically.
   it to CSS classes, never colors), `stereotype` and `abstract`.
 - Edge kinds (8): `inheritance`, `realization`, `composition`,
   `aggregation`, `dependency`, `association`, `attachment`, `message`.
+- A `label` may carry several lines, separated by `\n`: they are drawn
+  stacked and the layout reserves the room. Edges that are
+  indistinguishable apart from their `label` and `title` are drawn as one,
+  with both texts joined line by line — so a document of twenty parallel
+  relations is one line on the drawing and twenty in its text.
 - **An edge's `from` and `to` name nodes of the same document.** The
   engine draws an edge only when both ends were placed; an end that
   names nothing is reported in the rendered notice, with the names it
