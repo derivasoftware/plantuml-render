@@ -260,11 +260,19 @@ function diagramTitle(root: Node): string | undefined {
 
 /** A PlantUML hyperlink on an entity head (REQ-00023-1): `[[url]]` or
  * `[[url{tooltip}]]`, structural since grammar 0.11. */
+/**
+ * `[[url]]`, `[[url{explanation}]]` and `[[{explanation}]]`.
+ *
+ * The third form is the one that carries no link at all: PlantUML writes a
+ * tooltip that way, and an entity that explains itself without pointing
+ * anywhere is the common case in a generated diagram. The grammar has always
+ * parsed it; only this reader insisted on a URL first.
+ */
 export function hyperlink(text: string): { href?: string; title?: string } {
-  const m = /^\[\[\s*([^\]{}\s][^\]{}]*?)\s*(?:\{([^}]*)\})?\s*\]\]$/.exec(text.trim());
-  if (!m) return {};
+  const m = /^\[\[\s*([^\]{}\s][^\]{}]*?)?\s*(?:\{([^}]*)\})?\s*\]\]$/.exec(text.trim());
+  if (!m || (!m[1] && !m[2])) return {};
   const title = m[2]?.trim();
-  return { href: m[1], ...(title ? { title } : {}) };
+  return { ...(m[1] ? { href: m[1] } : {}), ...(title ? { title } : {}) };
 }
 
 export function treeToIr(root: CstNode): RenderIr {
@@ -376,7 +384,14 @@ export function treeToIr(root: CstNode): RenderIr {
         const op = node.childForFieldName("operator")?.text.trim() ?? "";
         const decoded = decodeOperator(op);
         if (decoded) {
-          const label = node.childForFieldName("label")?.text.trim();
+          // `A --> B : text [[url{explanation}]]` — the link rides at the end
+          // of the label, which is where the grammar leaves it. Taken out, it
+          // is the relation's link and its explanation; left in, it is
+          // brackets printed on the drawing and a tooltip nobody gets.
+          const written = node.childForFieldName("label")?.text.trim();
+          const tail = written ? /\s*(\[\[[^\]]*\]\])$/.exec(written) : null;
+          const link = tail ? hyperlink(tail[1]) : {};
+          const label = tail ? written!.slice(0, tail.index).trim() || undefined : written;
           const left = strip(node.childForFieldName("left")?.text ?? "");
           const right = strip(node.childForFieldName("right")?.text ?? "");
           edges.push({
@@ -384,6 +399,7 @@ export function treeToIr(root: CstNode): RenderIr {
             to: decoded.swapped ? left : right,
             kind: decoded.kind,
             label,
+            ...link,
           });
         }
         return;
