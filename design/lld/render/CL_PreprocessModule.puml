@@ -1,0 +1,20 @@
+@startuml CL_PreprocessModule
+' requirement REQ-00034-1
+
+!startsub PreprocessModule
+
+namespace render.preprocess {
+  class expandIncludes <<function>> {
+    + expandIncludes()
+  }
+  class loadFragment <<function>> {
+    + loadFragment()
+  }
+  class loadWhole <<function>> {
+    + loadWhole()
+  }
+}
+
+!endsub
+
+@enduml

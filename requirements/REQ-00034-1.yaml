@@ -1,0 +1,13 @@
+requirement:
+  id: REQ-00034-1
+  title: The renderer shall expand include directives through an injected loader, on an entry of its own
+  description: >
+    The renderer shall expand !includesub file!NAME and !include file through an injected loader before parsing, so an aggregate draws its included fragments; a missing target keeps its directive line verbatim and cycles are cut. The expansion ships as its own package entry (plantuml-render/preprocess) that loads nothing else, so a host that only expands includes does not carry the layout engine.
+  rationale: >
+    PUML-106: preprocess.ts had no requirement or sheet although the CLI and the VS Code host both expand includes with it; the host imported it through the browser entry and bundled elkjs into its client (838 KB -> 4.0 MB). The owner and the light entry land together.
+  status: APPROVED
+  asil: QM
+  parent_ids:
+    - SREQ-00004-1
+  tags:
+    - frontend
