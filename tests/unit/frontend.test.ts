@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { pumlToIr } from "../src/render/frontend.js";
+import { pumlToIr } from "../../src/render/frontend.js";
 
 const PUML = `@startuml demo
 namespace core {

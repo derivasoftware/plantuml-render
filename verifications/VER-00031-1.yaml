@@ -1,0 +1,20 @@
+verification:
+  id: VER-00031-1
+  req_id: REQ-00031-1
+  title: "State tests read the drawing back: states, composites and terminals, declaration by use, long and short names, transition labels as written, one terminal per level, nothing dangling, the notice for shapes not drawn yet"
+  description: >
+    State tests read the drawing back: states, composites and terminals, declaration by use, long and short names, transition labels as written, one terminal per level, nothing dangling, the notice for shapes not drawn yet
+  method: test
+  test_ids:
+    - "tests/integration/frontend.test.ts::draws a state diagram now, instead of refusing it"
+    - "tests/integration/state.test.ts::draws states, composites and the two terminals"
+    - "tests/integration/state.test.ts::declares a state by using it, and lets a later declaration say more"
+    - "tests/integration/state.test.ts::shows the long name and answers to the short one"
+    - "tests/integration/state.test.ts::carries the trigger, the guard and the action as written"
+    - "tests/integration/state.test.ts::takes an explanation off a transition"
+    - "tests/integration/state.test.ts::shares one terminal per level, however many arrows reach it"
+    - "tests/integration/state.test.ts::draws the whole thing, with nothing dangling"
+    - "tests/integration/state.test.ts::says which shapes it drew as plain states"
+    - "tests/integration/state.test.ts::names concurrent regions rather than dropping them in silence"
+    - "tests/integration/state.test.ts::says nothing when there is nothing to say"
+  status: APPROVED

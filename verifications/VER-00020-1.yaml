@@ -20,4 +20,6 @@ verification:
     - "tests/integration/interactive.test.ts::leaf deltas move the node and its container adapts around it"
     - "tests/integration/interactive.test.ts::container deltas cascade to the whole subtree"
     - "tests/integration/interactive.test.ts::negative deltas stay inside the covering viewBox"
+    - "tests/integration/bundle.test.ts::keeps a tall label inside the canvas"
+    - "tests/integration/engine.test.ts::reaches a relation's label, even when it sits outside the route"
   status: DRAFT

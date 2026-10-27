@@ -1,0 +1,32 @@
+@startuml CL_FocusModule
+' requirement REQ-00032-1
+
+!startsub FocusModule
+
+namespace render.focus {
+  class neighbourhood <<function>> {
+    + neighbourhood()
+  }
+  class attachFocus <<function>> {
+    + attachFocus()
+  }
+  class attr <<function>> {
+    + attr()
+  }
+  class labelOf <<function>> {
+    + labelOf()
+  }
+  class nodeOf <<function>> {
+    + nodeOf()
+  }
+  class relations <<function>> {
+    + relations()
+  }
+  class titleOf <<function>> {
+    + titleOf()
+  }
+}
+
+!endsub
+
+@enduml

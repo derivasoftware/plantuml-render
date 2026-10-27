@@ -10,4 +10,6 @@ verification:
     - "tests/integration/manual.test.ts::serves the manual from the package and from injected copies"
     - "tests/integration/manual.test.ts::renders a directory into a mirrored tree of SVGs"
     - "tests/integration/manual.test.ts::parses through the wasm grammar: no native binding in the dependencies"
+    - "tests/integration/manual.test.ts::only sends the reader to topics that exist"
+    - "tests/integration/manual.test.ts::describes the markup the engine actually emits"
   status: DRAFT

@@ -20,6 +20,9 @@ namespace render.frontend {
   class packagedAssets <<function>> {
     + packagedAssets()
   }
+  class syntaxErrorLine <<function>> {
+    + syntaxErrorLine()
+  }
 }
 
 !endsub

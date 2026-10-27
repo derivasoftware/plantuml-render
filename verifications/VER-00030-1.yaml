@@ -1,0 +1,45 @@
+verification:
+  id: VER-00030-1
+  req_id: REQ-00030-1
+  title: "Block-port tests read the IR and the SVG: ports owned by their block, endpoints resolved to ports, wires routed to the port, outputs marked apart, names clear of the wire, flow direction, legibility at size"
+  description: >
+    Block-port tests read the IR and the SVG: ports owned by their block, endpoints resolved to ports, wires routed to the port, outputs marked apart, names clear of the wire, flow direction, legibility at size
+  method: test
+  test_ids:
+    - "tests/integration/ports.test.ts::reads in/out members as ports owned by the block"
+    - "tests/integration/ports.test.ts::leaves a block's other members in their compartments"
+    - "tests/integration/ports.test.ts::resolves Block::port endpoints to the port node"
+    - "tests/integration/ports.test.ts::only applies to the block stereotype"
+    - "tests/integration/ports.test.ts::validates against the render-IR schema"
+    - "tests/integration/ports.test.ts::places each port on its block's border and sizes the block to fit"
+    - "tests/integration/ports.test.ts::marks outputs apart and draws the name clear of the wire"
+    - "tests/integration/ports.test.ts::routes the wire to the port, not to the block's centre"
+    - "tests/integration/ports.test.ts::keeps the port names inside the canvas"
+    - "tests/integration/ports.test.ts::is byte-deterministic"
+    - "tests/integration/ports.test.ts::reads <<in>>/<<out>> children of a block container as its ports"
+    - "tests/integration/ports.test.ts::wires the inside and the outside to the same ports"
+    - "tests/integration/ports.test.ts::only applies inside a block container"
+    - "tests/integration/ports.test.ts::draws the ports on the container border and routes both sides to them"
+    - "tests/integration/ports.test.ts::starts every wire of a fan-out at the one port they share"
+    - "tests/integration/ports.test.ts::without the port, each wire leaves the box at its own place"
+    - "tests/integration/ports.test.ts::runs the chain left to right when the ports are on the sides"
+    - "tests/integration/ports.test.ts::keeps a diagram without ports flowing downwards"
+    - "tests/integration/ports.test.ts::follows the border the ports actually use"
+    - "tests/integration/ports.test.ts::draws a box and a container in colours a large diagram keeps"
+    - "tests/integration/ports.test.ts::wraps a long chain instead of drawing one endless row"
+    - "tests/integration/ports.test.ts::grows a long chain in both directions, not only sideways"
+    - "tests/integration/ports.test.ts::keeps the outlines at the width they were drawn, whatever the zoom"
+    - "tests/integration/ports.test.ts::writes a container's names inside it, so neighbours cannot collide"
+    - "tests/integration/ports.test.ts::leaves no two names overlapping"
+    - "tests/integration/ports.test.ts::keeps a leaf block's names outside, where its own text is not"
+    - "tests/integration/ports.test.ts::is still wide enough for its own names"
+    - "tests/integration/ports.test.ts::leaves none of its names piled on another"
+    - "tests/integration/ports.test.ts::draws them at their natural size by default"
+    - "tests/integration/ports.test.ts::scales every marker by --pr-arrow-size"
+    - "tests/integration/ports.test.ts::ignores a size that is not a positive number, and caps a wild one"
+    - "tests/integration/ports.test.ts::gives the line its own width token"
+    - "tests/integration/ports.test.ts::says so, and what the block offers"
+    - "tests/integration/ports.test.ts::says nothing once the ports are named"
+    - "tests/integration/ports.test.ts::leaves a block without ports alone"
+    - "tests/integration/ports.test.ts::only counts the direction the wire needs"
+  status: APPROVED

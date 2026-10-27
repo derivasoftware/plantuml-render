@@ -1,0 +1,13 @@
+requirement:
+  id: REQ-00031-1
+  title: "The renderer shall draw state machines with states, composites, terminals and labelled transitions"
+  description: >
+    The renderer shall draw state machines with states, composites, terminals and labelled transitions
+  rationale: >
+    States are declared or used, composites nest, each level shares one initial and one final terminal, and a transition carries its trigger, guard and action as written; shapes it does not draw yet are named in the notice.
+  status: APPROVED
+  asil: QM
+  parent_ids:
+    - SREQ-00010-1
+  tags:
+    - rendering

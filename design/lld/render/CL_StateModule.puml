@@ -1,0 +1,23 @@
+@startuml CL_StateModule
+' requirement REQ-00031-1
+
+!startsub StateModule
+
+namespace render.state {
+  class isState <<function>> {
+    + isState()
+  }
+  class stateToIr <<function>> {
+    + stateToIr()
+  }
+  class link <<function>> {
+    + link()
+  }
+  class strip <<function>> {
+    + strip()
+  }
+}
+
+!endsub
+
+@enduml

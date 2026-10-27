@@ -1,0 +1,19 @@
+verification:
+  id: VER-00032-1
+  req_id: REQ-00032-1
+  title: "Focus tests drive the drawing as a host page would: neighbours named once, lighting and restoring, relations pointed at through their band, the host classes styled"
+  description: >
+    Focus tests drive the drawing as a host page would: neighbours named once, lighting and restoring, relations pointed at through their band, the host classes styled
+  method: test
+  test_ids:
+    - "tests/integration/focus.test.ts::answers from the drawing alone, with the words it carries"
+    - "tests/integration/focus.test.ts::names every neighbour once, with its own explanation"
+    - "tests/integration/focus.test.ts::says nothing extra about a node nothing reaches"
+    - "tests/integration/focus.test.ts::lights the node, its neighbours and the relations between them"
+    - "tests/integration/focus.test.ts::hands the host what it needs to say something about it"
+    - "tests/integration/focus.test.ts::on a relation, keeps the relation and its two ends"
+    - "tests/integration/focus.test.ts::puts everything back when the pointer leaves, and when it is detached"
+    - "tests/integration/interactive.test.ts::gives a relation an invisible band to be pointed at"
+    - "tests/integration/interactive.test.ts::names each relation once, on the group that holds both paths"
+    - "tests/integration/interactive.test.ts::styles the three classes a host switches on"
+  status: APPROVED

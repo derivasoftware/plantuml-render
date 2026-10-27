@@ -2,6 +2,8 @@
 ' requirement REQ-00002-1
 ' requirement REQ-00006-1
 ' requirement REQ-00020-1
+' requirement REQ-00030-1
+' requirement REQ-00033-1
 ' requirement REQ-00016-1
 
 !startsub EngineModule
@@ -54,6 +56,24 @@ namespace render.engine {
   }
   class toElk <<function>> {
     + toElk()
+  }
+  class arrowScale <<function>> {
+    + arrowScale()
+  }
+  class bundleParallel <<function>> {
+    + bundleParallel()
+  }
+  class danglingNotice <<function>> {
+    + danglingNotice()
+  }
+  class labelBox <<function>> {
+    + labelBox()
+  }
+  class sideOf <<function>> {
+    + sideOf()
+  }
+  class unportedNotice <<function>> {
+    + unportedNotice()
   }
 }
 

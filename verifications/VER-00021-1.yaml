@@ -19,4 +19,10 @@ verification:
     - "tests/integration/cli.test.ts::reports a kind that is not drawn on stderr, draws the notice and exits 0"
     - "tests/integration/cli.test.ts::reports an invalid --ir document as one line with exit code 1"
     - "tests/integration/cli.test.ts::fails usage without input"
+    - "tests/integration/engine.test.ts::names the endpoints that nothing declares"
+    - "tests/integration/engine.test.ts::counts the relations and lists the names once each"
+    - "tests/integration/engine.test.ts::stops naming after four and counts the rest"
+    - "tests/integration/engine.test.ts::says nothing when every relation is drawn"
+    - "tests/integration/engine.test.ts::keeps the producer's own notice and adds its line below"
+    - "tests/integration/engine.test.ts::leaves a document that drew nothing to its producer"
   status: DRAFT
