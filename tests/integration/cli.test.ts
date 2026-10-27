@@ -51,7 +51,8 @@ describe("cli", () => {
     const out = join(dir, "flow.svg");
     let err = "";
     expect(await main([puml, "-o", out], { stderr: (t) => (err += t) })).toBe(0);
-    expect(err).toContain("flow.puml: Deployment diagram: not drawn by plantuml-render (kept lossless). Render this kind with plantuml.jar.");
+    expect(err).toContain("flow.puml: Deployment diagram: not drawn by plantuml-render (kept lossless).");
+    expect(err).not.toContain("plantuml.jar");
     expect(readFileSync(out, "utf8")).toContain('class="pr-notice"');
   });
 

@@ -251,7 +251,7 @@ function notDrawnKind(root: Node): string | undefined {
  * leaving a blank, and the command line repeats it on stderr. */
 export function notDrawnNotice(kind: string): string {
   const name = kind.charAt(0).toUpperCase() + kind.slice(1);
-  return `${name} diagram: not drawn by plantuml-render (kept lossless).\nRender this kind with plantuml.jar.`;
+  return `${name} diagram: not drawn by plantuml-render (kept lossless).`;
 }
 
 function diagramTitle(root: Node): string | undefined {
