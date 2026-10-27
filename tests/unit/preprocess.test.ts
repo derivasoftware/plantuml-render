@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { expandIncludes, type IncludeLoader } from "../src/render/preprocess.js";
+import { expandIncludes, type IncludeLoader } from "../../src/render/preprocess.js";
 
 const FILES: Record<string, string> = {
   "/d/CL_Leaf.puml": `@startuml CL_Leaf
