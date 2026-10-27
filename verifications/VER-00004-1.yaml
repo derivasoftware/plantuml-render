@@ -11,3 +11,8 @@ verification:
     - "tests/integration/cli.test.ts::reports an invalid --ir document as one line with exit code 1"
     - "tests/integration/cli.test.ts::fails usage without input"
     - "tests/integration/cli.test.ts::writes a whole SVG larger than a pipe's buffer to stdout (PUML-65)"
+    - "tests/integration/cli.test.ts::fails with exit 1 on a source that does not parse and leaves nothing to draw (PUML-87)"
+    - "tests/integration/cli.test.ts::fails with exit 1 on an include whose target does not exist (PUML-87)"
+    - "tests/integration/cli.test.ts::in batch mode reports each unrenderable file, writes the rest and exits 1 (PUML-87)"
+    - "tests/integration/cli.test.ts::draws an empty diagram as the 'Nothing to draw.' notice and exits 0: empty is not broken (PUML-87)"
+    - "tests/integration/cli.test.ts::warns but draws a source that parses only in part (PUML-87)"

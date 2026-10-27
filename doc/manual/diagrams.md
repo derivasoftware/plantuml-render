@@ -25,6 +25,9 @@ an error.
 - `note left|right|top|bottom of X : text` with `\n` line breaks.
 - `class f <<function>>` marks a module-level function (badge `f`).
 - `!include file` and `!includesub file!NAME` are expanded before parsing.
+  On the command line a target that does not exist fails the file (exit 1),
+  and so does a source that does not parse and leaves nothing to draw; an
+  empty diagram still draws its notice and exits 0.
 
 ## Blocks with boundary ports
 
