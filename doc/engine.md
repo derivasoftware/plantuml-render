@@ -137,7 +137,10 @@ CLI wires `fs` and the vscode host wires `workspace.fs`; the browser
 bundle itself never touches files. Cycles are cut by a seen-set;
 unresolvable targets keep their directive line verbatim (it lands on
 the grammar's raw frontier and draws nothing), matching the argos
-reader's lenient posture.
+reader's lenient posture. The expansion ships as its own entry,
+`plantuml-render/preprocess`, a module with no imports, so a host that
+only expands includes (the vscode extension's client) does not bundle
+the layout engine.
 
 ## CLI
 
