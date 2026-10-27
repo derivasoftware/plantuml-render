@@ -64,9 +64,9 @@ describe("engine", () => {
 describe("engine", () => {
   it("draws a producer's notice under the content and alone for an empty document", async () => {
     const plain = await renderSvg(IR);
-    const noted = await renderSvg({ ...IR, notice: "Activity diagram: not drawn.\nRender it with plantuml.jar." });
+    const noted = await renderSvg({ ...IR, notice: "Activity diagram: not drawn.\nSecond line of the notice." });
     expect(noted).toContain('class="pr-notice"');
-    expect(noted).toContain("Render it with plantuml.jar.");
+    expect(noted).toContain("Second line of the notice.");
     const height = (svg: string) => Number(/height="(\d+)"/.exec(svg)![1]);
     expect(height(noted)).toBeGreaterThan(height(plain));
 
