@@ -1,12 +1,31 @@
+import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
 import { main } from "../../src/render/cli.js";
 
 describe("cli", () => {
+  it("writes a whole SVG larger than a pipe's buffer to stdout (PUML-65)", () => {
+    const dir = mkdtempSync(join(tmpdir(), "pr-"));
+    const puml = join(dir, "big.puml");
+    const lines = ["@startuml BIG"];
+    for (let i = 0; i < 200; i++) lines.push(`class Clase${i} {`, `  + metodo_${i}(uno: int, dos: str) : bool`, "}");
+    for (let i = 0; i < 199; i++) lines.push(`Clase${i} --> Clase${i + 1} : relacion_${i}`);
+    lines.push("@enduml");
+    writeFileSync(puml, lines.join("\n") + "\n");
+    const cli = resolve("out/render/cli.js");
+    const file = join(dir, "big.svg");
+    expect(spawnSync(process.execPath, [cli, puml, "-o", file]).status).toBe(0);
+    const piped = spawnSync(process.execPath, [cli, puml], { maxBuffer: 64 * 1024 * 1024 });
+    expect(piped.status).toBe(0);
+    expect(piped.stdout.length).toBeGreaterThan(64 * 1024);
+    expect(piped.stdout.toString("utf8")).toBe(readFileSync(file, "utf8"));
+  }, 60000);
+
+
   it("renders puml files and prebuilt IR documents", async () => {
     const dir = mkdtempSync(join(tmpdir(), "pr-"));
     const puml = join(dir, "d.puml");
