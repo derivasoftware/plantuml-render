@@ -1,5 +1,6 @@
 @startuml CL_ActivityModule
 ' requirement REQ-00024-1
+' requirement REQ-00025-1
 
 !startsub ActivityModule
 
