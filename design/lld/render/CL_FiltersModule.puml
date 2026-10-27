@@ -13,6 +13,9 @@ namespace render.filters {
   class hideNotes <<function>> {
     + hideNotes()
   }
+  class filterMembers <<function>> {
+    + filterMembers()
+  }
 }
 
 !endsub

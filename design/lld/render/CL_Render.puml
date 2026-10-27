@@ -12,6 +12,10 @@
 ' requirement REQ-00011-1
 ' requirement REQ-00017-1
 ' requirement REQ-00018-1
+' requirement REQ-00030-1
+' requirement REQ-00031-1
+' requirement REQ-00032-1
+' requirement REQ-00033-1
 
 !startsub IrModule
 !includesub ./CL_IrModule.puml!IrModule
@@ -51,6 +55,14 @@
 
 !startsub ServeModule
 !includesub ./CL_ServeModule.puml!ServeModule
+!endsub
+
+!startsub StateModule
+!includesub ./CL_StateModule.puml!StateModule
+!endsub
+
+!startsub FocusModule
+!includesub ./CL_FocusModule.puml!FocusModule
 !endsub
 
 !startsub CliModule
