@@ -10,3 +10,7 @@ verification:
     - "tests/integration/frontend.test.ts::requalifies relation endpoints and maps kinds"
     - "tests/integration/frontend.test.ts::emits notes with attachments"
     - "tests/integration/frontend.test.ts::frontend output always validates against the schema"
+    - "tests/integration/frontend.test.ts::resolves a qualified tail to the entity that ends with it"
+    - "tests/integration/frontend.test.ts::leaves an ambiguous tail unresolved rather than guessing"
+    - "tests/integration/frontend.test.ts::keeps the declared name ahead of any tail"
+    - "tests/integration/frontend.test.ts::resolves the owner of a port reference the same way"

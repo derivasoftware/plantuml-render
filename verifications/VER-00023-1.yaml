@@ -11,4 +11,9 @@ verification:
     - "tests/integration/links.test.ts::wraps linked elements in <a href>, adds the tooltip and the data-ref attributes"
     - "tests/integration/links.test.ts::links sequence participants and messages the same way"
     - "tests/integration/links.test.ts::applies a map by id, by unique short name, and a template to the rest"
+    - "tests/integration/frontend.test.ts::takes an explanation on an entity without asking for a link"
+    - "tests/integration/frontend.test.ts::still reads a link, with or without the explanation"
+    - "tests/integration/frontend.test.ts::takes the link off a relation's label instead of printing it"
+    - "tests/integration/frontend.test.ts::leaves a relation that carries only an explanation without a label"
+    - "tests/integration/frontend.test.ts::does not touch a label that has no link in it"
   status: DRAFT

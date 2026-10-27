@@ -1,0 +1,13 @@
+requirement:
+  id: REQ-00032-1
+  title: "The renderer shall light what an entity or a relation is connected to when a host points at it"
+  description: >
+    The renderer shall light what an entity or a relation is connected to when a host points at it
+  rationale: >
+    Pointing at a node lights it, its neighbours and the relations between them; pointing at a relation keeps the relation and its two ends; everything is restored when the pointer leaves. The drawing carries what the host needs (an invisible band per relation, the classes a host switches on), so the answer comes from the SVG alone.
+  status: DRAFT
+  asil: QM
+  parent_ids:
+    - SREQ-00007-1
+  tags:
+    - rendering

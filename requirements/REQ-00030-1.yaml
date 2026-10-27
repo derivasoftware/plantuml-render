@@ -1,0 +1,13 @@
+requirement:
+  id: REQ-00030-1
+  title: "The renderer shall draw blocks with boundary ports and route wires to the ports"
+  description: >
+    The renderer shall draw blocks with boundary ports and route wires to the ports
+  rationale: >
+    A block stereotype with in and out members is a box whose members are ports on its boundary; a Block::port endpoint resolves to the port and the wire is routed to it. The capability shipped with the HLD block diagrams and its tests carried no requirement until the PUML-88 cleanup.
+  status: DRAFT
+  asil: QM
+  parent_ids:
+    - SREQ-00004-1
+  tags:
+    - rendering

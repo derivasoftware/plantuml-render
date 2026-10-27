@@ -1,0 +1,14 @@
+requirement:
+  id: SREQ-00010-1
+  title: The engine shall render state diagrams
+  description: >
+    The engine shall render state diagrams.
+  rationale: >
+    Fourth kind after class, sequence and activity (PUML-77, October 2026): the grammar is structural for states, composite states and their terminals, and the layered layout draws a state machine as it draws a flowchart. Written down by the PUML-88 cleanup: the capability shipped with its tests and no requirement.
+  owner: dcoello-dev
+  status: DRAFT
+  asil: QM
+  parent_ids:
+    - SREQ-00001-1
+  tags:
+    - rendering

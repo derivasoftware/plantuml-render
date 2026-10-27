@@ -10,3 +10,8 @@ verification:
     - "tests/integration/filters.test.ts::flattenContainers drops containers, parents and their edges"
     - "tests/integration/filters.test.ts::hideNotes drops notes and attachments"
     - "tests/integration/filters.test.ts::filters never mutate their input"
+    - "tests/integration/filters.test.ts::keeps the members a predicate accepts"
+    - "tests/integration/filters.test.ts::drops a compartment once it empties, and its kind with it"
+    - "tests/integration/filters.test.ts::selects by kind where position would lie"
+    - "tests/integration/filters.test.ts::leaves a node with no members alone"
+    - "tests/integration/filters.test.ts::never mutates its input"

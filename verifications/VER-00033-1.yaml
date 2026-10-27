@@ -1,0 +1,14 @@
+verification:
+  id: VER-00033-1
+  req_id: REQ-00033-1
+  title: "Bundle tests read the SVG: parallel relations drawn as one, every word kept, only indistinguishable ones collapsed, sequences untouched, references the group does not agree on dropped"
+  description: >
+    Bundle tests read the SVG: parallel relations drawn as one, every word kept, only indistinguishable ones collapsed, sequences untouched, references the group does not agree on dropped
+  method: test
+  test_ids:
+    - "tests/integration/bundle.test.ts::are drawn as one, and the drawing stops being a detour"
+    - "tests/integration/bundle.test.ts::keep every word: the labels on the line, the explanations behind it"
+    - "tests/integration/bundle.test.ts::only collapse what is indistinguishable apart from its text"
+    - "tests/integration/bundle.test.ts::leave a sequence alone, where each message is a row"
+    - "tests/integration/bundle.test.ts::drop a reference the group does not agree on"
+  status: DRAFT

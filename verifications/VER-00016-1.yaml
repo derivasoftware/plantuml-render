@@ -18,4 +18,9 @@ verification:
     - "tests/integration/embed.test.ts::declares light and dark tokens on the diagram itself"
     - "tests/integration/embed.test.ts::sizes the root naturally and fluidly"
     - "tests/integration/embed.test.ts::frames the content with the same margin on every side"
+    - "tests/integration/cli.test.ts::leaves the defaults alone unless asked"
+    - "tests/integration/cli.test.ts::bakes the bold outline in, after the defaults so it wins"
+    - "tests/integration/cli.test.ts::sets any token, and a later one wins over the preset"
+    - "tests/integration/cli.test.ts::refuses an outline it does not know and a token without a value"
+    - "tests/integration/cli.test.ts::keeps a token name and value from carrying anything else into the stylesheet"
   status: DRAFT
