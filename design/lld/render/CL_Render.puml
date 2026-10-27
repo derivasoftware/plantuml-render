@@ -65,6 +65,10 @@
 !includesub ./CL_FocusModule.puml!FocusModule
 !endsub
 
+!startsub FrontendCoreModule
+!includesub ./CL_FrontendCoreModule.puml!FrontendCoreModule
+!endsub
+
 !startsub PreprocessModule
 !includesub ./CL_PreprocessModule.puml!PreprocessModule
 !endsub

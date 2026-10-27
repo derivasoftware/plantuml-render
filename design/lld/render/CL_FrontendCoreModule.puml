@@ -1,0 +1,45 @@
+@startuml CL_FrontendCoreModule
+' requirement REQ-00010-1
+' requirement REQ-00021-1
+
+!startsub FrontendCoreModule
+
+namespace render.frontend-core {
+  class treeToIr <<function>> {
+    + treeToIr()
+  }
+  class decodeOperator <<function>> {
+    + decodeOperator()
+  }
+  class diagramTitle <<function>> {
+    + diagramTitle()
+  }
+  class hyperlink <<function>> {
+    + hyperlink()
+  }
+  class isSequence <<function>> {
+    + isSequence()
+  }
+  class memberSections <<function>> {
+    + memberSections()
+  }
+  class notDrawnKind <<function>> {
+    + notDrawnKind()
+  }
+  class notDrawnNotice <<function>> {
+    + notDrawnNotice()
+  }
+  class portDirection <<function>> {
+    + portDirection()
+  }
+  class sequenceToIr <<function>> {
+    + sequenceToIr()
+  }
+  class splitPorts <<function>> {
+    + splitPorts()
+  }
+}
+
+!endsub
+
+@enduml

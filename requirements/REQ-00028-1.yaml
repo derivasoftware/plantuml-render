@@ -18,6 +18,8 @@ requirement:
     check in scripts/build_binaries.sh and the per-platform jobs mean the
     same thing by "verified".
   status: APPROVED
+  design_optional: true
+  implementation_optional: true
   asil: QM
   parent_ids:
     - SREQ-00001-1

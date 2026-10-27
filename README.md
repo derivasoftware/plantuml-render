@@ -1,7 +1,7 @@
 # plantuml-render
 
 <!-- folio: colophon --project plantuml-render --junit test-results/junit.xml --coverage_ut test-results/coverage/cobertura-coverage.xml -->
-![powered by: argos](https://img.shields.io/badge/powered%20by-argos-1f6feb) ![traced: 91%](https://img.shields.io/badge/traced-91%25-2ea44f) ![verified: 100%](https://img.shields.io/badge/verified-100%25-2ea44f) ![tests: 91%](https://img.shields.io/badge/tests-91%25-2ea44f) ![UT: 96%](https://img.shields.io/badge/UT-96%25-2ea44f) ![ST: n/a](https://img.shields.io/badge/ST-n%2Fa-lightgrey) ![diagnostics: 9](https://img.shields.io/badge/diagnostics-9-dfb317)
+![powered by: argos](https://img.shields.io/badge/powered%20by-argos-1f6feb) ![traced: 91%](https://img.shields.io/badge/traced-91%25-2ea44f) ![verified: 100%](https://img.shields.io/badge/verified-100%25-2ea44f) ![tests: 91%](https://img.shields.io/badge/tests-91%25-2ea44f) ![UT: 96%](https://img.shields.io/badge/UT-96%25-2ea44f) ![ST: n/a](https://img.shields.io/badge/ST-n%2Fa-lightgrey) ![diagnostics: 0](https://img.shields.io/badge/diagnostics-0-2ea44f)
 
 > **plantuml-render** is powered by **argos**. **folio** generates this documentation from the repository's model: 34 requirements · 34 verifications · 0 constraints. Quality: 91% traced to code · 100% verified · 91% tests passing · 96% UT coverage.
 <!-- /folio -->

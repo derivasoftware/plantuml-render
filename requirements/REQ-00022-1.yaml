@@ -17,6 +17,8 @@ requirement:
     `sha256sum -c SHA256SUMS --ignore-missing` (`shasum -a 256 -c` on
     macOS). A detached signature is a possible later step.
   status: APPROVED
+  design_optional: true
+  implementation_optional: true
   asil: QM
   parent_ids:
     - SREQ-00001-1

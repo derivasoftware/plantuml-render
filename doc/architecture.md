@@ -50,7 +50,7 @@ _cl · `design/lld/render/CL_NotDrawnNotice.puml`_
 _cl · `design/lld/render/CL_Render.puml`_
 
 - traces to: `REQ-00001-1` `REQ-00002-1` `REQ-00003-1` `REQ-00004-1` `REQ-00005-1` `REQ-00006-1` `REQ-00007-1` `REQ-00008-1` `REQ-00009-1` `REQ-00010-1` `REQ-00011-1` `REQ-00017-1` `REQ-00018-1` `REQ-00030-1` `REQ-00031-1` `REQ-00032-1` `REQ-00033-1`
-- implemented in: `src/render/activity.ts` · `src/render/cli.ts` · `src/render/engine.ts` · `src/render/filters.ts` · `src/render/focus.ts` · `src/render/frontend.ts` · `src/render/ir.ts` · `src/render/links.ts` · `src/render/preprocess.ts` · `src/render/sequence.ts` · `src/render/serve.ts` · `src/render/shared.ts` · `src/render/state.ts`
+- implemented in: `src/render/activity.ts` · `src/render/cli.ts` · `src/render/engine.ts` · `src/render/filters.ts` · `src/render/focus.ts` · `src/render/frontend-core.ts` · `src/render/frontend.ts` · `src/render/ir.ts` · `src/render/links.ts` · `src/render/preprocess.ts` · `src/render/sequence.ts` · `src/render/serve.ts` · `src/render/shared.ts` · `src/render/state.ts`
 - verified by: `tests/integration/bundle.test.ts` (5) · `tests/integration/cli.test.ts` (10) · `tests/integration/engine.test.ts` (4) · `tests/integration/filters.test.ts` (9) · `tests/integration/focus.test.ts` (7) · `tests/integration/frontend.test.ts` (9) · `tests/integration/interactive.test.ts` (9) · `tests/integration/ir.test.ts` (4) · `tests/integration/links.test.ts` (5) · `tests/integration/ports.test.ts` (36) · `tests/integration/sequence.test.ts` (8) · `tests/integration/serve.test.ts` (6) · `tests/integration/state.test.ts` (10)
 
 ![CL_Render](assets/CL_Render.svg)
@@ -138,11 +138,11 @@ _cl · `design/lld/render/CL_Render.puml`_
 </details>
 
 <details>
-<summary><code>CL_ActivityModule</code> · traces to <code>REQ-00024-1</code></summary>
+<summary><code>CL_ActivityModule</code> · traces to <code>REQ-00024-1</code> <code>REQ-00025-1</code></summary>
 <ul>
 <li>source: <code>design/lld/render/CL_ActivityModule.puml</code></li>
 <li>implemented in: <code>src/render/activity.ts</code></li>
-<li>verified by: <code>tests/integration/activity.test.ts</code> (7)</li>
+<li>verified by: <code>tests/integration/activity.test.ts</code> (8)</li>
 </ul>
 <p><img alt="CL_ActivityModule" src="assets/CL_ActivityModule.svg"></p>
 </details>
@@ -165,6 +165,16 @@ _cl · `design/lld/render/CL_Render.puml`_
 <li>verified by: <code>tests/integration/focus.test.ts</code> (7), <code>tests/integration/interactive.test.ts</code> (3)</li>
 </ul>
 <p><img alt="CL_FocusModule" src="assets/CL_FocusModule.svg"></p>
+</details>
+
+<details>
+<summary><code>CL_FrontendCoreModule</code> · traces to <code>REQ-00010-1</code> <code>REQ-00021-1</code></summary>
+<ul>
+<li>source: <code>design/lld/render/CL_FrontendCoreModule.puml</code></li>
+<li>implemented in: <code>src/render/frontend-core.ts</code></li>
+<li>verified by: <code>tests/integration/cli.test.ts</code> (4), <code>tests/integration/engine.test.ts</code> (10), <code>tests/integration/frontend.test.ts</code> (5), <code>tests/integration/sequence.test.ts</code> (3)</li>
+</ul>
+<p><img alt="CL_FrontendCoreModule" src="assets/CL_FrontendCoreModule.svg"></p>
 </details>
 
 <details>
