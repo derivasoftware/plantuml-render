@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -53,6 +53,59 @@ describe("cli", () => {
     expect(await main([puml, "-o", out], { stderr: (t) => (err += t) })).toBe(0);
     expect(err).toContain("flow.puml: Deployment diagram: not drawn by plantuml-render (kept lossless). Render this kind with plantuml.jar.");
     expect(readFileSync(out, "utf8")).toContain('class="pr-notice"');
+  });
+
+  it("fails with exit 1 on a source that does not parse and leaves nothing to draw (PUML-87)", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "pr-"));
+    const puml = join(dir, "broken.puml");
+    writeFileSync(puml, "@startuml\nclass {\n@enduml\n");
+    let err = "";
+    expect(await main([puml, "-o", join(dir, "broken.svg")], { stderr: (t) => (err += t) })).toBe(1);
+    expect(err).toContain("broken.puml: does not parse (line 2) and leaves nothing to draw");
+  });
+
+  it("fails with exit 1 on an include whose target does not exist (PUML-87)", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "pr-"));
+    const puml = join(dir, "agg.puml");
+    writeFileSync(puml, "@startuml\n!includesub ./gone.puml!Sub\nclass Here\n@enduml\n");
+    let err = "";
+    expect(await main([puml, "-o", join(dir, "agg.svg")], { stderr: (t) => (err += t) })).toBe(1);
+    expect(err).toContain("include target not found:");
+    expect(err).toContain("gone.puml");
+  });
+
+  it("in batch mode reports each unrenderable file, writes the rest and exits 1 (PUML-87)", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "pr-"));
+    const src = join(dir, "src");
+    const out = join(dir, "out");
+    mkdirSync(src);
+    writeFileSync(join(src, "good.puml"), "@startuml\nclass Good\n@enduml\n");
+    writeFileSync(join(src, "bad.puml"), "@startuml\n!include ./nope.iuml\n@enduml\n");
+    let err = "";
+    expect(await main(["render", src, "-o", out], { stderr: (t) => (err += t) })).toBe(1);
+    expect(err).toContain("bad.puml: include target not found:");
+    expect(err).toContain("1 of 2 diagrams");
+    expect(readFileSync(join(out, "good.svg"), "utf8")).toContain('id="Good"');
+  });
+
+  it("draws an empty diagram as the 'Nothing to draw.' notice and exits 0: empty is not broken (PUML-87)", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "pr-"));
+    const puml = join(dir, "empty.puml");
+    writeFileSync(puml, "@startuml\n@enduml\n");
+    const out = join(dir, "empty.svg");
+    expect(await main([puml, "-o", out])).toBe(0);
+    expect(readFileSync(out, "utf8")).toContain("Nothing to draw.");
+  });
+
+  it("warns but draws a source that parses only in part (PUML-87)", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "pr-"));
+    const puml = join(dir, "partial.puml");
+    writeFileSync(puml, "@startuml\nclass Kept\nclass {\n@enduml\n");
+    const out = join(dir, "partial.svg");
+    let err = "";
+    expect(await main([puml, "-o", out], { stderr: (t) => (err += t) })).toBe(0);
+    expect(err).toContain("partial.puml: does not parse at line 3; drawing what parses");
+    expect(readFileSync(out, "utf8")).toContain('id="Kept"');
   });
 
   it("reports an invalid --ir document as one line with exit code 1", async () => {

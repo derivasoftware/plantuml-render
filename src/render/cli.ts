@@ -21,7 +21,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSy
 import { basename, dirname, extname, join, relative, resolve } from "node:path";
 
 import { renderSvg } from "./engine.js";
-import { pumlToIr } from "./frontend.js";
+import { pumlToIr, syntaxErrorLine } from "./frontend.js";
 import { validateIr } from "./ir.js";
 import { applyLinks, type LinkSpec } from "./links.js";
 import { expandIncludes, type IncludeLoader } from "./preprocess.js";
@@ -78,6 +78,13 @@ OUTPUT
   data-id and data-from/data-to on edges, light and dark palettes inside, natural size that shrinks
   to its container. See \`plantuml-render docs embedding\`.
 
+EXIT
+  0   drawn (an empty diagram draws a 'Nothing to draw.' notice; a source that parses only in
+      part is drawn as far as it parses, with a warning on stderr)
+  1   a file was not drawn: an include target that does not exist, or a source that does not
+      parse and leaves nothing to draw; batch mode names each such file and still writes the rest
+  2   usage
+
 EXAMPLES
   plantuml-render design/lld/CL_Order.puml -o docs/CL_Order.svg
   plantuml-render big.puml --outline bold -o big.svg
@@ -109,9 +116,33 @@ function walk(dir: string, acc: string[] = []): string[] {
   return acc;
 }
 
+/** A source the CLI will not turn into an SVG: a missing include, or one that
+ * does not parse and leaves nothing to draw (PUML-87). The batch mode counts
+ * it as one failed file; a single render exits 1. */
+class UnrenderableSource extends Error {}
+
 async function renderFile(file: string, links: LinkSpec, warn: (text: string) => void, tokens?: Record<string, string>): Promise<string> {
   const raw = readFileSync(file, "utf8");
-  const ir = await pumlToIr(await expandIncludes(raw, dirname(resolve(file)), fsLoader));
+  // the expansion stays lenient for the hosts that want a partial drawing;
+  // the CLI records every target it could not read and refuses the file
+  const missing: string[] = [];
+  const loader: IncludeLoader = {
+    ...fsLoader,
+    read(path) {
+      const text = fsLoader.read(path);
+      if (text === null) missing.push(path);
+      return text;
+    },
+  };
+  const expanded = await expandIncludes(raw, dirname(resolve(file)), loader);
+  if (missing.length) throw new UnrenderableSource(`include target not found: ${missing.join(", ")}`);
+  const ir = await pumlToIr(expanded);
+  const errorLine = await syntaxErrorLine(expanded);
+  if (errorLine !== null) {
+    const nothingDrawn = ir.nodes.length === 0 && ir.edges.length === 0 && !ir.notice;
+    if (nothingDrawn) throw new UnrenderableSource(`does not parse (line ${errorLine}) and leaves nothing to draw`);
+    warn(`${file}: does not parse at line ${errorLine}; drawing what parses\n`);
+  }
   ir.title ??= basename(file, extname(file));
   // A kind that is not drawn is said in the SVG and here (REQ-00021-1);
   // the exit code stays 0, the source is kept as it is.
