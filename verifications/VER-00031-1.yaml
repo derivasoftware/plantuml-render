@@ -17,4 +17,4 @@ verification:
     - "tests/integration/state.test.ts::says which shapes it drew as plain states"
     - "tests/integration/state.test.ts::names concurrent regions rather than dropping them in silence"
     - "tests/integration/state.test.ts::says nothing when there is nothing to say"
-  status: DRAFT
+  status: APPROVED

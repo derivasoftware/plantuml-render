@@ -42,4 +42,4 @@ verification:
     - "tests/integration/ports.test.ts::says nothing once the ports are named"
     - "tests/integration/ports.test.ts::leaves a block without ports alone"
     - "tests/integration/ports.test.ts::only counts the direction the wire needs"
-  status: DRAFT
+  status: APPROVED

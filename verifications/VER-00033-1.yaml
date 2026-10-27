@@ -11,4 +11,4 @@ verification:
     - "tests/integration/bundle.test.ts::only collapse what is indistinguishable apart from its text"
     - "tests/integration/bundle.test.ts::leave a sequence alone, where each message is a row"
     - "tests/integration/bundle.test.ts::drop a reference the group does not agree on"
-  status: DRAFT
+  status: APPROVED

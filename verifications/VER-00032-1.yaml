@@ -16,4 +16,4 @@ verification:
     - "tests/integration/interactive.test.ts::gives a relation an invisible band to be pointed at"
     - "tests/integration/interactive.test.ts::names each relation once, on the group that holds both paths"
     - "tests/integration/interactive.test.ts::styles the three classes a host switches on"
-  status: DRAFT
+  status: APPROVED

@@ -5,7 +5,7 @@ requirement:
     The class layout shall draw relations that differ only in their text as one
   rationale: >
     Parallel relations between the same two entities with the same kind are drawn as one route and keep every label and explanation; only what is indistinguishable apart from its text collapses, and a sequence, where each message is a row, is never bundled.
-  status: DRAFT
+  status: APPROVED
   asil: QM
   parent_ids:
     - SREQ-00004-1
