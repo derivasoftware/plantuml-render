@@ -8,6 +8,8 @@ include:
     file:
       - /templates/base.yml
       - /templates/node.yml
+      # argos diagnose gate: fails on any ERROR-severity finding (PUML-88)
+      - /templates/argos-gate.yml
 
 workflow:
   rules:
