@@ -2,6 +2,7 @@
 ' requirement REQ-00011-1
 
 !startsub ServeModule
+!includesub ./CL_PreprocessModule.puml!PreprocessModule
 
 namespace render.serve {
   class renderFile <<function>> {

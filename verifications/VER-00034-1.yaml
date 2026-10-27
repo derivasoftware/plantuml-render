@@ -1,0 +1,11 @@
+verification:
+  id: VER-00034-1
+  req_id: REQ-00034-1
+  title: Include expansion driven directly, and its entry proven light
+  description: >
+    The preprocess tests expand an aggregate through an injected loader, keeping a missing target's directive line, and prove the package exposes the expansion as its own entry whose built module imports nothing.
+  method: test
+  test_ids:
+    - tests/integration/preprocess.test.ts::expands an aggregate through an injected loader, keeping a missing target's line
+    - tests/integration/preprocess.test.ts::ships as an entry of its own that loads nothing else
+  status: APPROVED

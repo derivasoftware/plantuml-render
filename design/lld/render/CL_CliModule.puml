@@ -4,6 +4,7 @@
 ' requirement REQ-00014-1
 
 !startsub CliModule
+!includesub ./CL_PreprocessModule.puml!PreprocessModule
 
 namespace render.cli {
   class main <<function>> {
