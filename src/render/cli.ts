@@ -280,5 +280,8 @@ const invoked = (() => {
 })();
 
 if (invoked === import.meta.url) {
-  process.exit(await main(process.argv.slice(2)));
+  // exitCode, not process.exit(): exit() ends the process before Node has
+  // drained a piped stdout, which cut every SVG at the pipe's 64 KiB
+  // (PUML-65). The process now exits on its own once the write is flushed.
+  process.exitCode = await main(process.argv.slice(2));
 }

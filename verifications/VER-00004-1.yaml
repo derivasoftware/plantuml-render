@@ -10,3 +10,4 @@ verification:
     - "tests/integration/cli.test.ts::reports a kind that is not drawn on stderr, draws the notice and exits 0"
     - "tests/integration/cli.test.ts::reports an invalid --ir document as one line with exit code 1"
     - "tests/integration/cli.test.ts::fails usage without input"
+    - "tests/integration/cli.test.ts::writes a whole SVG larger than a pipe's buffer to stdout (PUML-65)"
