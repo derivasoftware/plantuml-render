@@ -11,4 +11,4 @@ verification:
     - "tests/integration/release-binaries.test.ts::attaches assets only for a version tag"
     - "tests/integration/release-binaries.test.ts::accepts an executable that reports its version and draws the class it was given"
     - "tests/integration/release-binaries.test.ts::rejects an executable whose version does not match the build"
-  status: DRAFT
+  status: APPROVED

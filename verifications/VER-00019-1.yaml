@@ -12,4 +12,4 @@ verification:
     - "tests/integration/sequence-layout.test.ts::grows a row to fit a multi-line note instead of overlapping the next message"
     - "tests/integration/sequence-layout.test.ts::keeps self-message loops and right-hand notes inside the frame"
     - "tests/integration/sequence-layout.test.ts::stays deterministic and keeps lanes ordered"
-  status: DRAFT
+  status: APPROVED

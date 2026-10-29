@@ -12,4 +12,4 @@ verification:
     - "tests/integration/manual.test.ts::parses through the wasm grammar: no native binding in the dependencies"
     - "tests/integration/manual.test.ts::only sends the reader to topics that exist"
     - "tests/integration/manual.test.ts::describes the markup the engine actually emits"
-  status: DRAFT
+  status: APPROVED

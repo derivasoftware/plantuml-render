@@ -12,4 +12,4 @@ verification:
     - "tests/integration/style.test.ts::paints containers parent-first and edge labels above the leaves"
     - "tests/integration/style.test.ts::styles the sequence: actor glyph, frame tab with condition, note line breaks"
     - "tests/integration/style.test.ts::declares the palette as overridable tokens in light and dark"
-  status: DRAFT
+  status: APPROVED

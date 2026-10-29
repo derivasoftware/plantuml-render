@@ -18,4 +18,4 @@ verification:
     - "tests/integration/manual.test.ts::serves the manual from the package and from injected copies"
     - "tests/integration/manual.test.ts::renders a directory into a mirrored tree of SVGs"
     - "tests/integration/manual.test.ts::parses through the wasm grammar: no native binding in the dependencies"
-  status: DRAFT
+  status: APPROVED

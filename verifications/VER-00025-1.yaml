@@ -7,4 +7,4 @@ verification:
   method: test
   test_ids:
     - "tests/integration/activity.test.ts::lays lanes out as disjoint columns in declaration order, nodes inside their lane, chains straight"
-  status: DRAFT
+  status: APPROVED

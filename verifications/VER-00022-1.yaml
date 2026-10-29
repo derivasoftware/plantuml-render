@@ -8,4 +8,4 @@ verification:
   test_ids:
     - "tests/integration/checksums.test.ts::writes a SHA256SUMS that covers every executable and verifies with sha256sum -c"
     - "tests/integration/checksums.test.ts::refuses a directory without executables"
-  status: DRAFT
+  status: APPROVED
