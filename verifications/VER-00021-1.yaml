@@ -25,4 +25,4 @@ verification:
     - "tests/integration/engine.test.ts::says nothing when every relation is drawn"
     - "tests/integration/engine.test.ts::keeps the producer's own notice and adds its line below"
     - "tests/integration/engine.test.ts::leaves a document that drew nothing to its producer"
-  status: DRAFT
+  status: APPROVED
