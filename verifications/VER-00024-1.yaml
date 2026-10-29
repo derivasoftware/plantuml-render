@@ -13,4 +13,4 @@ verification:
     - "tests/integration/activity.test.ts::validates against the schema and leaves class diagrams alone"
     - "tests/integration/activity.test.ts::draws the shapes with their classes and the solid flow arrowhead"
     - "tests/integration/activity.test.ts::is byte-deterministic for a flow with loops and lanes"
-  status: DRAFT
+  status: APPROVED
