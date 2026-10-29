@@ -23,4 +23,4 @@ verification:
     - "tests/integration/cli.test.ts::sets any token, and a later one wins over the preset"
     - "tests/integration/cli.test.ts::refuses an outline it does not know and a token without a value"
     - "tests/integration/cli.test.ts::keeps a token name and value from carrying anything else into the stylesheet"
-  status: DRAFT
+  status: APPROVED
