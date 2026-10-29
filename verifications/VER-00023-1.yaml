@@ -16,4 +16,4 @@ verification:
     - "tests/integration/frontend.test.ts::takes the link off a relation's label instead of printing it"
     - "tests/integration/frontend.test.ts::leaves a relation that carries only an explanation without a label"
     - "tests/integration/frontend.test.ts::does not touch a label that has no link in it"
-  status: DRAFT
+  status: APPROVED
