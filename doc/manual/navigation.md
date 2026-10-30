@@ -88,5 +88,5 @@ A `--links` map entry for that entity overrides the source link; the
 
 ## Coming next
 
-- design-render filling `href` and `refs` from the argos model.
+- A producer filling `href` and `refs` from a design model.
 - Keeping a focus pinned on click, which today is the host's to add.
