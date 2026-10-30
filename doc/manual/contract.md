@@ -8,8 +8,8 @@ composition | aggregation | dependency | association | attachment |
 message | flow`. A lifeline switches the document to the sequence layout;
 an activity document is a flow graph of actions, decisions, bars and
 start/end nodes joined by `flow` edges, and containers with classifier
-`swimlane` become columns. Any producer that emits it — the argos
-design model through design-render, a script over your own data — gets the
+`swimlane` become columns. Any producer that emits it — a generator over a design model, a script
+over your own data — gets the
 same deterministic SVG as PlantUML text does.
 
 Determinism is the contract: same input, byte-identical SVG, so rendered

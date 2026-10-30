@@ -5,9 +5,9 @@ family's second public API after the grammar's node vocabulary: an
 **origin-neutral** description of what to draw, versioned under semver
 and published to the generic registry on every release tag.
 
-Two producers exist today — this package's PlantUML frontend
-(text → CST → IR) and design-render (argos `DesignBase` → IR) — and one
-consumer, the engine. Anything that emits valid IR renders identically.
+One producer ships today — this package's PlantUML frontend
+(text → CST → IR) — and one consumer, the engine. Anything that emits
+valid IR renders identically.
 
 ## Shape
 
@@ -116,9 +116,7 @@ standalone validator** generated at build time (`scripts/gen_schema.mjs`)
 
 Vendor the schema file at the release you pin, validate your emitted
 documents against it in your own CI, and treat a pin bump as: replace
-the vendored file, run your contract tests green. design-render
-(`src/design_render/schema/`, `ContractViolation`) is the reference
-implementation of this discipline.
+the vendored file, run your contract tests green.
 
 ## Versioning
 
