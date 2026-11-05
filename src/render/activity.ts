@@ -33,8 +33,8 @@ interface Open {
   label?: string;
 }
 
-const paren = (s: string | undefined) => (s ?? "").replace(/^\(/, "").replace(/\)$/, "").trim();
-const actionText = (s: string) =>
+export const paren = (s: string | undefined) => (s ?? "").replace(/^\(/, "").replace(/\)$/, "").trim();
+export const actionText = (s: string) =>
   s.replace(/^#\S+/, "").replace(/^:/, "").replace(/[;|<>/\]}]\s*$/, "").trim();
 
 export function activityToIr(root: Node): RenderIr {

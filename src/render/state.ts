@@ -33,10 +33,10 @@ export function isState(root: Node): boolean {
   return walk(root);
 }
 
-const strip = (text: string) => text.replace(/^"|"$/g, "");
+export const strip = (text: string) => text.replace(/^"|"$/g, "");
 
 /** `[[url{explanation}]]` on a state or a transition. */
-function link(node: Node | null): { href?: string; title?: string } {
+export function link(node: Node | null): { href?: string; title?: string } {
   if (!node) return {};
   const m = /^\[\[\s*([^\]{}\s][^\]{}]*?)?\s*(?:\{([^}]*)\})?\s*\]\]$/.exec(node.text.trim());
   if (!m || (!m[1] && !m[2])) return {};

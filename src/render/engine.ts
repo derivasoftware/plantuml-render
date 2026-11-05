@@ -31,7 +31,7 @@ const LABEL_CHAR_W = 7; // edge labels are 11px
 const LABEL_H = 14;
 
 /** What a relation's text occupies, one line or twenty. */
-function labelBox(text: string): { text: string; width: number; height: number } {
+export function labelBox(text: string): { text: string; width: number; height: number } {
   const lines = text.split("\n");
   return {
     text,
@@ -84,7 +84,7 @@ export interface RenderOptions {
  * nothing the producer said is lost: the labels become the drawn label and
  * the explanations become the explanation.
  */
-function bundleParallel(ir: RenderIr): RenderIr {
+export function bundleParallel(ir: RenderIr): RenderIr {
   const key = (e: IrEdge) =>
     e.order !== undefined ? null : [e.from, e.to, e.kind, e.dashed ?? false, e.href ?? ""].join("\u0000");
   const groups = new Map<string, IrEdge[]>();
@@ -144,7 +144,7 @@ export async function renderSvg(input: unknown, opts: RenderOptions = {}): Promi
 
 /** A node's effective delta cascades: its own plus every ancestor
  * container's — dragging a namespace moves its whole subtree. */
-function applyDeltas(
+export function applyDeltas(
   ir: RenderIr,
   placed: Placed[],
   positions: NonNullable<RenderOptions["positions"]>,
@@ -170,7 +170,7 @@ function applyDeltas(
 /** Containers stretch to enclose their (possibly dragged) children.
  * `placed` lists children before their container, so one forward pass
  * folds bottom-up. */
-function adaptContainers(placed: Placed[]): void {
+export function adaptContainers(placed: Placed[]): void {
   const byId = new Map(placed.map((p) => [p.node.id, p]));
   for (const p of placed) {
     if (p.node.kind !== "container") continue;
@@ -197,7 +197,7 @@ const DOT_W = 12; // visibility dot plus the gap before the member
 const NOTE_FOLD = 9; // folded corner of a note
 
 /** A note's lines: the PlantUML `\\n` escape and real newlines both break. */
-function noteLines(node: IrNode): string[] {
+export function noteLines(node: IrNode): string[] {
   return node.label.split(/\\n|\n/);
 }
 
@@ -209,7 +209,7 @@ const LABEL_OF = "\u0000label";
 const PORT_LABEL_W = 6;
 const PORT_LABEL_H = 10;
 
-function nodeSize(node: IrNode): { w: number; h: number } {
+export function nodeSize(node: IrNode): { w: number; h: number } {
   if (node.kind === "port") return { w: PORT, h: PORT };
   if (node.kind === "action") {
     const lines = noteLines(node);
@@ -247,7 +247,7 @@ function nodeSize(node: IrNode): { w: number; h: number } {
   return { w, h };
 }
 
-function headerText(node: IrNode): string {
+export function headerText(node: IrNode): string {
   return node.label;
 }
 
@@ -297,7 +297,7 @@ interface ElkGraph {
  * multi-node component laid out inside an invisible layered node, the
  * edge-less children placed as loose boxes. Hierarchy edges are reversed so
  * bases sit above their subtypes. */
-function toElk(ir: RenderIr): ElkGraph {
+export function toElk(ir: RenderIr): ElkGraph {
   const byId = new Map(ir.nodes.map((n) => [n.id, n]));
   const containers = new Set(ir.nodes.filter((n) => n.kind === "container").map((n) => n.id));
   const parentOf = (n: IrNode) => (n.parent && containers.has(n.parent) && byId.has(n.parent) && n.parent !== n.id ? n.parent : "root");
@@ -560,7 +560,7 @@ function toElk(ir: RenderIr): ElkGraph {
 }
 
 /** Absolute (rounded) positions of every laid-out node. */
-function absolutePositions(root: ElkNode): Map<string, { x: number; y: number; w: number; h: number }> {
+export function absolutePositions(root: ElkNode): Map<string, { x: number; y: number; w: number; h: number }> {
   const out = new Map<string, { x: number; y: number; w: number; h: number }>();
   const walk = (node: ElkNode, ox: number, oy: number) => {
     for (const child of node.children ?? []) {
@@ -594,7 +594,7 @@ function absolutePositions(root: ElkNode): Map<string, { x: number; y: number; w
   return out;
 }
 
-async function layout(ir: RenderIr): Promise<{ placed: Placed[]; routes: Map<number, Route> }> {
+export async function layout(ir: RenderIr): Promise<{ placed: Placed[]; routes: Map<number, Route> }> {
   const { root, edgeHome } = toElk(ir);
   const laid = await elk.layout(root);
   const abs = absolutePositions(laid);
@@ -655,7 +655,7 @@ const LANE_HEAD = 28;
  * centred, so a linear chain runs straight down its lane. Edges are routed
  * orthogonally by hand: down through the gap between layers, back edges
  * through a channel on the right. */
-async function layoutLanes(ir: RenderIr): Promise<{ placed: Placed[]; routes: Map<number, Route> }> {
+export async function layoutLanes(ir: RenderIr): Promise<{ placed: Placed[]; routes: Map<number, Route> }> {
   const byId = new Map(ir.nodes.map((n) => [n.id, n]));
   const lanes = ir.nodes.filter((n) => n.kind === "container" && n.classifier === "swimlane");
   const laneIndex = new Map(lanes.map((l, i) => [l.id, i]));
@@ -781,12 +781,12 @@ async function layoutLanes(ir: RenderIr): Promise<{ placed: Placed[]; routes: Ma
  * the browser. A diagram of many short wires reads as mostly arrowhead at the
  * natural size; `--pr-arrow-size: 0.7` gives it back its lines.
  */
-function arrowScale(tokens: Record<string, string> | undefined): number {
+export function arrowScale(tokens: Record<string, string> | undefined): number {
   const raw = Number(tokens?.["--pr-arrow-size"]);
   return Number.isFinite(raw) && raw > 0 ? Math.min(raw, 4) : 1;
 }
 
-const markers = (px: string, scale = 1) => {
+export const markers = (px: string, scale = 1) => {
   const at = (n: number) => Math.round(n * scale * 100) / 100;
   return `
   <marker id="${px}tri" viewBox="0 0 14 12" refX="13" refY="6" markerWidth="${at(14)}" markerHeight="${at(12)}" orient="auto"><path d="M1,1 L13,6 L1,11 Z"/></marker>
@@ -807,7 +807,7 @@ const MARKER_BY_KIND: Record<string, string> = {
   flow: "tri-solid",
 };
 
-function anchor(p: Placed, other: Placed): { x: number; y: number } {
+export function anchor(p: Placed, other: Placed): { x: number; y: number } {
   const cx = p.x + p.w / 2;
   if (other.y + other.h <= p.y) return { x: cx, y: p.y };
   if (other.y >= p.y + p.h) return { x: cx, y: p.y + p.h };
@@ -815,16 +815,16 @@ function anchor(p: Placed, other: Placed): { x: number; y: number } {
   return other.x >= cx ? { x: p.x + p.w, y: cy } : { x: p.x, y: cy };
 }
 
-function classifierOf(node: IrNode): string | undefined {
+export function classifierOf(node: IrNode): string | undefined {
   return node.classifier ?? (node.stereotype === "function" ? "function" : undefined);
 }
 
 /** Where a port sits on its owner's border: as declared, else by direction. */
-function sideOf(node: IrNode): string {
+export function sideOf(node: IrNode): string {
   return node.side ?? (node.direction === "out" ? "east" : "west");
 }
 
-function emitNode(p: Placed, px: string): string {
+export function emitNode(p: Placed, px: string): string {
   const node = p.node;
   const classifier = classifierOf(node);
   const classes = [
@@ -929,7 +929,7 @@ function emitNode(p: Placed, px: string): string {
   return linked(node.href, parts.join(""));
 }
 
-function emitEdge(edge: IrEdge, byId: Map<string, Placed>, px: string, route?: Route): { path: string; label: string } {
+export function emitEdge(edge: IrEdge, byId: Map<string, Placed>, px: string, route?: Route): { path: string; label: string } {
   const from = byId.get(edge.from);
   const to = byId.get(edge.to);
   if (!from || !to) return { path: "", label: "" };
@@ -985,7 +985,7 @@ const NAMED = 4;
  * is the difference between what the producer asked for and what the
  * drawing can show.
  */
-function danglingNotice(ir: RenderIr, placed: Placed[]): string | undefined {
+export function danglingNotice(ir: RenderIr, placed: Placed[]): string | undefined {
   const drawn = new Set(placed.map((p) => p.node.id));
   const missing: string[] = [];
   let lost = 0;
@@ -1014,7 +1014,7 @@ function danglingNotice(ir: RenderIr, placed: Placed[]): string | undefined {
  * does not. Which port is meant is not for the engine to guess, so it says
  * which blocks are involved and what they offer.
  */
-function unportedNotice(ir: RenderIr, placed: Placed[]): string | undefined {
+export function unportedNotice(ir: RenderIr, placed: Placed[]): string | undefined {
   const drawn = new Set(placed.map((p) => p.node.id));
   const portsOf = new Map<string, { in: string[]; out: string[] }>();
   for (const node of ir.nodes) {
@@ -1050,7 +1050,7 @@ function unportedNotice(ir: RenderIr, placed: Placed[]): string | undefined {
   );
 }
 
-function emit(ir: RenderIr, placed: Placed[], routes: Map<number, Route>, tokens?: Record<string, string>): string {
+export function emit(ir: RenderIr, placed: Placed[], routes: Map<number, Route>, tokens?: Record<string, string>): string {
   // The frame is the content's bounding box plus PAD on every side.
   // The frame is the bounding box of the nodes and of the routed edges,
   // with the same pad on every side.

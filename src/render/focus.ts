@@ -34,7 +34,7 @@ export interface DomRoot extends DomElement {
 }
 
 /** `[data-id="…"]`, with the two characters that could end the string early. */
-const attr = (name: string, value: string) => `[${name}="${value.replace(/[\\"]/g, "\\$&")}"]`;
+export const attr = (name: string, value: string) => `[${name}="${value.replace(/[\\"]/g, "\\$&")}"]`;
 
 /** One end of what a node touches. */
 export interface Link {
@@ -57,21 +57,21 @@ export interface Neighbourhood {
   neighbours: Link[];
 }
 
-const titleOf = (el: DomElement | null): string => {
+export const titleOf = (el: DomElement | null): string => {
   const title = el?.querySelector(":scope > title");
   return title?.textContent ?? "";
 };
 
-const nodeOf = (svg: DomElement, id: string): DomElement | null => svg.querySelector(attr("data-id", id));
+export const nodeOf = (svg: DomElement, id: string): DomElement | null => svg.querySelector(attr("data-id", id));
 
 /** The name a reader sees on a node; its id when it carries no text. */
-const labelOf = (svg: DomElement, id: string): string => {
+export const labelOf = (svg: DomElement, id: string): string => {
   const node = nodeOf(svg, id);
   const text = node?.querySelector("text:not(.pr-port-label)");
   return text?.textContent?.trim() || id;
 };
 
-const relations = (svg: DomElement): DomElement[] => [...svg.querySelectorAll("[data-from]")];
+export const relations = (svg: DomElement): DomElement[] => [...svg.querySelectorAll("[data-from]")];
 
 /**
  * What the node `id` touches: what reaches it, what leaves it, and who is at

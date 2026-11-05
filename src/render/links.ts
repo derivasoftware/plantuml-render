@@ -19,9 +19,9 @@ export interface LinkSpec {
 
 const LINKABLE = new Set(["box", "lifeline", "container"]);
 
-const shortName = (id: string) => id.split(".").pop() ?? id;
+export const shortName = (id: string) => id.split(".").pop() ?? id;
 
-function entryFor(node: IrNode, map: Record<string, LinkEntry>, byShort: Map<string, string[]>): IrLinks | undefined {
+export function entryFor(node: IrNode, map: Record<string, LinkEntry>, byShort: Map<string, string[]>): IrLinks | undefined {
   const exact = map[node.id];
   if (exact !== undefined) return typeof exact === "string" ? { href: exact } : exact;
   const owners = byShort.get(shortName(node.id));
