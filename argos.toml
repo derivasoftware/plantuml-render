@@ -7,5 +7,10 @@
 [project]
 asil = "NA"
 
+[diagnose]
+# Approved-artefact history reviewed up to this commit (PUML-120). The
+# reviewed findings are listed in the merge request of that card.
+approved_mutation_since = "4d1e314add7ced12134bdf904a9c4870e08c7e60"
+
 [sources]
 typescript = ["src"]
