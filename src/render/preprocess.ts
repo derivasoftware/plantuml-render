@@ -52,7 +52,7 @@ export async function expandIncludes(
   return out.join("\n");
 }
 
-async function loadWhole(
+export async function loadWhole(
   path: string,
   loader: IncludeLoader,
   seen: Set<string>,
@@ -68,7 +68,7 @@ async function loadWhole(
   return expandIncludes(body, loader.dirname(path), loader, seen);
 }
 
-async function loadFragment(
+export async function loadFragment(
   path: string,
   sub: string,
   loader: IncludeLoader,

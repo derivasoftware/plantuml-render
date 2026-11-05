@@ -94,7 +94,7 @@ EXAMPLES
 `;
 }
 
-function packagedDocs(): Record<string, string> {
+export function packagedDocs(): Record<string, string> {
   const dir = new URL("../../doc/manual/", import.meta.url);
   const docs: Record<string, string> = {};
   for (const topic of TOPICS) {
@@ -107,7 +107,7 @@ function packagedDocs(): Record<string, string> {
   return docs;
 }
 
-function walk(dir: string, acc: string[] = []): string[] {
+export function walk(dir: string, acc: string[] = []): string[] {
   for (const entry of readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
     const path = join(dir, entry.name);
     if (entry.isDirectory()) walk(path, acc);
@@ -121,7 +121,7 @@ function walk(dir: string, acc: string[] = []): string[] {
  * it as one failed file; a single render exits 1. */
 class UnrenderableSource extends Error {}
 
-async function renderFile(file: string, links: LinkSpec, warn: (text: string) => void, tokens?: Record<string, string>): Promise<string> {
+export async function renderFile(file: string, links: LinkSpec, warn: (text: string) => void, tokens?: Record<string, string>): Promise<string> {
   const raw = readFileSync(file, "utf8");
   // the expansion stays lenient for the hosts that want a partial drawing;
   // the CLI records every target it could not read and refuses the file

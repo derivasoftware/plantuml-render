@@ -140,7 +140,7 @@ export function svgRoot(minX: number, minY: number, width: number, height: numbe
 const VISIBILITY: Record<string, string> = { "+": "public", "-": "private", "#": "protected", "~": "package" };
 
 /** Split on top-level commas: generics and nested parentheses stay whole. */
-function splitParams(text: string): string[] {
+export function splitParams(text: string): string[] {
   const out: string[] = [];
   let depth = 0;
   let current = "";

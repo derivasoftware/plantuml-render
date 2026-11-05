@@ -27,7 +27,7 @@ type Node = CstNode;
  * dashed or dotted core, direction hints stripped. Reversed forms
  * (`B <|-- A` ≡ `A --|> B`) swap the endpoints so the stored edge is
  * canonical. Plain links (`--`, `..`) draw as associations. */
-function decodeOperator(
+export function decodeOperator(
   op: string,
 ): { kind: IrEdge["kind"]; swapped: boolean } | null {
   const m = /^(<\||<|\*|o)?([-.]+(?:(?:left|right|up|down)[-.]+)?)(\|>|>|\*|o)?$/.exec(
@@ -49,7 +49,7 @@ function decodeOperator(
 
 /** A diagram is a sequence diagram when it declares participants or
  * frames — the same inference PlantUML itself makes. */
-function isSequence(root: Node): boolean {
+export function isSequence(root: Node): boolean {
   const walk = (node: Node): boolean => {
     if (node.type === "participant_declaration" || node.type === "frame_block") {
       return true;
@@ -68,7 +68,7 @@ const PARTICIPANT_KINDS = new Set([
 /** Sequence mapping: statements claim rows in source order — messages,
  * `==` dividers and anchored notes each take one; frames span the rows
  * of their children (an empty frame still claims one). */
-function sequenceToIr(root: Node): RenderIr {
+export function sequenceToIr(root: Node): RenderIr {
   const nodes: IrNode[] = [];
   const edges: IrEdge[] = [];
   const lifelineIds = new Map<string, string>();
@@ -221,7 +221,7 @@ const RAW_LINE_KINDS: [RegExp, string][] = [
   [/^(node|cloud|storage|hexagon)\b/, "deployment"],
 ];
 
-function notDrawnKind(root: Node): string | undefined {
+export function notDrawnKind(root: Node): string | undefined {
   const tag = /@start(\w+)/.exec(root.text)?.[1];
   if (tag && tag !== "uml") return START_TAGS[tag] ?? tag;
   let found: string | undefined;
@@ -254,7 +254,7 @@ export function notDrawnNotice(kind: string): string {
   return `${name} diagram: not drawn by plantuml-render (kept lossless).`;
 }
 
-function diagramTitle(root: Node): string | undefined {
+export function diagramTitle(root: Node): string | undefined {
   const diagram = root.namedChildren.find((c) => c.type === "diagram");
   return diagram?.childForFieldName("name")?.text.trim() || undefined;
 }
@@ -479,7 +479,7 @@ export const BLOCK = "block";
 const PORT_MEMBER = /^([+\-#~]\s*)?(in|out)\s+(\S.*)$/i;
 
 /** `<<in>>` / `<<out>>`, the port marker a container's children can carry. */
-function portDirection(stereotype: string | undefined): "in" | "out" | undefined {
+export function portDirection(stereotype: string | undefined): "in" | "out" | undefined {
   const s = stereotype?.toLowerCase();
   return s === "in" || s === "out" ? s : undefined;
 }
@@ -494,7 +494,7 @@ const PORT_TYPE = /^([^:]+?)\s*:\s*(\S.*)$/;
  * decides that this reading applies at all — every other classifier is
  * untouched.
  */
-function splitPorts(decl: Node): {
+export function splitPorts(decl: Node): {
   ports: IrNode[];
   rest: { sections?: string[][]; sectionKinds?: SectionKind[] };
 } | undefined {
@@ -541,7 +541,7 @@ function splitPorts(decl: Node): {
   };
 }
 
-function memberSections(
+export function memberSections(
   decl: Node,
 ): { sections: string[][]; sectionKinds: SectionKind[] } | undefined {
   const body = decl.childForFieldName("body");

@@ -29,7 +29,7 @@ export function configureParser(next: ParserAssets): void {
   parser = undefined;
 }
 
-async function packagedAssets(): Promise<ParserAssets> {
+export async function packagedAssets(): Promise<ParserAssets> {
   const { readFileSync } = await import("node:fs");
   const { createRequire } = await import("node:module");
   const require = createRequire(import.meta.url);
@@ -40,7 +40,7 @@ async function packagedAssets(): Promise<ParserAssets> {
   };
 }
 
-async function load(): Promise<Parser> {
+export async function load(): Promise<Parser> {
   const current = assets ?? (assets = await packagedAssets());
   await Parser.init({ wasmBinary: current.runtime } as unknown as Parameters<typeof Parser.init>[0]);
   const instance = new Parser();
